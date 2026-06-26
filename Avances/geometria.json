@@ -1,0 +1,103 @@
+{
+  "descripcion": "Geometría del arreglo multimicrófono biomimético inspirado en slit sensilla del escorpión",
+  "unidades": "metros",
+  "sample_rate": 16000,
+  "velocidad_sonido": 343.0,
+  "micrófonos": [
+    {
+      "id": 1,
+      "esp": 1,
+      "bus": 0,
+      "canal": "L",
+      "lr_pin": "GND",
+      "x": 0.05,
+      "y": 0.00,
+      "z": 0.00,
+      "notas": "ESP1 Bus0-L — par frontal izquierdo"
+    },
+    {
+      "id": 2,
+      "esp": 1,
+      "bus": 0,
+      "canal": "R",
+      "lr_pin": "VCC",
+      "x": -0.05,
+      "y": 0.00,
+      "z": 0.00,
+      "notas": "ESP1 Bus0-R — par frontal derecho"
+    },
+    {
+      "id": 3,
+      "esp": 1,
+      "bus": 1,
+      "canal": "L",
+      "lr_pin": "GND",
+      "x": 0.05,
+      "y": -0.03,
+      "z": 0.00,
+      "notas": "ESP1 Bus1-L — par lateral izquierdo"
+    },
+    {
+      "id": 4,
+      "esp": 1,
+      "bus": 1,
+      "canal": "R",
+      "lr_pin": "VCC",
+      "x": -0.05,
+      "y": -0.03,
+      "z": 0.00,
+      "notas": "ESP1 Bus1-R — par lateral derecho"
+    },
+    {
+      "id": 5,
+      "esp": 2,
+      "bus": 0,
+      "canal": "L",
+      "lr_pin": "GND",
+      "x": 0.05,
+      "y": -0.06,
+      "z": 0.00,
+      "notas": "ESP2 Bus0-L — par posterior izquierdo"
+    },
+    {
+      "id": 6,
+      "esp": 2,
+      "bus": 0,
+      "canal": "R",
+      "lr_pin": "VCC",
+      "x": -0.05,
+      "y": -0.06,
+      "z": 0.00,
+      "notas": "ESP2 Bus0-R — par posterior derecho"
+    },
+    {
+      "id": 7,
+      "esp": 2,
+      "bus": 1,
+      "canal": "L",
+      "lr_pin": "GND",
+      "x": 0.05,
+      "y": -0.09,
+      "z": 0.00,
+      "notas": "ESP2 Bus1-L — par trasero izquierdo"
+    },
+    {
+      "id": 8,
+      "esp": 2,
+      "bus": 1,
+      "canal": "R",
+      "lr_pin": "VCC",
+      "x": -0.05,
+      "y": -0.09,
+      "z": 0.00,
+      "notas": "ESP2 Bus1-R — par trasero derecho"
+    }
+  ],
+  "pares_das": [
+    {"nombre": "frontal",   "mics": [1, 2]},
+    {"nombre": "lateral",   "mics": [3, 4]},
+    {"nombre": "posterior", "mics": [5, 6]},
+    {"nombre": "trasero",   "mics": [7, 8]}
+  ],
+  "notas_geometria": "Actualizar coordenadas x,y,z con mediciones reales del collar antes de implementar DAS"
+}

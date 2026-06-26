@@ -1,0 +1,357 @@
+# Documentación del Sistema de Adquisición — TT
+
+## Contexto general
+
+Este documento sirve como referencia técnica y bitácora de progreso para el Trabajo Terminal:
+
+> **"Sistema de localización acústica multimicrófono basado en mecanismos de detección vibracional de escorpiones para la mejora de la inteligibilidad del habla en entornos acústicamente adversos"**
+> UPIITA-IPN — Ingeniería Biónica — Semestre 2026/2
+> Proyecto: `DTA.MI.2026-2.5BM1.LMP.01`
+
+El sistema de adquisición está compuesto por **dos ESP32-S3** conectados vía USB a una PC con Python. Cada ESP captura 4 micrófonos ICS-43434 mediante dos buses I2S y transmite los datos en un formato interleaved por USB CDC. Python recibe ambos flujos, los sincroniza y los combina en frames de 8 canales listos para DAS (Delay-and-Sum beamforming).
+
+---
+
+## 1. Hardware
+
+### 1.1 Asignación de pines ESP32-S3
+
+Los **dos ESP32-S3 comparten el mismo esquema de pines** (el firmware diferencia Master/Slave solo por la constante `IS_MASTER`).
+
+| GPIO | Bus I2S | Función    | Micrófono(s)       |
+|:----:|:-------:|:----------:|:------------------:|
+| 4    | Bus 0   | WS (LRCLK) | Mic 1 + Mic 2      |
+| 5    | Bus 0   | SCK (BCLK) | Mic 1 + Mic 2      |
+| 6    | Bus 0   | SD (DATA)  | Mic 1 + Mic 2      |
+| 11   | Bus 1   | WS (LRCLK) | Mic 3 + Mic 4      |
+| 12   | Bus 1   | SCK (BCLK) | Mic 3 + Mic 4      |
+| 13   | Bus 1   | SD (DATA)  | Mic 3 + Mic 4      |
+| 10   | —       | SYNC       | Master→Slave       |
+| 38   | —       | NeoPixel   | LED RGB (WS2812)   |
+
+> **Nota:** El pin SYNC (GPIO10) es **salida en el Master** y **entrada en el Slave**. Solo se usa durante el arranque para alinear el inicio de los dos flujos I2S.
+
+### 1.2 Conexión de micrófonos ICS-43434 (I2S)
+
+Cada bus I2S soporta dos micrófonos en modo estéreo usando el pin L/R:
+
+| Micrófono | Bus | L/R pin | Canal I2S |
+|:---------:|:---:|:-------:|:---------:|
+| Mic 1     | 0   | GND     | Left      |
+| Mic 2     | 0   | VCC     | Right     |
+| Mic 3     | 1   | GND     | Left      |
+| Mic 4     | 1   | VCC     | Right     |
+
+> **Nota:** El mismo esquema aplica en ambas placas. En ESP1 los micrófonos son Mic1–Mic4; en ESP2 son Mic5–Mic8 (Python los distingue por puerto COM, no por el firmware).
+
+### 1.3 Identificación visual de placas (LED RGB)
+
+Durante los primeros 5 segundos del arranque el LED indica el rol:
+
+| Color  | Rol    | Puerto COM (ejemplo) |
+|:------:|:------:|:--------------------:|
+| Azul   | Master | COM8                 |
+| Rojo   | Slave  | COM6                 |
+| Verde  | —      | Parpadeo al recibir/enviar pulso SYNC |
+
+> Los puertos COM se deben ajustar en `monitor_8LR.py` según el equipo de desarrollo. Ver sección 4.
+
+### 1.4 Configuración Arduino IDE
+
+| Parámetro       | Valor                         |
+|:---------------:|:-----------------------------:|
+| Board           | ESP32S3 Dev Module            |
+| USB CDC On Boot | Enabled                       |
+| USB Mode        | Hardware CDC and JTAG         |
+| Flash Size      | 16MB (128Mb)                  |
+| PSRAM           | OPI PSRAM                     |
+
+> **Importante:** `USB CDC On Boot: Enabled` es obligatorio. Sin esto el ESP no aparece como puerto COM al conectarse.
+
+---
+
+## 2. Protocolo de comunicación ESP32 a Python
+
+### 2.1 Transporte
+
+La transmisión de audio se realiza por **USB CDC** (`Serial` en el firmware de Arduino), no por UART. Esto permite velocidades muy superiores a 115200 baud. La llamada `Serial.begin(0)` en el firmware indica CDC nativo; el parámetro de baud es ignorado por el driver USB.
+
+El debug del firmware (mensajes de texto) sale por **UART0** (`Serial0.begin(115200)`), que es un puerto separado.
+
+### 2.2 Formato del frame de audio
+
+Cada iteración del `loop()` del firmware genera un **frame** de 512 muestras por canal. La estructura del buffer que se envía por USB es:
+
+```
+Frame = CHUNK_SAMPLES × 4 canales × 2 bytes = 512 × 4 × 2 = 4096 bytes
+```
+
+El buffer está organizado como muestras **int16 interleaved** en el orden:
+
+```
+[Mic1_s0, Mic2_s0, Mic3_s0, Mic4_s0,  Mic1_s1, Mic2_s1, Mic3_s1, Mic4_s1, ...]
+```
+
+donde `s0`, `s1`... son las muestras consecutivas en el tiempo.
+
+### 2.3 Codificación de canal en los bits bajos
+
+Cada muestra int16 lleva el **ID de canal codificado en los bits [1:0]**:
+
+| Bits [1:0] | Canal | Posición en frame |
+|:----------:|:-----:|:-----------------:|
+| `00` (0)   | Mic 1 | Bus0-Left         |
+| `01` (1)   | Mic 2 | Bus0-Right        |
+| `10` (2)   | Mic 3 | Bus1-Left         |
+| `11` (3)   | Mic 4 | Bus1-Right        |
+
+La máscara `0xFFFC` limpia los dos bits bajos para recuperar el audio puro. Python aplica esta máscara con `np.int16(-4)`.
+
+**¿Por qué esta codificación?**
+Permite detectar desalineamiento del stream: si los primeros 4 valores del frame no tienen IDs `[0, 1, 2, 3]` en ese orden, el frame está corrido y Python lo realinea buscando el patrón correcto.
+
+### 2.4 Proceso de obtención del dato de audio en el firmware
+
+```
+I2S RX (32 bits) → shift right 16 bits → int16 → AND 0xFFFC → OR ID_MIC
+```
+
+Los micrófonos ICS-43434 entregan datos justificados a la izquierda en 32 bits. Al hacer `>> 16` se obtienen los 16 bits más significativos como un int16. Los 2 bits menos significativos del resultado se usan para inyectar el ID de canal.
+
+---
+
+## 3. Sincronización hardware entre ESP32s
+
+### 3.1 Pulso SYNC al arranque
+
+Al iniciar, el Master espera 500 ms para que el Slave esté listo y luego envía un pulso de 10 µs en GPIO10. El Slave espera ese pulso (timeout 15 s) antes de comenzar a leer el I2S. Esto alinea el inicio del muestreo en ambas placas.
+
+```
+Master:                   Slave:
+  delay(500ms)              wait for SYNC pulse
+  SYNC_PIN → HIGH           (timeout 15s)
+  delay(10µs)
+  SYNC_PIN → LOW
+  → inicia I2S              → inicia I2S
+```
+
+### 3.2 Sincronización de frames en Python (software)
+
+Python alinea los frames de los dos ESP en el **hilo sincronizador** (`hilo_sincronizador`). Si uno de los dos ESP no entrega un frame en 50 ms, ambos se descartan para evitar desfase acumulativo. Este es el punto de extensión donde se implementará el DAS.
+
+---
+
+## 4. Arquitectura Python (`monitor_8LR.py`)
+
+### 4.1 Parámetros configurables
+
+| Constante       | Valor por defecto | Descripción                          |
+|:---------------:|:-----------------:|:------------------------------------:|
+| `ESP1_PORT`     | `"COM8"`          | Puerto COM del Master (Mics 1-4)     |
+| `ESP2_PORT`     | `"COM6"`          | Puerto COM del Slave (Mics 5-8)      |
+| `ESP_BAUD`      | `115200`          | Baud del puerto serial (CDC ignora este valor) |
+| `ESP_RATE`      | `16000`           | Frecuencia de muestreo en Hz         |
+| `CHUNK`         | `512`             | Muestras por frame por canal         |
+| `ESP1_MICS`     | `[True]*4`        | Habilitar/deshabilitar Mics 1-4      |
+| `ESP2_MICS`     | `[True]*4`        | Habilitar/deshabilitar Mics 5-8      |
+| `PAR_ACTIVO`    | `0`               | Par estéreo a reproducir (0–3)       |
+| `GEOMETRIA_FILE`| `"geometria.json"`| Archivo de posiciones de micrófonos  |
+| `DEBUG`         | `True`            | Imprime mensajes de diagnóstico      |
+
+### 4.2 Pares de micrófonos disponibles para escuchar
+
+| Índice | Descripción               | Columnas en frame 8ch |
+|:------:|:-------------------------:|:---------------------:|
+| 0      | Mic1+Mic2  ESP1 Bus0      | cols 0, 1             |
+| 1      | Mic3+Mic4  ESP1 Bus1      | cols 2, 3             |
+| 2      | Mic5+Mic6  ESP2 Bus0      | cols 4, 5             |
+| 3      | Mic7+Mic8  ESP2 Bus1      | cols 6, 7             |
+
+### 4.3 Arquitectura de hilos (PRUEBAS)
+
+```
+Hilo lector ESP1 ➡️
+                    ➡️ Hilo sincronizador ➡️ q_combinada (CHUNK, 8)
+Hilo lector ESP2 ➡️                                     ⬇️
+                                                  Hilo reproductor
+                                                (escucha par activo)
+                                                         ⬇️        
+                                             Hilo estadísticas (cada 5 s)
+                                            Hilo teclado (comandos 1–4, q)
+```
+
+| Hilo               | Función                                                    |
+|:------------------:|:----------------------------------------------------------:|
+| `hilo_lector`      | Lee bytes del puerto serial, valida alineamiento, produce frames (CHUNK, 4) |
+| `hilo_sincronizador` | Empareja frames ESP1+ESP2, produce frames (CHUNK, 8) para DAS |
+| `reproducir`       | Toma frames 8ch, extrae par activo, escribe a PyAudio      |
+| `stats`            | Imprime contadores de OK/ERR/drops/underruns cada 5 s      |
+| `escuchar_teclado` | Cambia `PAR_ACTIVO` con teclas 1–4, cierra con q           |
+
+### 4.4 Colas y flujo de datos
+
+| Cola          | Tipo                       | Tamaño máx | Productor          | Consumidor           |
+|:-------------:|:--------------------------:|:----------:|:------------------:|:--------------------:|
+| `q_esp1`      | `np.ndarray` (CHUNK, 4)    | 8 frames   | hilo_lector ESP1   | hilo_sincronizador   |
+| `q_esp2`      | `np.ndarray` (CHUNK, 4)    | 8 frames   | hilo_lector ESP2   | hilo_sincronizador   |
+| `q_combinada` | `np.ndarray` (CHUNK, 8)    | 8 frames   | hilo_sincronizador | hilo reproductor     |
+
+> Si una cola está llena, se descarta el frame más antiguo (política drop-oldest) para mantener latencia baja.
+
+### 4.5 Proceso de sincronización inicial del stream
+
+Al arrancar, Python busca en el stream el **patrón de sincronización** `[0, 1, 2, 3]` en los bits [1:0] de 4 muestras consecutivas. Esto garantiza que los frames de audio empiecen en el offset correcto antes de entrar al bucle de lectura. Timeout: 30 s.
+
+### 4.6 Normalización de audio
+
+Las muestras int16 se convierten a float32 normalizado `[-1.0, 1.0]` dividiendo entre 32768. Los canales deshabilitados en `ESP1_MICS`/`ESP2_MICS` se fuerzan a `0.0`.
+
+### 4.7 Dependencias Python
+
+```
+pip install pyserial pyaudio numpy
+```
+
+### 4.8 Comandos en tiempo de ejecución
+
+| Tecla | Acción                         |
+|:-----:|:------------------------------:|
+| `1`   | Escuchar Mic1+Mic2 (ESP1 Bus0) |
+| `2`   | Escuchar Mic3+Mic4 (ESP1 Bus1) |
+| `3`   | Escuchar Mic5+Mic6 (ESP2 Bus0) |
+| `4`   | Escuchar Mic7+Mic8 (ESP2 Bus1) |
+| `q`   | Salir                          |
+
+---
+
+## 5. Archivo `geometria.json`
+
+Este archivo define las posiciones físicas de los 8 micrófonos en el espacio (collar/arreglo). Es necesario para implementar el **DAS (Delay-and-Sum beamforming)** ya que los retardos de compensación dependen de las distancias reales entre micrófonos.
+
+### 5.1 Estructura esperada
+
+```json
+{
+  "velocidad_sonido": 343,
+  "micrófonos": [
+    { "id": 1, "x": 0.0, "y": 0.0, "z": 0.0 },
+    { "id": 2, "x": 0.0, "y": 0.0, "z": 0.0 },
+    ...
+    { "id": 8, "x": 0.0, "y": 0.0, "z": 0.0 }
+  ]
+}
+```
+
+> **TODO:** Completar con las mediciones físicas reales del arreglo (separaciones d1–d4 entre pares LR1–LR4 según la geometría inspirada en el escorpión).
+
+### 5.2 Correspondencia micrófonos–pares del arreglo
+
+| ID Mic | Par LR | ESP   | Bus I2S | Canal I2S | Nomenclatura en PCB |
+|:------:|:------:|:-----:|:-------:|:---------:| :-: |
+| 1      | LR1-L  | ESP1  | Bus 0   | Left      | L2 |
+| 2      | LR1-R  | ESP1  | Bus 0   | Right     | L1 |
+| 3      | LR2-L  | ESP1  | Bus 1   | Left      | L4 |
+| 4      | LR2-R  | ESP1  | Bus 1   | Right     | L3 |
+| 5      | LR3-L  | ESP2  | Bus 0   | Left      | R2 |
+| 6      | LR3-R  | ESP2  | Bus 0   | Right     | R1 |
+| 7      | LR4-L  | ESP2  | Bus 1   | Left      | R4 |
+| 8      | LR4-R  | ESP2  | Bus 1   | Right     | R3 |
+
+---
+
+## 6. Punto de extensión: DAS Beamforming
+
+El `hilo_sincronizador` en `monitor_8LR.py` es el **único punto donde se insertará el DAS**. El frame combinado `frame_8ch` de shape `(512, 8)` ya contiene las 8 señales sincronizadas y normalizadas.
+
+```python
+# Esquema futuro dentro de hilo_sincronizador:
+frame_8ch = np.concatenate([f1, f2], axis=1)   # (512, 8) — ya disponible
+
+# TODO: Implementar aquí
+retardos = calcular_retardos(geometria, angulo_doa)   # retardos en muestras
+salida   = delay_and_sum(frame_8ch, retardos)          # (512,) señal enfocada
+```
+
+Los retardos en muestras para cada micrófono `n` hacia una DOA se calculan como:
+
+```
+τ_n = round( (d_n · cos(θ)) / (v_sonido / Fs) )
+```
+
+donde `d_n` es la distancia del micrófono al origen del arreglo proyectada en la dirección θ, `v_sonido = 343 m/s` y `Fs = 16000 Hz`.
+
+---
+
+## 7. Notas importantes
+
+- **Orden de arranque:** Primero conectar ambos ESP32 a USB, luego ejecutar el script Python. Si se conectan después de iniciar Python, los puertos COM pueden no estar disponibles o los buffers estarán llenos.
+- **Puertos COM:** Los valores `COM8` (ESP1/Master) y `COM6` (ESP2/Slave) son específicos del equipo de desarrollo. Verificar con el Administrador de dispositivos de Windows cada vez que se conecten las placas.
+- **LED:** Si el LED no enciende en los primeros segundos, verificar que la librería `Adafruit_NeoPixel` esté instalada en el Arduino IDE y que GPIO38 sea el correcto para la placa usada.
+- **Timeout SYNC:** El Slave tiene un timeout de 15 s esperando el pulso SYNC del Master. Si se supera, arranca sin sincronización (los flujos de ambos ESP pueden estar desfasados hasta ~500 ms).
+- **USB CDC On Boot:** Si `USB CDC On Boot` está deshabilitado, el ESP no aparecerá como puerto COM al conectarse vía USB. Solo será visible si se conecta mientras se mantiene presionado el botón de Boot.
+- **UART0 vs USB:** `Serial0` (GPIO43/44, UART0) es solo para debug del firmware. `Serial` es el CDC por USB para audio. No confundirlos al conectar un analizador lógico.
+- **Latencia:** Con `CHUNK=512` y `Fs=16000`, la latencia teórica por frame es `512/16000 ≈ 32 ms`. Con 8 frames en cola el buffer máximo es `~256 ms`.
+- **Descarte de frames:** Cuando las colas se llenan se descarta el frame más antiguo. Underruns frecuentes (`stats_data["underruns"]`) indican que el procesamiento no lleva el ritmo del audio. Bajar `CHUNK` puede ayudar a latencia a costa de más overhead.
+- **Alineamiento de frames:** Si se ven muchos `WARN Desalineamiento` en consola, es probable que el USB esté perdiendo bytes. Verificar que ningún otro proceso esté abriendo los puertos COM.
+
+---
+
+## 8. Estadísticas en tiempo de ejecución
+
+El hilo de estadísticas imprime cada 5 segundos:
+
+```
+[STATS]
+  Par activo   : 0 — Mic1+Mic2  ESP1 Bus0  pines 4/5/6
+  Colas        : ESP1=N  ESP2=N  Combinada=N
+  Sync OK/Drop : X  /  Y
+  Underruns    : Z
+  ESP1         : OK=A  ERR=B  Realign=C
+  ESP2         : OK=A  ERR=B  Realign=C
+```
+
+| Contador      | Descripción                                              |
+|:-------------:|:--------------------------------------------------------:|
+| `sync_ok`     | Frames combinados correctamente de ambos ESP             |
+| `sync_drop`   | Frames descartados por timeout de sincronización (>50 ms)|
+| `underruns`   | Veces que el reproductor no encontró datos en 100 ms     |
+| `espX_ok`     | Frames válidos recibidos del ESPX                        |
+| `espX_err`    | Frames con desalineamiento detectado                     |
+| `espX_realign`| Frames donde se encontró y corrigió el desalineamiento   |
+
+---
+
+## 9. Diagrama de flujo de datos (resumen)
+
+```
+[ICS-43434 x4]──I2S──[ESP32-S3 Master]──USB CDC➡️
+                                                 ➡️[Python: hilo_sincronizador]──► frame(512,8)
+[ICS-43434 x4]──I2S──[ESP32-S3 Slave ]──USB CDC➡️                   
+                                                                    ⬇️
+                                                        [TODO: DAS Beamforming]
+                                                                    ⬇️
+                                                        [PyAudio → salida estéreo]
+```
+
+---
+
+## 10. Avances
+
+<!-- Registrar aquí los avances, cambios y observaciones del desarrollo -->
+
+| Fecha      | Descripción del avance | Archivos involucrados |
+|:----------:|:----------------------:|:---------------------:|
+| _25/06/2026_ | _Creación y definición de los protocolos de comunicación y pruebas con los micrófonos_         | _monitor_8LR.py, esp32_8micLR.txt y Documentation.md_             |
+<!-- | _dd/mm/aa_ | _descripción_         | _archivo_             | # FORMATO -->
+
+---
+
+## 11. Pendientes
+
+- [ ] Medir y registrar las distancias físicas reales entre micrófonos en el arreglo (d1–d4).
+- [ ] Crear `geometria.json` con las coordenadas reales del collar/arreglo.
+- [ ] Implementar `calcular_retardos()` y `delay_and_sum()` en `hilo_sincronizador`.
+- [ ] Implementar estimación de DOA (TDOA/GCC-PHAT) sobre `q_combinada`.
+- [ ] Implementar algoritmo de clasificación habla/ruido.
+- [ ] Evaluar con métricas PESQ, STOI y mejora de SNR.
+- [ ] ¿Diseñar e implementar PCB definitiva?.

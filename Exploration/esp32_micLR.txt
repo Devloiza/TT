@@ -1,0 +1,87 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// esp32s3_2mic_validacion.txt  (renombra a .ino antes de abrir en Arduino IDE)
+//
+// Validación de 2 micrófonos ICS-43434 en Bus I2S 0 del ESP32-S3.
+// Equivalente al código original del WROOM-32 pero con pines del S3.
+//
+// Conexiones:
+//   Mic 1  →  L/R = GND   (slot LEFT)
+//   Mic 2  →  L/R = VCC   (slot RIGHT)
+//   Ambos comparten:  WS=4   SCK=5   SD=6
+//
+// Formato del stream Serial:
+//   [M1_0, M2_0, M1_1, M2_1, ...]  →  int16 intercalado L/R
+//
+// Compatible con monitor_2mic.py (CHUNK_BYTES = CHUNK * 2 * 2)
+// ─────────────────────────────────────────────────────────────────────────────
+
+#include <Arduino.h>
+#include <driver/i2s.h>
+
+// ── Pines Bus I2S 0 (compartidos por ambos mics) ─────────────────────────────
+#define I2S0_WS   4
+#define I2S0_SCK  5
+#define I2S0_SD   6
+
+// ── Config de audio ───────────────────────────────────────────────────────────
+#define SAMPLE_RATE    16000
+#define CHUNK_SAMPLES  512
+
+// Bus estéreo entrega CHUNK*2 muestras (L+R intercaladas)
+#define BUF_SAMPLES  (CHUNK_SAMPLES * 2)
+
+// ── Buffers estáticos ─────────────────────────────────────────────────────────
+static int32_t raw[BUF_SAMPLES];   // datos crudos 32 bit del DMA
+static int16_t pcm[BUF_SAMPLES];   // datos convertidos a 16 bit para enviar
+
+void setup()
+{
+  Serial.begin(921600);
+  delay(500);   // dar tiempo al USB CDC del S3 para inicializarse
+
+  i2s_config_t cfg = {
+    .mode                 = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),
+    .sample_rate          = SAMPLE_RATE,
+    .bits_per_sample      = I2S_BITS_PER_SAMPLE_32BIT,
+    .channel_format       = I2S_CHANNEL_FMT_RIGHT_LEFT,
+    .communication_format = I2S_COMM_FORMAT_STAND_I2S,
+    .intr_alloc_flags     = ESP_INTR_FLAG_LEVEL1,
+    .dma_buf_count        = 8,
+    .dma_buf_len          = 512,
+    .use_apll             = true,
+    .tx_desc_auto_clear   = false,
+    .fixed_mclk           = 0
+  };
+
+  i2s_pin_config_t pins = {
+    .bck_io_num   = I2S0_SCK,
+    .ws_io_num    = I2S0_WS,
+    .data_out_num = I2S_PIN_NO_CHANGE,
+    .data_in_num  = I2S0_SD
+  };
+
+  i2s_driver_install(I2S_NUM_0, &cfg, 0, NULL);
+  i2s_set_pin(I2S_NUM_0, &pins);
+  i2s_start(I2S_NUM_0);
+
+  delay(100);
+  Serial.write("START");
+}
+
+void loop()
+{
+  size_t bytes_read = 0;
+
+  // DMA entrega: [L0, R0, L1, R1, ...] → Mic1 en L, Mic2 en R
+  i2s_read(I2S_NUM_0, raw, sizeof(raw), &bytes_read, portMAX_DELAY);
+
+  uint32_t n = bytes_read / sizeof(int32_t);
+
+  // Convertir 32 → 16 bit manteniendo el intercalado L/R intacto
+  for (uint32_t i = 0; i < n; i++) {
+    pcm[i] = (int16_t)(raw[i] >> 16);
+  }
+
+  // Python recibe: [M1_0, M2_0, M1_1, M2_1, ...]
+  Serial.write((uint8_t*)pcm, n * sizeof(int16_t));
+}

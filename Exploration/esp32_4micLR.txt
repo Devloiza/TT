@@ -1,0 +1,169 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// esp32s3_4mic_final.txt  (renombra a .ino antes de abrir en Arduino IDE)
+//
+// 4 micrófonos ICS-43434 por USB CDC con identificación de canal en bits [1:0]
+//
+// Protocolo de canal (bits menos significativos de cada muestra):
+//   00 → Mic 1 (Bus0-L, L/R=GND)
+//   01 → Mic 2 (Bus0-R, L/R=VCC)
+//   10 → Mic 3 (Bus1-L, L/R=GND)
+//   11 → Mic 4 (Bus1-R, L/R=VCC)
+//
+// Conexiones:
+//   Bus I2S 0  →  WS=4   SCK=5   SD=6    Mic1(L/R=GND) + Mic2(L/R=VCC)
+//   Bus I2S 1  →  WS=11  SCK=12  SD=13   Mic3(L/R=GND) + Mic4(L/R=VCC)
+//
+// Configuración Arduino IDE:
+//   Board          →  ESP32S3 Dev Module
+//   USB CDC On Boot→  Enabled
+//   USB Mode       →  Hardware CDC and JTAG
+//   Flash Size     →  16MB (128Mb)
+//   PSRAM          →  OPI PSRAM
+// ─────────────────────────────────────────────────────────────────────────────
+
+#include <Arduino.h>
+#include <driver/i2s.h>
+
+// ── DEBUG ─────────────────────────────────────────────────────────────────────
+#define DEBUG true   // true = imprime puntos de control por Serial (UART0)
+                     // false = producción, sin prints
+
+// Para ver los prints de debug sin contaminar el stream de audio,
+// abre el monitor serie en COM9 (UART0/CH343), no en COM8 (CDC).
+
+#if DEBUG
+  #define DBG(msg)         Serial0.println(msg)
+  #define DBG_FMT(fmt,...) Serial0.printf(fmt, ##__VA_ARGS__)
+#else
+  #define DBG(msg)
+  #define DBG_FMT(fmt,...)
+#endif
+
+// ── Pines Bus I2S 0 ───────────────────────────────────────────────────────────
+#define I2S0_WS   4
+#define I2S0_SCK  5
+#define I2S0_SD   6
+
+// ── Pines Bus I2S 1 ───────────────────────────────────────────────────────────
+#define I2S1_WS   11
+#define I2S1_SCK  12
+#define I2S1_SD   13
+
+// ── Config de audio ───────────────────────────────────────────────────────────
+#define SAMPLE_RATE   16000
+#define CHUNK_SAMPLES 512
+#define BUS_SAMPLES   (CHUNK_SAMPLES * 2)
+
+// ── IDs de canal embebidos en bits [1:0] ──────────────────────────────────────
+#define ID_MIC1  0x00   // 00
+#define ID_MIC2  0x01   // 01
+#define ID_MIC3  0x02   // 10
+#define ID_MIC4  0x03   // 11
+#define ID_MASK  0xFFFC // máscara para limpiar los 2 bits bajos del audio
+
+// ── Buffers estáticos ─────────────────────────────────────────────────────────
+static int32_t bus0_buf[BUS_SAMPLES];
+static int32_t bus1_buf[BUS_SAMPLES];
+static int16_t out_buf[CHUNK_SAMPLES * 4];
+
+// ── Inicialización I2S ────────────────────────────────────────────────────────
+static void i2s_init(i2s_port_t port, int ws, int sck, int sd)
+{
+  i2s_config_t cfg = {
+    .mode                 = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),
+    .sample_rate          = SAMPLE_RATE,
+    .bits_per_sample      = I2S_BITS_PER_SAMPLE_32BIT,
+    .channel_format       = I2S_CHANNEL_FMT_RIGHT_LEFT,
+    .communication_format = I2S_COMM_FORMAT_STAND_I2S,
+    .intr_alloc_flags     = ESP_INTR_FLAG_LEVEL1,
+    .dma_buf_count        = 8,
+    .dma_buf_len          = 512,
+    .use_apll             = true,
+    .tx_desc_auto_clear   = false,
+    .fixed_mclk           = 0
+  };
+  i2s_pin_config_t pins = {
+    .bck_io_num   = sck,
+    .ws_io_num    = ws,
+    .data_out_num = I2S_PIN_NO_CHANGE,
+    .data_in_num  = sd
+  };
+
+  esp_err_t err = i2s_driver_install(port, &cfg, 0, NULL);
+  DBG_FMT("[I2S] driver_install port=%d: %s\n", port, esp_err_to_name(err));
+
+  err = i2s_set_pin(port, &pins);
+  DBG_FMT("[I2S] set_pin port=%d ws=%d sck=%d sd=%d: %s\n",
+          port, ws, sck, sd, esp_err_to_name(err));
+
+  i2s_start(port);
+  DBG_FMT("[I2S] port=%d iniciado\n", port);
+}
+
+void setup()
+{
+  // USB CDC — stream de audio
+  Serial.begin(0);
+
+  // UART0 — debug (solo visible si DEBUG=true, por COM9/CH343)
+  Serial0.begin(115200);
+  DBG("\n[SETUP] Iniciando ESP32-S3 4 micrófonos");
+  DBG_FMT("[SETUP] SAMPLE_RATE=%d CHUNK=%d\n", SAMPLE_RATE, CHUNK_SAMPLES);
+
+  // Inicializar buses I2S
+  DBG("[SETUP] Inicializando Bus I2S 0...");
+  i2s_init(I2S_NUM_0, I2S0_WS, I2S0_SCK, I2S0_SD);
+
+  DBG("[SETUP] Inicializando Bus I2S 1...");
+  i2s_init(I2S_NUM_1, I2S1_WS, I2S1_SCK, I2S1_SD);
+
+  delay(100);
+  DBG("[SETUP] Buses I2S listos. Esperando host USB...");
+
+  // Esperar a que Python abra el puerto CDC
+  uint32_t t0 = millis();
+  while (!Serial) {
+    delay(10);
+    if (millis() - t0 > 10000) {
+      DBG("[SETUP] Timeout esperando host — arrancando de todas formas");
+      break;
+    }
+  }
+
+  delay(200);
+  DBG("[SETUP] Host conectado. Iniciando stream.");
+}
+
+void loop()
+{
+  size_t bytes0 = 0, bytes1 = 0;
+
+  // Leer Bus 0
+  i2s_read(I2S_NUM_0, bus0_buf, sizeof(bus0_buf), &bytes0, portMAX_DELAY);
+
+  // Leer Bus 1
+  i2s_read(I2S_NUM_1, bus1_buf, sizeof(bus1_buf), &bytes1, portMAX_DELAY);
+
+  uint32_t n = min(bytes0, bytes1) / sizeof(int32_t) / 2;
+
+  // Construir stream con ID de canal en bits [1:0]
+  for (uint32_t i = 0; i < n; i++) {
+    out_buf[i * 4 + 0] = (int16_t)((bus0_buf[i*2+0] >> 16) & ID_MASK) | ID_MIC1;
+    out_buf[i * 4 + 1] = (int16_t)((bus0_buf[i*2+1] >> 16) & ID_MASK) | ID_MIC2;
+    out_buf[i * 4 + 2] = (int16_t)((bus1_buf[i*2+0] >> 16) & ID_MASK) | ID_MIC3;
+    out_buf[i * 4 + 3] = (int16_t)((bus1_buf[i*2+1] >> 16) & ID_MASK) | ID_MIC4;
+  }
+
+  // Debug periódico: verificar que los IDs están bien
+  static uint32_t frame_dbg = 0;
+  if (DEBUG && ++frame_dbg % 500 == 0) {
+    DBG_FMT("[LOOP] frame=%lu n=%lu IDs[0]=%d [1]=%d [2]=%d [3]=%d\n",
+            frame_dbg, n,
+            out_buf[0] & 0x03,
+            out_buf[1] & 0x03,
+            out_buf[2] & 0x03,
+            out_buf[3] & 0x03);
+  }
+
+  Serial.write((uint8_t*)out_buf, n * 4 * sizeof(int16_t));
+}

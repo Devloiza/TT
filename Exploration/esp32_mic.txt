@@ -1,0 +1,65 @@
+#include <Arduino.h>
+#include <driver/i2s.h>
+
+#define I2S_WS   25
+#define I2S_SCK  26
+#define I2S_SD   34
+
+// Con 921600 baud el techo es ~92160 B/s.
+// 16000 Hz x 2 B/muestra = 32000 B/s -> margen amplio.
+// Si necesitas 44100 Hz considera subir a 2000000 baud en ambos lados.
+#define SAMPLE_RATE  16000
+
+// Tamano del bloque de lectura en muestras.
+// 512 muestras: raw[512]*4 = 2 KB + pcm[512]*2 = 1 KB en pila -> seguro.
+#define CHUNK_SAMPLES  512
+
+void setup() {
+  Serial.begin(921600);
+
+  i2s_config_t cfg = {
+    .mode                 = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),
+    .sample_rate          = SAMPLE_RATE,
+    .bits_per_sample      = I2S_BITS_PER_SAMPLE_32BIT,
+    .channel_format       = I2S_CHANNEL_FMT_ONLY_LEFT,
+    .communication_format = I2S_COMM_FORMAT_STAND_I2S,
+    .intr_alloc_flags     = ESP_INTR_FLAG_LEVEL1,
+    .dma_buf_count        = 8,
+    .dma_buf_len          = 512,   // muestras por buffer DMA (max recomendado ~1024)
+    .use_apll             = true,  // mejora precision de la tasa de muestreo
+    .tx_desc_auto_clear   = false,
+    .fixed_mclk           = 0
+  };
+
+  i2s_pin_config_t pins = {
+    .bck_io_num   = I2S_SCK,
+    .ws_io_num    = I2S_WS,
+    .data_out_num = I2S_PIN_NO_CHANGE,
+    .data_in_num  = I2S_SD
+  };
+
+  i2s_driver_install(I2S_NUM_0, &cfg, 0, NULL);
+  i2s_set_pin(I2S_NUM_0, &pins);
+  i2s_start(I2S_NUM_0);
+
+  delay(100);  // deja que el ADC se estabilice
+
+  Serial.write("START");
+}
+
+void loop() {
+  int32_t raw[CHUNK_SAMPLES];
+  int16_t pcm[CHUNK_SAMPLES];
+  size_t  bytesRead = 0;
+
+  i2s_read(I2S_NUM_0, raw, sizeof(raw), &bytesRead, portMAX_DELAY);
+  uint32_t n = bytesRead / sizeof(int32_t);
+
+  // En modo 32-bit I2S el ESP32 alinea los datos a la izquierda (bits 31:8).
+  // >> 16 extrae los 16 bits mas significativos del valor de 24 bits.
+  for (uint32_t i = 0; i < n; i++) {
+    pcm[i] = (int16_t)(raw[i] >> 16);
+  }
+
+  Serial.write((uint8_t*)pcm, n * sizeof(int16_t));
+}
