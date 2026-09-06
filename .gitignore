@@ -3,3 +3,8 @@ __pycache__/
 .vscode/
 Citas.md
 PROTOCOLO_TT.pdf
+
+# Resultados generados (grabaciones .npy, gráficas, etc.) — no versionar,
+# solo el marcador de la carpeta (ver SALIDAS/README.md)
+SALIDAS/*
+!SALIDAS/README.md

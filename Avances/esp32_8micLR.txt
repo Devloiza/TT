@@ -1,5 +1,18 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// esp32s3_8mic.txt  (renombra a .ino antes de abrir en Arduino IDE)
+// esp32_8micLR.txt  (renombra a .ino antes de abrir en Arduino IDE)
+//
+// Sistema completo: dos ESP32-S3 + SYNC. Reconstruido en sept 2026 después de
+// encontrar la causa raíz de un mes de fallas de sincronización: Serial y
+// Serial0 comparten el mismo periférico UART físico en este hardware, así
+// que deben abrirse EXACTAMENTE al mismo baud que usa Python (3,000,000) —
+// antes se asumía (incorrectamente) que el baud no importaba para USB CDC.
+// Ver Documentation.md sección 10 para el detalle completo de la reconstrucción
+// por etapas (los archivos de prueba de cada etapa quedaron en
+// Exploration/reconstruccion_sept2026/).
+//
+// El loop() quedó como lectura+escritura directa (sin tareas FreeRTOS
+// separadas) porque, con el baud correcto, un loop simple ya sostiene los
+// 4 mics por placa sin underruns.
 //
 // Flashear dos veces cambiando IS_MASTER:
 //   IS_MASTER 1 → ESP32-S3 #1 (Master, azul,  genera SYNC, COM del primer ESP)
@@ -13,10 +26,12 @@
 // Conexiones (idénticas en ambas placas):
 //   Bus I2S 0  →  WS=4   SCK=5   SD=6    Mic1(L/R=GND) + Mic2(L/R=VCC)
 //   Bus I2S 1  →  WS=11  SCK=12  SD=13   Mic3(L/R=GND) + Mic4(L/R=VCC)
-//   SYNC       →  GPIO 10 (salida en Master, entrada en Slave)
+//   SYNC       →  GPIO 10 (salida en Master, entrada en Slave — unir ambas
+//                 placas por este pin Y compartir GND entre ambas)
 //   LED RGB    →  GPIO 38 (NeoPixel WS2812)
 //
 // Configuración Arduino IDE:
+//   esp32 by Espressif → 3.3.11 o superior
 //   Board           →  ESP32S3 Dev Module
 //   USB CDC On Boot →  Enabled
 //   USB Mode        →  Hardware CDC and JTAG
@@ -29,7 +44,10 @@
 #include <Adafruit_NeoPixel.h>
 
 // ── ROL DE ESTA PLACA ─────────────────────────────────────────────────────────
-#define IS_MASTER  1    // 1 = Master (azul) | 0 = Slave (rojo)
+#define IS_MASTER  0    // 1 = Master (azul) | 0 = Slave (rojo)
+
+// ── BAUD (firmware y Python DEBEN coincidir exactamente — ver Etapa 1a) ──────
+#define PROJECT_BAUD  3000000
 
 // ── DEBUG ─────────────────────────────────────────────────────────────────────
 #define DEBUG true
@@ -77,7 +95,8 @@ static int32_t bus0_buf[BUS_SAMPLES];
 static int32_t bus1_buf[BUS_SAMPLES];
 static int16_t out_buf[CHUNK_SAMPLES * 4];
 
-// ── LED helpers ───────────────────────────────────────────────────────────────
+// ── LED helpers (colores en orden R,G,B normal — la librería ya compensa
+//    el orden físico NEO_GRB internamente, no hay que intercambiar nada) ──────
 static void led_color(uint8_t r, uint8_t g, uint8_t b)
 {
   led.setPixelColor(0, led.Color(r, g, b));
@@ -100,7 +119,7 @@ static void i2s_init(i2s_port_t port, int ws, int sck, int sd)
     .channel_format       = I2S_CHANNEL_FMT_RIGHT_LEFT,
     .communication_format = I2S_COMM_FORMAT_STAND_I2S,
     .intr_alloc_flags     = ESP_INTR_FLAG_LEVEL1,
-    .dma_buf_count        = 8,
+    .dma_buf_count        = 16,
     .dma_buf_len          = 512,
     .use_apll             = true,
     .tx_desc_auto_clear   = false,
@@ -124,20 +143,21 @@ static void i2s_init(i2s_port_t port, int ws, int sck, int sd)
 
 void setup()
 {
-  Serial.begin(0);      // USB CDC — stream de audio
-  Serial0.begin(115200); // UART0 — debug
+  Serial.setTxBufferSize(16384);
+  Serial.begin(PROJECT_BAUD);
+  Serial0.begin(PROJECT_BAUD);
 
-  DBG_FMT("\n[SETUP] Rol: %s\n", IS_MASTER ? "MASTER" : "SLAVE");
+  DBG_FMT("\n[SETUP] Rol: %s  baud=%d\n", IS_MASTER ? "MASTER" : "SLAVE", PROJECT_BAUD);
 
   // ── LED: identificación visual ────────────────────────────────────────────
   led.begin();
-  led.setBrightness(80);
+  led.setBrightness(40);
   led_off();
   delay(100);
 
 #if IS_MASTER
   DBG("[SETUP] LED → AZUL (Master)");
-  led_color(0, 0, 255);   // Azul
+  led_color(0, 0, 200);   // Azul
 #else
   DBG("[SETUP] LED → ROJO (Slave)");
   led_color(255, 0, 0);   // Rojo
@@ -183,18 +203,30 @@ void setup()
 #else
   DBG("[SETUP] Slave: esperando pulso SYNC del Master...");
   uint32_t t0 = millis();
+  bool sync_ok = true;
   while (digitalRead(SYNC_PIN) == LOW) {
     if (millis() - t0 > 15000) {
       DBG("[SETUP] Slave: timeout SYNC — arrancando sin sincronización");
+      sync_ok = false;
       break;
     }
   }
-  DBG_FMT("[SETUP] Slave: SYNC recibido tras %lu ms\n", millis() - t0);
 
-  // Parpadeo verde para confirmar SYNC recibido
-  led_color(0, 255, 0);
-  delay(200);
-  led_off();
+  if (sync_ok) {
+    DBG_FMT("[SETUP] Slave: SYNC recibido tras %lu ms\n", millis() - t0);
+    // Parpadeo verde para confirmar SYNC recibido
+    led_color(0, 255, 0);
+    delay(200);
+    led_off();
+  } else {
+    // 3 parpadeos rojos: no llegó el pulso SYNC del Master (revisar cableado GPIO10/GND)
+    for (int i = 0; i < 3; i++) {
+      led_color(255, 0, 0);
+      delay(150);
+      led_off();
+      delay(150);
+    }
+  }
 #endif
 
   // ── Esperar host USB ──────────────────────────────────────────────────────

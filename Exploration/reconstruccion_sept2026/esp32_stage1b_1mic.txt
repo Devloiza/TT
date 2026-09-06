@@ -1,0 +1,97 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// esp32_stage1b_1mic.txt  (renombra a .ino antes de abrir en Arduino IDE)
+//
+// ETAPA 1b — I2S real, 1 micrófono, 1 bus. Sin SYNC, sin segunda placa,
+// sin IDs de canal — lo mínimo para confirmar que la captura de audio real
+// funciona igual de limpio que el contador de prueba de la Etapa 1a.
+//
+// Lección de la Etapa 1a: el baud SÍ importa en este hardware (Serial y
+// Serial0 comparten el mismo periférico UART físico) — firmware y Python
+// deben abrir el puerto exactamente al mismo baud. Usamos 3,000,000, el
+// valor que quedó validado sin pérdidas.
+//
+// Conexión (Bus I2S 0, igual que el proyecto final):
+//   WS=4  SCK=5  SD=6   Mic1 → L/R = GND (slot LEFT)
+//
+// Configuración Arduino IDE:
+//   esp32 by Espressif → 3.3.11 o superior
+//   Board           →  ESP32S3 Dev Module
+//   USB CDC On Boot →  Enabled
+//   USB Mode        →  Hardware CDC and JTAG
+//   Flash Size      →  16MB (128Mb)
+//   PSRAM           →  OPI PSRAM
+// ─────────────────────────────────────────────────────────────────────────────
+
+#include <Arduino.h>
+#include <driver/i2s.h>
+
+#define I2S_WS   4
+#define I2S_SCK  5
+#define I2S_SD   6
+
+#define SAMPLE_RATE   16000
+#define CHUNK_SAMPLES 512
+
+static int32_t raw[CHUNK_SAMPLES];
+static int16_t pcm[CHUNK_SAMPLES];
+
+void setup()
+{
+  Serial.setTxBufferSize(16384);
+  Serial.begin(3000000);
+  Serial0.begin(3000000);
+
+  Serial0.println("\n[SETUP] Stage1b — 1 mic, 1 bus I2S");
+
+  i2s_config_t cfg = {
+    .mode                 = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),
+    .sample_rate          = SAMPLE_RATE,
+    .bits_per_sample      = I2S_BITS_PER_SAMPLE_32BIT,
+    .channel_format       = I2S_CHANNEL_FMT_ONLY_LEFT,
+    .communication_format = I2S_COMM_FORMAT_STAND_I2S,
+    .intr_alloc_flags     = ESP_INTR_FLAG_LEVEL1,
+    .dma_buf_count        = 8,
+    .dma_buf_len          = 512,
+    .use_apll             = true,
+    .tx_desc_auto_clear   = false,
+    .fixed_mclk           = 0
+  };
+  i2s_pin_config_t pins = {
+    .bck_io_num   = I2S_SCK,
+    .ws_io_num    = I2S_WS,
+    .data_out_num = I2S_PIN_NO_CHANGE,
+    .data_in_num  = I2S_SD
+  };
+
+  esp_err_t err = i2s_driver_install(I2S_NUM_0, &cfg, 0, NULL);
+  Serial0.printf("[I2S] driver_install: %s\n", esp_err_to_name(err));
+  err = i2s_set_pin(I2S_NUM_0, &pins);
+  Serial0.printf("[I2S] set_pin: %s\n", esp_err_to_name(err));
+  i2s_start(I2S_NUM_0);
+
+  delay(100);   // estabilización del ADC del mic
+
+  uint32_t t0 = millis();
+  while (!Serial) {
+    delay(10);
+    if (millis() - t0 > 10000) {
+      Serial0.println("[SETUP] Timeout host USB — arrancando de todas formas");
+      break;
+    }
+  }
+  delay(200);
+  Serial0.println("[SETUP] Host conectado. Iniciando stream de audio.");
+}
+
+void loop()
+{
+  size_t bytesRead = 0;
+  i2s_read(I2S_NUM_0, raw, sizeof(raw), &bytesRead, portMAX_DELAY);
+
+  uint32_t n = bytesRead / sizeof(int32_t);
+  for (uint32_t i = 0; i < n; i++) {
+    pcm[i] = (int16_t)(raw[i] >> 16);
+  }
+
+  Serial.write((uint8_t*)pcm, n * sizeof(int16_t));
+}

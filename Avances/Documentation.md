@@ -74,9 +74,11 @@ Durante los primeros 5 segundos del arranque el LED indica el rol:
 
 ### 2.1 Transporte
 
-La transmisión de audio se realiza por **USB CDC** (`Serial` en el firmware de Arduino), no por UART. Esto permite velocidades muy superiores a 115200 baud. La llamada `Serial.begin(0)` en el firmware indica CDC nativo; el parámetro de baud es ignorado por el driver USB.
+> **CORRECCIÓN (sept 2026):** Este documento asumía que la transmisión iba por **USB CDC nativo** y que el baud era ignorado por el driver USB. Se comprobó experimentalmente (Etapa 1a de reconstrucción, ver sección 10) que **eso es falso en este hardware**: `Serial` y `Serial0` terminan compartiendo el mismo periférico UART físico, con un reloj real. Si el baud pedido por Python no coincide EXACTAMENTE con el baud de `Serial.begin()`/`Serial0.begin()` en el firmware, se produce corrupción de bits (patrón característico: solo aparecen valores como `0x00`/`0x80`, nunca basura aleatoria completa) o, si el baud es demasiado bajo, un cuello de botella real en la tasa de datos.
+>
+> **Valor validado y usado en todo el proyecto desde sept 2026: `3,000,000` baud**, en firmware (`Serial.begin(3000000)` y `Serial0.begin(3000000)`) y en Python (`serial.Serial(puerto, 3000000, ...)`) a la vez. Ver `Avances/transport_check.py` para la prueba de integridad que lo comprobó.
 
-El debug del firmware (mensajes de texto) sale por **UART0** (`Serial0.begin(115200)`), que es un puerto separado.
+La transmisión de audio se realiza por `Serial` en el firmware de Arduino. El debug del firmware (mensajes de texto) sale por `Serial0`. **Ambos deben abrirse al mismo baud** (3,000,000) tanto en el firmware como del lado de Python — no asumir que el baud "no importa".
 
 ### 2.2 Formato del frame de audio
 
@@ -149,7 +151,7 @@ Python alinea los frames de los dos ESP en el **hilo sincronizador** (`hilo_sinc
 |:---------------:|:-----------------:|:------------------------------------:|
 | `ESP1_PORT`     | `"COM8"`          | Puerto COM del Master (Mics 1-4)     |
 | `ESP2_PORT`     | `"COM6"`          | Puerto COM del Slave (Mics 5-8)      |
-| `ESP_BAUD`      | `115200`          | Baud del puerto serial (CDC ignora este valor) |
+| `ESP_BAUD`      | `3000000`         | Baud del puerto serial — **debe coincidir exactamente** con `Serial.begin()`/`Serial0.begin()` del firmware (ver sección 2.1) |
 | `ESP_RATE`      | `16000`           | Frecuencia de muestreo en Hz         |
 | `CHUNK`         | `512`             | Muestras por frame por canal         |
 | `ESP1_MICS`     | `[True]*4`        | Habilitar/deshabilitar Mics 1-4      |
@@ -289,10 +291,13 @@ donde `d_n` es la distancia del micrófono al origen del arreglo proyectada en l
 - **LED:** Si el LED no enciende en los primeros segundos, verificar que la librería `Adafruit_NeoPixel` esté instalada en el Arduino IDE y que GPIO38 sea el correcto para la placa usada.
 - **Timeout SYNC:** El Slave tiene un timeout de 15 s esperando el pulso SYNC del Master. Si se supera, arranca sin sincronización (los flujos de ambos ESP pueden estar desfasados hasta ~500 ms).
 - **USB CDC On Boot:** Si `USB CDC On Boot` está deshabilitado, el ESP no aparecerá como puerto COM al conectarse vía USB. Solo será visible si se conecta mientras se mantiene presionado el botón de Boot.
-- **UART0 vs USB:** `Serial0` (GPIO43/44, UART0) es solo para debug del firmware. `Serial` es el CDC por USB para audio. No confundirlos al conectar un analizador lógico.
+- **UART0 vs USB:** `Serial0` es para debug del firmware, `Serial` para audio — pero en este hardware **ambos comparten el mismo periférico físico**, así que deben abrirse al mismo baud (ver sección 2.1). No asumir que son transportes independientes.
+- **Baud rate — causa raíz histórica:** durante ~1 mes el sistema no lograba sincronizar por tener `ESP_BAUD=115200` (techo real ~11,520 B/s) cuando el sistema necesita ~128,000 B/s por placa (4 mics) — insuficiente por un factor de >10x. Subir el baud en Python sin subirlo también en el firmware empeoraba las cosas (corrupción de bits, no solo lentitud). Ambos lados deben coincidir exactamente. Ver sección 10.
+- **Patrón de desalineamiento conocido y aceptado:** con el baud corregido (3,000,000) puede aparecer un desalineamiento ocasional (~1 cada 400-500 frames) que se autocorrige (`Realineado offset=...`) sin underruns. Coincide en tiempo con los prints periódicos de debug (`DBG_FMT` cada 500 frames) que comparten el mismo UART que el audio — sospecha: el print introduce un pequeño estanco que desfasa una muestra. No se ha considerado necesario eliminarlo (tasa de error ~0.2%, sin pérdida de audio real), pero si se busca cero errores, bajar la frecuencia del debug o quitarlo en producción.
 - **Latencia:** Con `CHUNK=512` y `Fs=16000`, la latencia teórica por frame es `512/16000 ≈ 32 ms`. Con 8 frames en cola el buffer máximo es `~256 ms`.
 - **Descarte de frames:** Cuando las colas se llenan se descarta el frame más antiguo. Underruns frecuentes (`stats_data["underruns"]`) indican que el procesamiento no lleva el ritmo del audio. Bajar `CHUNK` puede ayudar a latencia a costa de más overhead.
-- **Alineamiento de frames:** Si se ven muchos `WARN Desalineamiento` en consola, es probable que el USB esté perdiendo bytes. Verificar que ningún otro proceso esté abriendo los puertos COM.
+- **Alineamiento de frames:** Si se ven muchos `WARN Desalineamiento` en consola, primero verificar que el baud coincida entre firmware y Python (causa más común, ver arriba) antes de sospechar de pérdida de bytes por USB.
+- **Carpeta `SALIDAS/`:** todo resultado generado (grabaciones `.npy`, gráficas, etc.) debe guardarse en `SALIDAS/` (raíz del repo), no en `Avances/` ni en la raíz del proyecto. No se versiona su contenido (ver `.gitignore`) — solo `SALIDAS/README.md` como marcador. `monitor_8LR.py` (comando `g`) y `analisis.py` ya apuntan ahí.
 
 ---
 
@@ -335,21 +340,51 @@ El hilo de estadísticas imprime cada 5 segundos:
 
 ---
 
-## 10. Avances
+## 10. Reconstrucción por etapas (sept 2026)
+
+Tras ~1 mes sin lograr sincronización estable, se decidió abandonar el debugging directo sobre el sistema completo y reconstruir subiendo la complejidad en etapas controladas, cada una con su propia prueba de verificación. Las Etapas 1a, 1b y 2 fueron construcción incremental y ya cumplieron su propósito; sus archivos se movieron a `Exploration/reconstruccion_sept2026/` como referencia histórica. La Etapa 3 (el sistema completo) quedó **promovida a los nombres oficiales del proyecto**: `esp32_8micLR.txt` y `monitor_8LR.py`. Las versiones previas de esos dos archivos (que nunca lograron sincronizar de forma estable) se eliminaron — recuperables desde el historial de git si hiciera falta revisar el intento anterior.
+
+| Etapa | Objetivo | Archivos (ahora en `Exploration/reconstruccion_sept2026/`, salvo Etapa 3) | Resultado |
+|:-----:|:---------|:---------|:----------|
+| 1a | Transporte USB puro (sin I2S) a la tasa real objetivo (~32,000 B/s) | `esp32_stage1a_transport.txt`, `transport_check.py` | **OK** a 921,600 / 2,000,000 / 3,000,000 baud (coincidiendo firmware↔Python). Reveló la causa raíz del baud (sección 2.1). |
+| 1b | I2S real, 1 micrófono, 1 bus | `esp32_stage1b_1mic.txt`, `stage1b_record_plot.py` | **OK** — tasa correcta, señal real (aplausos visibles en la gráfica) |
+| 2 | 4 micrófonos, ambos buses I2S, 1 sola placa (sin SYNC) | `esp32_stage2_4mic.txt`, `monitor_stage2_4mic.py` | **OK** — 0 underruns, ~0.2% de frames con desalineamiento autocorregido (ver nota en sección 7) |
+| 3 | Dos placas + SYNC (el sistema completo) | **`Avances/esp32_8micLR.txt`, `Avances/monitor_8LR.py`** (nombres oficiales) | **OK** — SYNC inmediato (0 intentos) en ambas placas, 0 underruns, ~0.2% de frames con desalineamiento autocorregido, correlacionado en ambas placas a la vez (mismo patrón de la sección 7) |
+
+Herramientas de diagnóstico creadas en el camino, en `Exploration/reconstruccion_sept2026/` (quedan disponibles para depurar problemas futuros de transporte):
+
+- **`diag_raw_dump.py`**: vuelca bytes crudos de un puerto sin ningún parseo — útil para confirmar a simple vista qué canal (`Serial` vs `Serial0`) le está llegando realmente a un COM dado. El firmware `esp32_stage1a_transport.txt` tiene un bloque `#define DIAG_MODE` que manda un ping distinguible por cada canal (portar ese bloque si se necesita repetir el diagnóstico sobre `esp32_8micLR.txt`).
+- **`transport_check.py`**: verifica integridad de transporte con un contador incremental uint16 (detecta pérdidas/duplicados/corrupción de forma más rigurosa que enviar audio real, porque el contenido esperado es exacto).
+
+### Otros bugs encontrados y corregidos durante la reconstrucción (no relacionados al baud)
+
+1. **Colores de LED intercambiados** en la versión anterior de `esp32_8micLR.txt`: el Slave se identificaba con verde en vez de rojo, y el parpadeo de "SYNC enviado" del Master salía rojo en vez de verde. `Adafruit_NeoPixel::Color(r,g,b)` siempre recibe los parámetros en orden RGB — la librería reordena internamente según `NEO_GRB`, no hay que invertir los argumentos a mano. Ya corregido en la versión actual.
+2. **Bug de observabilidad en el Slave**: el LED de confirmación de SYNC parpadeaba igual (verde) tanto si el pulso llegaba como si había timeout tras 15s — imposible distinguir a simple vista. Se agregó una señal distinta (3 parpadeos rojos) para el caso de timeout (ya en la versión actual).
+3. **Bug del core `esp32` v3.3.10**: esa versión del paquete de Espressif rompía el canal USB nativo en modo `Hardware CDC and JTAG` para S3 (aunque `USB CDC On Boot` estuviera Enabled). Corregido actualizando a 3.3.11+.
+4. **Selección de Board incorrecta en Arduino IDE**: causaba error de esptool (`This chip is ESP32-S3, not ESP32`). Cambiar Tools → Board a "ESP32S3 Dev Module" resetea TODOS los submenús (USB CDC On Boot, Flash Size, PSRAM, etc.) a sus valores por defecto — hay que re-verificarlos después de cada cambio de Board.
+
+---
+
+## 11. Avances
 
 <!-- Registrar aquí los avances, cambios y observaciones del desarrollo -->
 
 | Fecha      | Descripción del avance | Archivos involucrados |
 |:----------:|:----------------------:|:---------------------:|
-| _25/06/2026_ | _Creación y definición de los protocolos de comunicación y pruebas con los micrófonos_         | _monitor_8LR.py, esp32_8micLR.txt y Documentation.md_             |
+| _25/06/2026_ | _Creación y definición de los protocolos de comunicación y pruebas con los micrófonos._         | _monitor_8LR.py, esp32_8micLR.txt y Documentation.md_             |
+| _06/09/2026_ | _Tras 1 mes sin lograr SYNC, se depuró el error de esptool (Board mal seleccionado), 2 bugs de color de LED, y un bug del core esp32 v3.3.10 que rompía USB nativo en S3. Se decidió reconstruir el sistema por etapas en vez de seguir depurando el sistema completo._ | _esp32_8micLR.txt (ahora esp32_8micLR_OLD.txt), diag_raw_dump.py_ |
+| _06/09/2026_ | _Encontrada la causa raíz real: `Serial`/`Serial0` comparten el mismo periférico UART físico en este hardware — el baud debe coincidir exactamente entre firmware y Python. Validado a 3,000,000 baud con Etapas 1a (transporte puro), 1b (1 mic real), 2 (4 mics, 1 placa) y 3 (sistema completo, 2 placas + SYNC) — todas OK. Ver sección 10._ | _esp32_stage1a/1b/2/3, transport_check.py, stage1b_record_plot.py, monitor_stage2/3.py_ |
+| _06/09/2026_ | _Cerrado el ciclo de reconstrucción: Etapa 3 promovida a los nombres oficiales `esp32_8micLR.txt`/`monitor_8LR.py`; archivos de las Etapas 1a/1b/2 movidos a `Exploration/reconstruccion_sept2026/`; versiones previas (nunca sincronizaban de forma estable) eliminadas del árbol de trabajo._ | _esp32_8micLR.txt, monitor_8LR.py, Exploration/reconstruccion_sept2026/*_ |
 <!-- | _dd/mm/aa_ | _descripción_         | _archivo_             | # FORMATO -->
 
 ---
 
-## 11. Pendientes
+## 12. Pendientes
 
+- [x] ~~Decidir si se reemplazan los archivos oficiales~~ — hecho: `esp32_8micLR.txt`/`monitor_8LR.py` ya son la versión reconstruida y validada (Etapa 3). Los archivos de las Etapas 1a/1b/2 se movieron a `Exploration/reconstruccion_sept2026/` y las versiones previas de los archivos oficiales se eliminaron (recuperables vía `git log` si hiciera falta).
+- [ ] Probar la función de grabación (`g`) del monitor con los 8 mics conectados y verificar el .npy resultante antes de retomar el trabajo de DAS.
 - [ ] Medir y registrar las distancias físicas reales entre micrófonos en el arreglo (d1–d4).
-- [ ] Crear `geometria.json` con las coordenadas reales del collar/arreglo.
+- [ ] Editar `geometria.json` con las coordenadas reales del collar/arreglo.
 - [ ] Implementar `calcular_retardos()` y `delay_and_sum()` en `hilo_sincronizador`.
 - [ ] Implementar estimación de DOA (TDOA/GCC-PHAT) sobre `q_combinada`.
 - [ ] Implementar algoritmo de clasificación habla/ruido.

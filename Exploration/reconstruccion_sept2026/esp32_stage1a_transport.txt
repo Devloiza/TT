@@ -1,0 +1,64 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// esp32_stage1a_transport.txt  (renombra a .ino antes de abrir en Arduino IDE)
+//
+// ETAPA 1a — Prueba de transporte puro (sin I2S, sin micrófono).
+//
+// Objetivo: confirmar que el canal ESP32 → USB CDC → Python no pierde ni
+// duplica bytes a la tasa real que va a necesitar el sistema final
+// (16000 Hz × 1 canal × 2 bytes ≈ 32000 B/s). Si esto falla, el problema
+// es del transporte USB/core, no de I2S — y no tiene caso seguir agregando
+// micrófonos hasta resolverlo aquí.
+//
+// El firmware manda un contador uint16 que se incrementa 1 en 1 (con
+// wraparound en 65536) a la tasa objetivo. Python (transport_check.py)
+// verifica que cada muestra sea exactamente la anterior + 1.
+//
+// Configuración Arduino IDE (igual que el proyecto real):
+//   esp32 by Espressif → 3.3.11 o superior
+//   Board           →  ESP32S3 Dev Module
+//   USB CDC On Boot →  Enabled
+//   USB Mode        →  Hardware CDC and JTAG
+//   Flash Size      →  16MB (128Mb)
+//   PSRAM           →  OPI PSRAM
+// ─────────────────────────────────────────────────────────────────────────────
+
+#include <Arduino.h>
+
+#define SAMPLE_RATE   16000
+#define CHUNK_SAMPLES 512
+
+static uint16_t chunk[CHUNK_SAMPLES];
+
+void setup()
+{
+  Serial.setTxBufferSize(16384);
+  Serial.begin(3000000);
+  Serial0.begin(3000000);
+
+  Serial0.println("\n[SETUP] Stage1a transporte — esperando host USB...");
+  uint32_t t0 = millis();
+  while (!Serial) {
+    delay(10);
+    if (millis() - t0 > 10000) {
+      Serial0.println("[SETUP] Timeout host USB — arrancando de todas formas");
+      break;
+    }
+  }
+  delay(200);
+  Serial0.println("[SETUP] Host conectado. Iniciando contador de prueba.");
+}
+
+void loop()
+{
+  static uint16_t counter   = 0;
+  static uint32_t next_send = 0;
+
+  uint32_t now = millis();
+  if (now < next_send) return;
+  next_send = now + (CHUNK_SAMPLES * 1000UL / SAMPLE_RATE);   // ~32 ms por chunk
+
+  for (int i = 0; i < CHUNK_SAMPLES; i++) {
+    chunk[i] = counter++;
+  }
+  Serial.write((uint8_t*)chunk, sizeof(chunk));
+}
