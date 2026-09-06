@@ -51,8 +51,8 @@ Durante los primeros 5 segundos del arranque el LED indica el rol:
 | Color  | Rol    | Puerto COM (ejemplo) |
 |:------:|:------:|:--------------------:|
 | Azul   | Master | COM8                 |
-| Rojo   | Slave  | COM6                 |
-| Verde  | —      | Parpadeo al recibir/enviar pulso SYNC |
+| Verde   | Slave  | COM6                 |
+| Rojo  | —      | Parpadeo al recibir/enviar pulso SYNC |
 
 > Los puertos COM se deben ajustar en `monitor_8LR.py` según el equipo de desarrollo. Ver sección 4.
 
