@@ -7,14 +7,25 @@ y este proyecto sigue [Versionamiento Semántico](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-07
+
+Sistema base validado también en **Raspberry Pi 4/5**, no solo en PC/Windows — corriendo los 8 micrófonos + SYNC + audio en vivo de forma estable. En el camino se encontró y corrigió un bug de fondo en la sincronización que también podía afectar a Windows, solo que se manifestaba con más frecuencia en la Pi.
+
 ### Added
 - Soporte para correr `monitor_8LR.py` en Raspberry Pi: puertos configurables vía variables de entorno `ESP1_PORT`/`ESP2_PORT` (antes hardcodeados a valores de Windows). Documentado el proceso completo de despliegue (SSH, grupos `dialout`/`audio`, venv, audio) en `Avances/Documentation.md` sección 12.
+- `SKIP_AUDIO=1` para desactivar PyAudio/reproducción por completo (diagnóstico de contención de CPU).
+- `AUDIO_DEVICE_INDEX` + `listar_audio.py` para forzar el dispositivo de salida de audio por índice, en vez de depender de un "default" de ALSA/PipeWire que puede no estar bien enrutado.
+- Contador de bytes recibidos por placa y tasa real (B/s) en las estadísticas periódicas, para diagnosticar pérdida de datos vs. corrupción.
 
 ### Fixed
 - Corregido un LED con orden de color real RGB (no GRB) en una de las placas — el firmware ahora declara `NEO_RGB` en el constructor de `Adafruit_NeoPixel`.
 - Corregido bug de falsos positivos en la sincronización por bits de canal: al ser solo 2 bits (4 valores), 4 muestras de audio real podían calzar por azar con el patrón esperado y producir una "sincronización"/realineamiento incorrectos, desatando cascadas de desalineamiento que solo se resolvían reiniciando el script. Ahora se exige que el patrón se cumpla en 3 grupos consecutivos (`N_VERIF_SYNC`) antes de aceptarlo.
 - **Bug de raíz más grave**: la búsqueda de realineamiento solo reagrupaba bytes en pares fijos (0-1, 2-3...), por lo que nunca podía recuperar un desalineamiento de un número **impar** de bytes (posible con la pérdida/inserción de un solo byte en el transporte) — causaba que "No se pudo realinear" se repitiera frame tras frame de forma persistente. Confirmado con datos reales de una corrida en Raspberry Pi. Ahora la búsqueda prueba ambas paridades de byte.
 - Optimizada la búsqueda de alineamiento: vectorizada con numpy (`sliding_window_view`) en vez de un loop de Python por offset candidato — en Raspberry Pi ese loop era lo bastante lento como para retrasar la lectura serial y causar aún más desalineamiento.
+- Salida de audio en Raspberry Pi: el jack 3.5mm integrado tiene un control de mezcla específico (`PCM`/`Headphone`) que puede quedar muteado aunque el volumen "general" esté alto; documentado el fix. Para mejor calidad se usa un adaptador USB-C de audio en vez del códec integrado (más ruidoso por ser PWM, no un DAC real).
+
+### Changed
+- `.gitignore` generalizado a `venv-*/` (antes `venv-laptop/` específico) para cubrir cualquier entorno virtual por máquina.
 
 ## [0.1.0] - 2026-09-06
 
