@@ -43,6 +43,11 @@ def dbg(msg):
 ESP1_PORT = os.environ.get("ESP1_PORT", "COM8")    # Master — Mics 1-4
 ESP2_PORT = os.environ.get("ESP2_PORT", "COM6")    # Slave  — Mics 5-8
 
+# SKIP_AUDIO=1 desactiva PyAudio/reproducción por completo — útil para
+# diagnosticar si la reproducción de audio compite por CPU con los hilos
+# de lectura serial (sospecha en Raspberry Pi con PipeWire inestable).
+SKIP_AUDIO = os.environ.get("SKIP_AUDIO", "0") == "1"
+
 ESP_BAUD  = 3000000   # DEBE coincidir con PROJECT_BAUD en el firmware
 ESP_RATE  = 16000
 CHUNK     = 512
@@ -400,9 +405,13 @@ def monitor():
         print("ERROR: Fallo de sincronización.")
         sys.exit(1)
 
-    p = pyaudio.PyAudio()
-    stream = p.open(format=pyaudio.paFloat32, channels=2, rate=ESP_RATE,
-                     output=True, frames_per_buffer=CHUNK)
+    p = stream = None
+    if not SKIP_AUDIO:
+        p = pyaudio.PyAudio()
+        stream = p.open(format=pyaudio.paFloat32, channels=2, rate=ESP_RATE,
+                         output=True, frames_per_buffer=CHUNK)
+    else:
+        dbg("SKIP_AUDIO=1 — reproducción desactivada")
 
     print("\n" + "═" * 62)
     print("  Monitor Etapa 3 — 8 micrófonos, 2× ESP32-S3 + SYNC")
@@ -418,22 +427,27 @@ def monitor():
     t_l2 = threading.Thread(target=hilo_lector, args=(ser2, resto2, "ESP2", q_esp2, ESP2_MICS,
                              "esp2_ok", "esp2_err", "esp2_realign", "esp2_bytes"), daemon=True)
     t_sync    = threading.Thread(target=hilo_sincronizador, daemon=True)
-    t_audio   = threading.Thread(target=reproducir, daemon=True)
+    t_audio   = threading.Thread(target=reproducir, daemon=True) if not SKIP_AUDIO else None
     t_stats   = threading.Thread(target=stats, daemon=True)
     t_teclado = threading.Thread(target=escuchar_teclado, daemon=True)
 
-    t_l1.start(); t_l2.start(); t_sync.start(); t_audio.start(); t_stats.start(); t_teclado.start()
+    t_l1.start(); t_l2.start(); t_sync.start()
+    if t_audio:
+        t_audio.start()
+    t_stats.start(); t_teclado.start()
 
     t_teclado.join()
 
     print("\nDeteniendo...")
     stop_evt.set()
     for t in (t_l1, t_l2, t_sync, t_audio):
-        t.join(timeout=2)
+        if t:
+            t.join(timeout=2)
 
-    stream.stop_stream()
-    stream.close()
-    p.terminate()
+    if stream:
+        stream.stop_stream()
+        stream.close()
+        p.terminate()
 
     print("\n[RESUMEN FINAL]")
     print(f"  Frames sincronizados : {stats_data['sync_ok']}")
