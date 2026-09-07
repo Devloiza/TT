@@ -17,6 +17,7 @@ Arquitectura:
 
 import pyaudio
 import numpy as np
+from numpy.lib.stride_tricks import sliding_window_view
 import serial
 import serial.tools.list_ports
 import json
@@ -81,16 +82,32 @@ AUDIO_MASK   = np.int16(-4)
 N_VERIF_SYNC = 3
 
 
-def _patron_valido(datos, offset: int, n_grupos: int = N_VERIF_SYNC) -> bool:
-    necesarios = offset + n_grupos * 8
-    if len(datos) < necesarios:
-        return False
-    for g in range(n_grupos):
-        inicio = offset + g * 8
-        m = np.frombuffer(bytes(datos[inicio:inicio + 8]), dtype=np.int16)
-        if [int(x & 0x03) for x in m] != ID_ESPERADOS:
-            return False
-    return True
+# Patrón de N_VERIF_SYNC grupos [0,1,2,3] concatenados, en unidades de MUESTRA
+# (no bytes) — ej. [0,1,2,3,0,1,2,3,0,1,2,3] para N_VERIF_SYNC=3.
+_PATRON_MUESTRAS  = np.tile(np.array(ID_ESPERADOS, dtype=np.int16), N_VERIF_SYNC)
+_LARGO_PATRON     = len(_PATRON_MUESTRAS)   # en muestras
+
+
+def _buscar_offset_muestras(ids: np.ndarray):
+    """Busca, vectorizado con numpy (sin loop de Python por candidato), el
+    primer índice de MUESTRA donde N_VERIF_SYNC grupos consecutivos calzan
+    con ID_ESPERADOS. Devuelve None si no hay match. `ids` ya debe traer
+    aplicada la máscara (`raw & 0x03`).
+
+    Un loop de Python probando offset por offset (con una llamada a numpy
+    por candidato) resultó demasiado lento en Raspberry Pi cuando había
+    muchos frames desalineados seguidos: el escaneo se comía la CPU,
+    retrasaba la lectura del puerto serie, y eso causaba AÚN MÁS
+    desalineamiento — un ciclo vicioso que no se veía en PC/laptop con más
+    CPU disponible.
+    """
+    if len(ids) < _LARGO_PATRON:
+        return None
+    ventanas = sliding_window_view(ids, _LARGO_PATRON)
+    coincide = np.all(ventanas == _PATRON_MUESTRAS, axis=1)
+    if not coincide.any():
+        return None
+    return int(np.argmax(coincide))
 
 q_esp1      : queue.Queue[np.ndarray] = queue.Queue(maxsize=8)
 q_esp2      : queue.Queue[np.ndarray] = queue.Queue(maxsize=8)
@@ -154,26 +171,36 @@ def sincronizar(ser: serial.Serial, label: str) -> bytearray:
     buf = bytearray()
     deadline = time.time() + 30
     intentos = 0
+    ultimo_log = time.time()
 
     while time.time() < deadline:
         try:
-            dato = ser.read(256)
+            dato = ser.read(4096)
             if dato:
                 buf += dato
         except Exception as e:
             dbg(f"[{label}] Error durante sync: {e}")
 
-        # Exige N_VERIF_SYNC grupos consecutivos, no solo uno — ver definición
-        # de _patron_valido() para el razonamiento de falsos positivos.
-        while len(buf) >= N_VERIF_SYNC * 8:
-            if _patron_valido(buf, 0):
-                dbg(f"[{label}] Sincronizado tras {intentos} intentos")
-                return bytearray(buf[8:])
-            buf = buf[2:]
-            intentos += 1
-            if DEBUG and intentos % 200 == 0:
-                ids1 = [int(m & 0x03) for m in np.frombuffer(bytes(buf[:8]), dtype=np.int16)]
-                dbg(f"[{label}] Buscando... intento {intentos} IDs={ids1}")
+        # Búsqueda vectorizada (ver _buscar_offset_muestras) en vez de probar
+        # offset por offset con un loop de Python — mucho más rápido, importa
+        # en hosts con poca CPU como Raspberry Pi.
+        if len(buf) >= _LARGO_PATRON * 2:
+            n_muestras = len(buf) // 2
+            ids = np.frombuffer(bytes(buf[:n_muestras * 2]), dtype=np.int16) & 0x03
+            idx = _buscar_offset_muestras(ids)
+            if idx is not None:
+                dbg(f"[{label}] Sincronizado (offset muestra={idx})")
+                return bytearray(buf[idx * 2 + 8:])
+
+            # Nada calzó en todo lo acumulado — conserva solo la cola
+            # necesaria por si un match cruza el borde del próximo read.
+            cola_bytes = (_LARGO_PATRON - 1) * 2
+            intentos += max(0, len(buf) - cola_bytes) // 2
+            if len(buf) > cola_bytes:
+                buf = buf[-cola_bytes:]
+            if DEBUG and time.time() - ultimo_log > 2:
+                dbg(f"[{label}] Buscando... intentos={intentos}")
+                ultimo_log = time.time()
 
     print(f"ERROR [{label}]: Sin sincronización en 30s")
     ser.close()
@@ -214,18 +241,16 @@ def hilo_lector(ser: serial.Serial, resto: bytearray, label: str, out_q: queue.Q
             stats_data[k_err] += 1
             print(f"\n[WARN {label}] Desalineamiento frame {cnt} IDs={ids_inicio}")
 
-            # Igual que en sincronizar(): exige N_VERIF_SYNC grupos consecutivos
-            # para evitar realinearse a un falso positivo dentro del audio real.
-            realineado = False
-            for offset in range(0, len(bloque) - N_VERIF_SYNC * 8, 2):
-                if _patron_valido(bloque, offset):
-                    resto = bytearray(bloque[offset+8:]) + resto
-                    realineado = True
-                    stats_data[k_realign] += 1
-                    dbg(f"[{label}] Realineado offset={offset}")
-                    break
-
-            if not realineado:
+            # Búsqueda vectorizada (igual que sincronizar()): exige
+            # N_VERIF_SYNC grupos consecutivos para evitar un falso positivo,
+            # sin el costo de un loop de Python por offset candidato.
+            idx = _buscar_offset_muestras(raw & 0x03)
+            if idx is not None:
+                offset = idx * 2
+                resto = bytearray(bloque[offset + 8:]) + resto
+                stats_data[k_realign] += 1
+                dbg(f"[{label}] Realineado offset={offset}")
+            else:
                 dbg(f"[{label}] No se pudo realinear — descartando")
                 dbg(f"[{label}] hex bloque (primeros 64B): {bloque[:64].hex(' ')}")
             continue
