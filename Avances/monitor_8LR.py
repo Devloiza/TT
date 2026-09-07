@@ -36,9 +36,34 @@ def dbg(msg):
         print(f"[DBG] {msg}")
 
 ## ── CONFIG ────────────────────────────────────────────────────────────────────
+'''
+PARA ASIGNAR LOS PUERTOS USB DE LOS ESPS:
+    - export ESP1_PORT=/dev/ttyACM2 ESP2_PORT=/dev/ttyACM3
 
-# PEGAR ESTO EN TERMINAL PARA DECLARAR LOS PUERTOS EN RASPBERRY:
-# export ESP1_PORT=/dev/ttyACM2 ESP2_PORT=/dev/ttyACM3
+PARA CONECTAR LOS AUDIFONOS:
+    - python Avances/listar_audio.py
+
+    SALDRA UNA LISTA COMO ESTA:
+
+        Índice  Canales salida  Nombre
+        ------------------------------------------------------------
+        0       8               bcm2835 Headphones: - (hw:0,0)
+        1***    2               CX31993 384Khz HIFI AUDIO: USB Audio (hw:3,0) <--- ESTE
+        2       128             sysdefault
+        3       128             lavrate
+        4       128             samplerate
+        5       128             speexrate
+        6       32              pulse
+        7       1               speex
+        8       8               upmix
+        9       6               vdownmix
+        10      128             default
+        11      2               dmix
+    
+    - export AUDIO_DEVICE_INDEX = EJ:1*** 
+    [Elegir NUMERO que sea CX31993 384Khz HIFI AUDIO: USB Audio (hw:3,0)]
+
+'''
 
 ESP1_PORT = os.environ.get("ESP1_PORT", "COM8")    # Master — Mics 1-4
 ESP2_PORT = os.environ.get("ESP2_PORT", "COM6")    # Slave  — Mics 5-8
