@@ -109,6 +109,34 @@ def _buscar_offset_muestras(ids: np.ndarray):
         return None
     return int(np.argmax(coincide))
 
+
+def _buscar_offset_bytes(datos):
+    """Busca el patrón en AMBAS paridades de byte (offset par e impar).
+
+    BUG encontrado en producción: un solo byte perdido/agregado en el
+    transporte desalinea el stream por una cantidad IMPAR de bytes.
+    `np.frombuffer(datos, dtype=np.int16)` siempre reagrupa en pares fijos
+    (0-1, 2-3, 4-5...) desde el byte 0 — una búsqueda que solo reordena
+    DENTRO de ese array ya construido NUNCA puede recuperar un corrimiento
+    impar, sin importar cuánto busque, porque el reagrupamiento en pares
+    de 2 bytes queda fijo desde su creación. Confirmado con hex real: los
+    bytes "tal cual" (paridad par) daban un patrón `[2,3,2,2]` sin sentido,
+    pero desplazados 1 byte daban `[2,3,0,1]` — una rotación perfecta de
+    `[0,1,2,3]`, es decir, alineación real de 1 byte, no corrupción.
+
+    Devuelve el offset en BYTES desde el inicio de `datos`, o None.
+    """
+    b = np.frombuffer(bytes(datos), dtype=np.uint8)
+    mejor = None
+    for paridad in (0, 1):
+        ids = (b[paridad::2] & 0x03).astype(np.int16)
+        idx = _buscar_offset_muestras(ids)
+        if idx is not None:
+            offset = paridad + idx * 2
+            if mejor is None or offset < mejor:
+                mejor = offset
+    return mejor
+
 q_esp1      : queue.Queue[np.ndarray] = queue.Queue(maxsize=8)
 q_esp2      : queue.Queue[np.ndarray] = queue.Queue(maxsize=8)
 q_combinada : queue.Queue[np.ndarray] = queue.Queue(maxsize=8)
@@ -181,21 +209,21 @@ def sincronizar(ser: serial.Serial, label: str) -> bytearray:
         except Exception as e:
             dbg(f"[{label}] Error durante sync: {e}")
 
-        # Búsqueda vectorizada (ver _buscar_offset_muestras) en vez de probar
-        # offset por offset con un loop de Python — mucho más rápido, importa
-        # en hosts con poca CPU como Raspberry Pi.
-        if len(buf) >= _LARGO_PATRON * 2:
-            n_muestras = len(buf) // 2
-            ids = np.frombuffer(bytes(buf[:n_muestras * 2]), dtype=np.int16) & 0x03
-            idx = _buscar_offset_muestras(ids)
-            if idx is not None:
-                dbg(f"[{label}] Sincronizado (offset muestra={idx})")
-                return bytearray(buf[idx * 2 + 8:])
+        # Búsqueda vectorizada en AMBAS paridades de byte (ver
+        # _buscar_offset_bytes) — un corrimiento de un número impar de
+        # bytes nunca se recupera si solo se reordena dentro de un array
+        # ya reagrupado en pares fijos.
+        if len(buf) >= _LARGO_PATRON * 2 + 1:
+            offset = _buscar_offset_bytes(buf)
+            if offset is not None:
+                dbg(f"[{label}] Sincronizado (offset byte={offset})")
+                return bytearray(buf[offset + 8:])
 
             # Nada calzó en todo lo acumulado — conserva solo la cola
-            # necesaria por si un match cruza el borde del próximo read.
-            cola_bytes = (_LARGO_PATRON - 1) * 2
-            intentos += max(0, len(buf) - cola_bytes) // 2
+            # necesaria (cubriendo ambas paridades) por si un match cruza
+            # el borde del próximo read.
+            cola_bytes = _LARGO_PATRON * 2
+            intentos += max(0, len(buf) - cola_bytes)
             if len(buf) > cola_bytes:
                 buf = buf[-cola_bytes:]
             if DEBUG and time.time() - ultimo_log > 2:
@@ -241,12 +269,10 @@ def hilo_lector(ser: serial.Serial, resto: bytearray, label: str, out_q: queue.Q
             stats_data[k_err] += 1
             print(f"\n[WARN {label}] Desalineamiento frame {cnt} IDs={ids_inicio}")
 
-            # Búsqueda vectorizada (igual que sincronizar()): exige
-            # N_VERIF_SYNC grupos consecutivos para evitar un falso positivo,
-            # sin el costo de un loop de Python por offset candidato.
-            idx = _buscar_offset_muestras(raw & 0x03)
-            if idx is not None:
-                offset = idx * 2
+            # Búsqueda vectorizada en ambas paridades de byte (igual que
+            # sincronizar() — ver _buscar_offset_bytes para el porqué).
+            offset = _buscar_offset_bytes(bloque)
+            if offset is not None:
                 resto = bytearray(bloque[offset + 8:]) + resto
                 stats_data[k_realign] += 1
                 dbg(f"[{label}] Realineado offset={offset}")
