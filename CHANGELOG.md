@@ -13,6 +13,8 @@ y este proyecto sigue [Versionamiento Semántico](https://semver.org/lang/es/).
 ### Fixed
 - Corregido un LED con orden de color real RGB (no GRB) en una de las placas — el firmware ahora declara `NEO_RGB` en el constructor de `Adafruit_NeoPixel`.
 - Corregido bug de falsos positivos en la sincronización por bits de canal: al ser solo 2 bits (4 valores), 4 muestras de audio real podían calzar por azar con el patrón esperado y producir una "sincronización"/realineamiento incorrectos, desatando cascadas de desalineamiento que solo se resolvían reiniciando el script. Ahora se exige que el patrón se cumpla en 3 grupos consecutivos (`N_VERIF_SYNC`) antes de aceptarlo.
+- **Bug de raíz más grave**: la búsqueda de realineamiento solo reagrupaba bytes en pares fijos (0-1, 2-3...), por lo que nunca podía recuperar un desalineamiento de un número **impar** de bytes (posible con la pérdida/inserción de un solo byte en el transporte) — causaba que "No se pudo realinear" se repitiera frame tras frame de forma persistente. Confirmado con datos reales de una corrida en Raspberry Pi. Ahora la búsqueda prueba ambas paridades de byte.
+- Optimizada la búsqueda de alineamiento: vectorizada con numpy (`sliding_window_view`) en vez de un loop de Python por offset candidato — en Raspberry Pi ese loop era lo bastante lento como para retrasar la lectura serial y causar aún más desalineamiento.
 
 ## [0.1.0] - 2026-09-06
 
