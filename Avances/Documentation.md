@@ -51,8 +51,10 @@ Durante los primeros 5 segundos del arranque el LED indica el rol:
 | Color  | Rol    | Puerto COM (ejemplo) |
 |:------:|:------:|:--------------------:|
 | Azul   | Master | COM8                 |
-| Verde   | Slave  | COM6                 |
-| Rojo  | —      | Parpadeo al recibir/enviar pulso SYNC |
+| Rojo   | Slave  | COM6                 |
+| Verde  | —      | Parpadeo al recibir/enviar pulso SYNC |
+
+> **Nota sobre el orden de color:** el LED de esta placa física está cableado en orden **RGB real, no GRB** (a pesar de ser un WS2812/NeoPixel "genérico") — se confirmó porque con `NEO_GRB` declarado en el firmware, rojo y verde salían intercambiados. El firmware ya declara `NEO_RGB` en el constructor de `Adafruit_NeoPixel`, así que los colores de esta tabla son los que deberías ver en la placa. Si vuelves a ver rojo/verde invertidos tras algún cambio, revisa que esa declaración siga en `NEO_RGB`.
 
 > Los puertos COM se deben ajustar en `monitor_8LR.py` según el equipo de desarrollo. Ver sección 4.
 
@@ -149,8 +151,8 @@ Python alinea los frames de los dos ESP en el **hilo sincronizador** (`hilo_sinc
 
 | Constante       | Valor por defecto | Descripción                          |
 |:---------------:|:-----------------:|:------------------------------------:|
-| `ESP1_PORT`     | `"COM8"`          | Puerto COM del Master (Mics 1-4)     |
-| `ESP2_PORT`     | `"COM6"`          | Puerto COM del Slave (Mics 5-8)      |
+| `ESP1_PORT`     | `"COM8"`          | Puerto del Master (Mics 1-4). Se puede sobreescribir con la variable de entorno `ESP1_PORT` (ej. `/dev/ttyACM1` en Linux/Raspberry Pi) sin tocar el código — ver sección 12. |
+| `ESP2_PORT`     | `"COM6"`          | Puerto del Slave (Mics 5-8). Igual, sobreescribible con `ESP2_PORT`. |
 | `ESP_BAUD`      | `3000000`         | Baud del puerto serial — **debe coincidir exactamente** con `Serial.begin()`/`Serial0.begin()` del firmware (ver sección 2.1) |
 | `ESP_RATE`      | `16000`           | Frecuencia de muestreo en Hz         |
 | `CHUNK`         | `512`             | Muestras por frame por canal         |
@@ -203,6 +205,8 @@ Hilo lector ESP2 ➡️                                     ⬇️
 ### 4.5 Proceso de sincronización inicial del stream
 
 Al arrancar, Python busca en el stream el **patrón de sincronización** `[0, 1, 2, 3]` en los bits [1:0] de 4 muestras consecutivas. Esto garantiza que los frames de audio empiecen en el offset correcto antes de entrar al bucle de lectura. Timeout: 30 s.
+
+> **Robustez del patrón (sept 2026):** el ID de canal son solo 2 bits (4 valores posibles), así que 4 muestras de audio real pueden calzar con `[0,1,2,3]` **por pura casualidad** (~1/256 por intento) y producir un falso positivo de sincronización — el código quedaba "sincronizado" en un punto que en realidad no era el inicio real de un grupo de canales, y como el error no se detecta hasta el siguiente grupo, esto podía desatar una cascada de desalineamientos consecutivos con offsets erráticos (visto tanto en Windows como, más raramente, en Raspberry Pi — y confirmado porque simplemente reiniciar el script de Python, sin tocar las placas, lo resolvía). **Fix:** tanto `sincronizar()` como el realineamiento en `hilo_lector()` ahora exigen que el patrón se cumpla en **`N_VERIF_SYNC` (3) grupos de 4 muestras consecutivos** antes de aceptarlo (constante ajustable), bajando la probabilidad de falso positivo a ~1/16.7 millones.
 
 ### 4.6 Normalización de audio
 
@@ -375,14 +379,100 @@ Herramientas de diagnóstico creadas en el camino, en `Exploration/reconstruccio
 | _06/09/2026_ | _Tras 1 mes sin lograr SYNC, se depuró el error de esptool (Board mal seleccionado), 2 bugs de color de LED, y un bug del core esp32 v3.3.10 que rompía USB nativo en S3. Se decidió reconstruir el sistema por etapas en vez de seguir depurando el sistema completo._ | _esp32_8micLR.txt (ahora esp32_8micLR_OLD.txt), diag_raw_dump.py_ |
 | _06/09/2026_ | _Encontrada la causa raíz real: `Serial`/`Serial0` comparten el mismo periférico UART físico en este hardware — el baud debe coincidir exactamente entre firmware y Python. Validado a 3,000,000 baud con Etapas 1a (transporte puro), 1b (1 mic real), 2 (4 mics, 1 placa) y 3 (sistema completo, 2 placas + SYNC) — todas OK. Ver sección 10._ | _esp32_stage1a/1b/2/3, transport_check.py, stage1b_record_plot.py, monitor_stage2/3.py_ |
 | _06/09/2026_ | _Cerrado el ciclo de reconstrucción: Etapa 3 promovida a los nombres oficiales `esp32_8micLR.txt`/`monitor_8LR.py`; archivos de las Etapas 1a/1b/2 movidos a `Exploration/reconstruccion_sept2026/`; versiones previas (nunca sincronizaban de forma estable) eliminadas del árbol de trabajo._ | _esp32_8micLR.txt, monitor_8LR.py, Exploration/reconstruccion_sept2026/*_ |
+| _06/09/2026_ | _Primer despliegue funcional en Raspberry Pi 4/5: acceso SSH, grupos `dialout`/`audio`, transporte validado a 3,000,000 baud en ambas placas simultáneamente, sistema completo (8 mics + SYNC) corriendo y con audio de salida funcionando. Se corrigió además un bug real de falsos positivos de sincronización (patrón de 2 bits calzando por azar), exigiendo 3 grupos consecutivos (`N_VERIF_SYNC`) para aceptar sync/realineamiento._ | _monitor_8LR.py, Documentation.md_ |
 <!-- | _dd/mm/aa_ | _descripción_         | _archivo_             | # FORMATO -->
 
 ---
 
-## 12. Pendientes
+## 12. Despliegue en Raspberry Pi (sept 2026)
+
+El objetivo a mediano plazo es correr el sistema en una Raspberry Pi (4/5) en vez de una PC/laptop, para tener un equipo dedicado y portátil. Validado: **transporte limpio a 3,000,000 baud en ambas placas, simultáneamente**, usando `transport_check.py` desde `Exploration/reconstruccion_sept2026/` — de hecho el driver `cdc_acm` de Linux resultó más confiable a esa tasa que el de una laptop con Windows (ver nota de la sección 7 sobre robustez de baud por host).
+
+### 12.1 Acceso remoto (SSH)
+
+1. En la Pi: `sudo raspi-config` → *Interface Options* → *SSH* → Enable (o `sudo systemctl enable ssh --now`).
+2. Conectar la Pi a la misma red (WiFi vía `raspi-config` → *System Options* → *Wireless LAN*, o Ethernet).
+3. Encontrar su IP: `hostname -I` en la propia Pi, o `ping raspberrypi.local` desde la PC.
+4. Desde Windows (PowerShell trae cliente SSH integrado): `ssh <usuario>@<ip>`.
+5. Los nombres de usuario en Linux deben ir en **minúsculas** (`adduser` rechaza mayúsculas por el `NAME_REGEX` por defecto).
+6. Recomendado: extensión **Remote-SSH** de VS Code para navegar archivos/editar/terminal integrados.
+
+### 12.2 Permisos de grupo (causa más común de "Permission denied")
+
+Linux restringe el acceso a hardware por grupo — un usuario nuevo (creado con `sudo adduser`) no trae estos grupos por defecto, a diferencia del usuario que se configura durante el flasheo inicial con Raspberry Pi Imager:
+
+| Grupo | Para qué | Comando |
+|:-----:|:---------|:--------|
+| `dialout` | Acceso a puertos serie (`/dev/ttyACM*`, `/dev/ttyUSB*`) | `sudo usermod -aG dialout <usuario>` |
+| `audio`   | Acceso a dispositivos de audio (`/dev/snd/*`)            | `sudo usermod -aG audio <usuario>`   |
+| `sudo`    | Ejecutar comandos administrativos                        | `sudo usermod -aG sudo <usuario>`    |
+
+**Importante:** los cambios de grupo no aplican a una sesión ya abierta — hay que cerrar sesión (`exit`) y volver a conectar por SSH para que tomen efecto. Verificar con `groups` o `id`.
+
+### 12.3 Cada ESP32-S3 expone DOS puertos `/dev/ttyACM*`
+
+En modo `Hardware CDC and JTAG`, el mismo USB expone dos interfaces: una para JTAG/depuración (grupo `plugdev`) y otra para datos (grupo `dialout`, la que usa `Serial` en el firmware). Con dos placas conectadas pueden aparecer como `ttyACM0`–`ttyACM3`. Identificar la correcta con:
+```
+ls -l /dev/ttyACM*
+```
+La de grupo `dialout` es la de datos — la de `plugdev` no sirve para este proyecto.
+
+### 12.4 Entorno Python
+
+Raspberry Pi OS (Bookworm+) bloquea `pip install` fuera de un venv (PEP 668, error *externally-managed-environment*):
+```
+python3 -m venv venv
+source venv/bin/activate      # repetir en cada sesión/pestaña nueva de tmux
+pip install pyserial numpy pyaudio
+```
+`pyaudio` necesita la librería de sistema `portaudio19-dev` antes de instalarse: `sudo apt install -y portaudio19-dev`.
+
+### 12.5 Puertos por variable de entorno (evita editar el código por máquina)
+
+`monitor_8LR.py` lee `ESP1_PORT`/`ESP2_PORT` de variables de entorno si existen (default: `COM8`/`COM6` para Windows). En la Pi:
+```
+export ESP1_PORT=/dev/ttyACM1
+export ESP2_PORT=/dev/ttyACM3
+```
+(Agregar a `~/.bashrc` para no repetirlo cada sesión.) Antes de este cambio, el archivo tenía los puertos de Windows y Raspberry hardcodeados en el mismo bloque — la segunda asignación siempre pisaba a la primera, causando errores de conexión confusos.
+
+### 12.6 Codificación de terminal (UnicodeEncodeError)
+
+Los scripts usan caracteres como `—`, y algunas sesiones SSH usan `latin-1` en vez de `UTF-8`, causando `UnicodeEncodeError` al imprimir. Fix rápido por sesión:
+```
+export PYTHONIOENCODING=utf-8
+```
+
+### 12.7 Audio de salida (jack 3.5mm)
+
+`aplay -l` puede detectar la tarjeta (`bcm2835 Headphones`) sin que realmente suene nada, incluso con el volumen "general" subido en `alsamixer`. La causa fue un **control de mezcla específico** (`PCM` y/o `Headphone`) muteado o en 0, distinto del control "Master":
+```
+amixer -c 0 scontrols                    # lista los controles reales de la tarjeta 0
+amixer -c 0 sset 'PCM' 100% unmute
+amixer -c 0 sset 'Headphone' 100% unmute
+speaker-test -D hw:0,0 -c2 -t wav        # probar
+```
+Se intentó también Bluetooth como alternativa; se encontró un conflicto real entre PipeWire y PulseAudio clásico peleando por el mismo adaptador (`RegisterProfile() failed: org.bluez.Error.NotPermitted` — no instalar `pulseaudio`/`pulseaudio-module-bluetooth` si el sistema ya usa PipeWire/WirePlumber nativo), pero no fue necesario resolverlo una vez arreglado el jack analógico.
+
+### 12.8 tmux — sesiones persistentes y en paralelo
+
+Para correr procesos que sobrevivan a una desconexión de SSH (el monitor completo, pruebas de las dos placas a la vez):
+```
+sudo apt install -y tmux
+tmux new -s prueba
+# Ctrl+B luego %  → divide en paneles verticales
+# Ctrl+B luego flechas → cambia de panel
+# Ctrl+B luego D  → se desconecta, deja todo corriendo
+tmux attach -t prueba   # para volver a entrar
+```
+
+---
+
+## 13. Pendientes
 
 - [x] ~~Decidir si se reemplazan los archivos oficiales~~ — hecho: `esp32_8micLR.txt`/`monitor_8LR.py` ya son la versión reconstruida y validada (Etapa 3). Los archivos de las Etapas 1a/1b/2 se movieron a `Exploration/reconstruccion_sept2026/` y las versiones previas de los archivos oficiales se eliminaron (recuperables vía `git log` si hiciera falta).
 - [ ] Probar la función de grabación (`g`) del monitor con los 8 mics conectados y verificar el .npy resultante antes de retomar el trabajo de DAS.
+- [ ] Dejar corriendo el sistema completo en la Raspberry Pi por un periodo largo (varios minutos) para confirmar que el fix de falsos positivos de sincronización (sección 4.5/12) realmente elimina las cascadas de desalineamiento intermitentes.
 - [ ] Medir y registrar las distancias físicas reales entre micrófonos en el arreglo (d1–d4).
 - [ ] Editar `geometria.json` con las coordenadas reales del collar/arreglo.
 - [ ] Implementar `calcular_retardos()` y `delay_and_sum()` en `hilo_sincronizador`.

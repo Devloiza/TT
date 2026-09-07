@@ -7,6 +7,13 @@ y este proyecto sigue [Versionamiento Semántico](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+### Added
+- Soporte para correr `monitor_8LR.py` en Raspberry Pi: puertos configurables vía variables de entorno `ESP1_PORT`/`ESP2_PORT` (antes hardcodeados a valores de Windows). Documentado el proceso completo de despliegue (SSH, grupos `dialout`/`audio`, venv, audio) en `Avances/Documentation.md` sección 12.
+
+### Fixed
+- Corregido un LED con orden de color real RGB (no GRB) en una de las placas — el firmware ahora declara `NEO_RGB` en el constructor de `Adafruit_NeoPixel`.
+- Corregido bug de falsos positivos en la sincronización por bits de canal: al ser solo 2 bits (4 valores), 4 muestras de audio real podían calzar por azar con el patrón esperado y producir una "sincronización"/realineamiento incorrectos, desatando cascadas de desalineamiento que solo se resolvían reiniciando el script. Ahora se exige que el patrón se cumpla en 3 grupos consecutivos (`N_VERIF_SYNC`) antes de aceptarlo.
+
 ## [0.1.0] - 2026-09-06
 
 Primer hito estable: el sistema **base** de adquisición (8 micrófonos, 2×

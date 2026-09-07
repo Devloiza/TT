@@ -61,9 +61,11 @@
 #endif
 
 // ── LED RGB ───────────────────────────────────────────────────────────────────
+// NEO_RGB (no NEO_GRB): en esta placa el LED físico está en orden RGB real,
+// no GRB — confirmado porque con NEO_GRB rojo y verde salían intercambiados.
 #define LED_PIN   38
 #define NUM_LEDS  1
-Adafruit_NeoPixel led(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel led(NUM_LEDS, LED_PIN, NEO_RGB + NEO_KHZ800);
 
 // ── SYNC ──────────────────────────────────────────────────────────────────────
 #define SYNC_PIN  10
@@ -95,8 +97,9 @@ static int32_t bus0_buf[BUS_SAMPLES];
 static int32_t bus1_buf[BUS_SAMPLES];
 static int16_t out_buf[CHUNK_SAMPLES * 4];
 
-// ── LED helpers (colores en orden R,G,B normal — la librería ya compensa
-//    el orden físico NEO_GRB internamente, no hay que intercambiar nada) ──────
+// ── LED helpers (colores en orden R,G,B normal — el orden físico real del
+//    LED de esta placa ya se declaró arriba como NEO_RGB, no hay que
+//    intercambiar nada aquí) ──────────────────────────────────────────────────
 static void led_color(uint8_t r, uint8_t g, uint8_t b)
 {
   led.setPixelColor(0, led.Color(r, g, b));

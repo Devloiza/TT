@@ -36,8 +36,13 @@ def dbg(msg):
 
 ## ── CONFIG ────────────────────────────────────────────────────────────────────
 
-ESP1_PORT = "COM8"    # Master — Mics 1-4
-ESP2_PORT = "COM6"    # Slave  — Mics 5-8
+# Puertos: se leen de las variables de entorno ESP1_PORT/ESP2_PORT si están
+# definidas (así no hay que editar este archivo al cambiar de máquina —
+# export ESP1_PORT=/dev/ttyACM1 ESP2_PORT=/dev/ttyACM3 en la Pi, por ejemplo).
+# Si no están definidas, usa los defaults de Windows.
+ESP1_PORT = os.environ.get("ESP1_PORT", "COM8")    # Master — Mics 1-4
+ESP2_PORT = os.environ.get("ESP2_PORT", "COM6")    # Slave  — Mics 5-8
+
 ESP_BAUD  = 3000000   # DEBE coincidir con PROJECT_BAUD en el firmware
 ESP_RATE  = 16000
 CHUNK     = 512
@@ -64,6 +69,24 @@ LATENCY_MS   = CHUNK * 1000 // ESP_RATE
 ID_ESPERADOS = [0, 1, 2, 3]
 AUDIO_MASK   = np.int16(-4)
 
+# Grupos de 4 muestras consecutivos que deben calzar con ID_ESPERADOS antes
+# de aceptar un punto como alineado. Con solo 2 bits de ID, un grupo puede
+# calzar por azar en audio real (~1/256) — cada grupo extra de verificación
+# multiplica esa probabilidad por ~1/256 más (3 grupos => ~1/16.7M).
+N_VERIF_SYNC = 3
+
+
+def _patron_valido(datos, offset: int, n_grupos: int = N_VERIF_SYNC) -> bool:
+    necesarios = offset + n_grupos * 8
+    if len(datos) < necesarios:
+        return False
+    for g in range(n_grupos):
+        inicio = offset + g * 8
+        m = np.frombuffer(bytes(datos[inicio:inicio + 8]), dtype=np.int16)
+        if [int(x & 0x03) for x in m] != ID_ESPERADOS:
+            return False
+    return True
+
 q_esp1      : queue.Queue[np.ndarray] = queue.Queue(maxsize=8)
 q_esp2      : queue.Queue[np.ndarray] = queue.Queue(maxsize=8)
 q_combinada : queue.Queue[np.ndarray] = queue.Queue(maxsize=8)
@@ -76,11 +99,12 @@ frames_grabados : list[np.ndarray] = []
 grab_lock       = threading.Lock()
 
 stats_data = {
-    "esp1_ok": 0, "esp1_err": 0, "esp1_realign": 0,
-    "esp2_ok": 0, "esp2_err": 0, "esp2_realign": 0,
+    "esp1_ok": 0, "esp1_err": 0, "esp1_realign": 0, "esp1_bytes": 0,
+    "esp2_ok": 0, "esp2_err": 0, "esp2_realign": 0, "esp2_bytes": 0,
     "sync_ok": 0, "sync_drop": 0,
     "underruns": 0,
 }
+BYTES_ESPERADOS_POR_SEG = ESP_RATE * N_CANALES * 2   # 128,000 B/s por placa a 16kHz/4ch/16bit
 
 ## ── CARGA DE GEOMETRÍA ────────────────────────────────────────────────────────
 
@@ -134,16 +158,17 @@ def sincronizar(ser: serial.Serial, label: str) -> bytearray:
         except Exception as e:
             dbg(f"[{label}] Error durante sync: {e}")
 
-        while len(buf) >= 8:
-            muestras = np.frombuffer(bytes(buf[:8]), dtype=np.int16)
-            ids = [int(m & 0x03) for m in muestras]
-            if ids == ID_ESPERADOS:
+        # Exige N_VERIF_SYNC grupos consecutivos, no solo uno — ver definición
+        # de _patron_valido() para el razonamiento de falsos positivos.
+        while len(buf) >= N_VERIF_SYNC * 8:
+            if _patron_valido(buf, 0):
                 dbg(f"[{label}] Sincronizado tras {intentos} intentos")
                 return bytearray(buf[8:])
             buf = buf[2:]
             intentos += 1
             if DEBUG and intentos % 200 == 0:
-                dbg(f"[{label}] Buscando... intento {intentos} IDs={ids}")
+                ids1 = [int(m & 0x03) for m in np.frombuffer(bytes(buf[:8]), dtype=np.int16)]
+                dbg(f"[{label}] Buscando... intento {intentos} IDs={ids1}")
 
     print(f"ERROR [{label}]: Sin sincronización en 30s")
     ser.close()
@@ -152,7 +177,7 @@ def sincronizar(ser: serial.Serial, label: str) -> bytearray:
 ## ── HILO LECTOR ───────────────────────────────────────────────────────────────
 
 def hilo_lector(ser: serial.Serial, resto: bytearray, label: str, out_q: queue.Queue,
-                 mics_activos: list, k_ok: str, k_err: str, k_realign: str):
+                 mics_activos: list, k_ok: str, k_err: str, k_realign: str, k_bytes: str):
 
     resto = bytearray(resto)
     cnt = 0
@@ -164,6 +189,7 @@ def hilo_lector(ser: serial.Serial, resto: bytearray, label: str, out_q: queue.Q
                 dato = ser.read(min(4096, CHUNK_BYTES - len(resto)))
                 if dato:
                     resto += dato
+                    stats_data[k_bytes] += len(dato)
             except serial.SerialException:
                 dbg(f"[{label}] SerialException — deteniendo")
                 stop_evt.set()
@@ -183,10 +209,11 @@ def hilo_lector(ser: serial.Serial, resto: bytearray, label: str, out_q: queue.Q
             stats_data[k_err] += 1
             print(f"\n[WARN {label}] Desalineamiento frame {cnt} IDs={ids_inicio}")
 
+            # Igual que en sincronizar(): exige N_VERIF_SYNC grupos consecutivos
+            # para evitar realinearse a un falso positivo dentro del audio real.
             realineado = False
-            for offset in range(0, len(bloque) - 8, 2):
-                sub = np.frombuffer(bloque[offset:offset+8], dtype=np.int16)
-                if list(sub & 0x03) == ID_ESPERADOS:
+            for offset in range(0, len(bloque) - N_VERIF_SYNC * 8, 2):
+                if _patron_valido(bloque, offset):
                     resto = bytearray(bloque[offset+8:]) + resto
                     realineado = True
                     stats_data[k_realign] += 1
@@ -195,6 +222,7 @@ def hilo_lector(ser: serial.Serial, resto: bytearray, label: str, out_q: queue.Q
 
             if not realineado:
                 dbg(f"[{label}] No se pudo realinear — descartando")
+                dbg(f"[{label}] hex bloque (primeros 64B): {bloque[:64].hex(' ')}")
             continue
 
         stats_data[k_ok] += 1
@@ -290,6 +318,9 @@ def reproducir():
 ## ── HILO ESTADÍSTICAS ─────────────────────────────────────────────────────────
 
 def stats():
+    prev_bytes1 = prev_bytes2 = 0
+    prev_t = time.time()
+
     while not stop_evt.is_set():
         time.sleep(5)
         if stop_evt.is_set():
@@ -297,13 +328,22 @@ def stats():
         with par_lock:
             par = PAR_ACTIVO
         _, _, desc = PAR_INFO[par]
+
+        now = time.time()
+        dt = now - prev_t
+        rate1 = (stats_data["esp1_bytes"] - prev_bytes1) / dt if dt > 0 else 0
+        rate2 = (stats_data["esp2_bytes"] - prev_bytes2) / dt if dt > 0 else 0
+        prev_bytes1, prev_bytes2, prev_t = stats_data["esp1_bytes"], stats_data["esp2_bytes"], now
+
         print(f"\n[STATS]"
               f"\n  Par activo   : {par} — {desc}"
               f"\n  Colas        : ESP1={q_esp1.qsize()}  ESP2={q_esp2.qsize()}  Combinada={q_combinada.qsize()}"
               f"\n  Sync OK/Drop : {stats_data['sync_ok']}  /  {stats_data['sync_drop']}"
               f"\n  Underruns    : {stats_data['underruns']}"
               f"\n  ESP1         : OK={stats_data['esp1_ok']}  ERR={stats_data['esp1_err']}  Realign={stats_data['esp1_realign']}"
-              f"\n  ESP2         : OK={stats_data['esp2_ok']}  ERR={stats_data['esp2_err']}  Realign={stats_data['esp2_realign']}")
+              f"  tasa={rate1:.0f} B/s (esperado ~{BYTES_ESPERADOS_POR_SEG})"
+              f"\n  ESP2         : OK={stats_data['esp2_ok']}  ERR={stats_data['esp2_err']}  Realign={stats_data['esp2_realign']}"
+              f"  tasa={rate2:.0f} B/s (esperado ~{BYTES_ESPERADOS_POR_SEG})")
 
 ## ── HILO TECLADO ──────────────────────────────────────────────────────────────
 
@@ -374,9 +414,9 @@ def monitor():
     print("\n  Comandos: 1-4 cambiar par | g grabar/guardar | q salir\n")
 
     t_l1 = threading.Thread(target=hilo_lector, args=(ser1, resto1, "ESP1", q_esp1, ESP1_MICS,
-                             "esp1_ok", "esp1_err", "esp1_realign"), daemon=True)
+                             "esp1_ok", "esp1_err", "esp1_realign", "esp1_bytes"), daemon=True)
     t_l2 = threading.Thread(target=hilo_lector, args=(ser2, resto2, "ESP2", q_esp2, ESP2_MICS,
-                             "esp2_ok", "esp2_err", "esp2_realign"), daemon=True)
+                             "esp2_ok", "esp2_err", "esp2_realign", "esp2_bytes"), daemon=True)
     t_sync    = threading.Thread(target=hilo_sincronizador, daemon=True)
     t_audio   = threading.Thread(target=reproducir, daemon=True)
     t_stats   = threading.Thread(target=stats, daemon=True)
@@ -399,8 +439,8 @@ def monitor():
     print(f"  Frames sincronizados : {stats_data['sync_ok']}")
     print(f"  Frames descartados   : {stats_data['sync_drop']}")
     print(f"  Underruns            : {stats_data['underruns']}")
-    print(f"  ESP1 — OK:{stats_data['esp1_ok']}  ERR:{stats_data['esp1_err']}  Realign:{stats_data['esp1_realign']}")
-    print(f"  ESP2 — OK:{stats_data['esp2_ok']}  ERR:{stats_data['esp2_err']}  Realign:{stats_data['esp2_realign']}")
+    print(f"  ESP1 — OK:{stats_data['esp1_ok']}  ERR:{stats_data['esp1_err']}  Realign:{stats_data['esp1_realign']}  bytes:{stats_data['esp1_bytes']}")
+    print(f"  ESP2 — OK:{stats_data['esp2_ok']}  ERR:{stats_data['esp2_err']}  Realign:{stats_data['esp2_realign']}  bytes:{stats_data['esp2_bytes']}")
 
 
 if __name__ == "__main__":
