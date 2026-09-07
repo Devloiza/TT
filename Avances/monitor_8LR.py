@@ -37,10 +37,9 @@ def dbg(msg):
 
 ## ── CONFIG ────────────────────────────────────────────────────────────────────
 
-# Puertos: se leen de las variables de entorno ESP1_PORT/ESP2_PORT si están
-# definidas (así no hay que editar este archivo al cambiar de máquina —
-# export ESP1_PORT=/dev/ttyACM1 ESP2_PORT=/dev/ttyACM3 en la Pi, por ejemplo).
-# Si no están definidas, usa los defaults de Windows.
+# PEGAR ESTO EN TERMINAL PARA DECLARAR LOS PUERTOS EN RASPBERRY:
+# export ESP1_PORT=/dev/ttyACM2 ESP2_PORT=/dev/ttyACM3
+
 ESP1_PORT = os.environ.get("ESP1_PORT", "COM8")    # Master — Mics 1-4
 ESP2_PORT = os.environ.get("ESP2_PORT", "COM6")    # Slave  — Mics 5-8
 
@@ -48,6 +47,14 @@ ESP2_PORT = os.environ.get("ESP2_PORT", "COM6")    # Slave  — Mics 5-8
 # diagnosticar si la reproducción de audio compite por CPU con los hilos
 # de lectura serial (sospecha en Raspberry Pi con PipeWire inestable).
 SKIP_AUDIO = os.environ.get("SKIP_AUDIO", "0") == "1"
+
+# AUDIO_DEVICE_INDEX fuerza el dispositivo de salida de PyAudio por índice
+# (usar listar_audio.py para encontrarlo) — en algunos sistemas (Raspberry
+# Pi con PipeWire) el "default" de ALSA no está enrutado al sink por
+# defecto de PipeWire/pactl, así que dejarlo en manos del "default" de
+# PyAudio puede terminar saliendo por un dispositivo distinto al esperado.
+_audio_device_index_env = os.environ.get("AUDIO_DEVICE_INDEX")
+AUDIO_DEVICE_INDEX = int(_audio_device_index_env) if _audio_device_index_env else None
 
 ESP_BAUD  = 3000000   # DEBE coincidir con PROJECT_BAUD en el firmware
 ESP_RATE  = 16000
@@ -459,8 +466,12 @@ def monitor():
     p = stream = None
     if not SKIP_AUDIO:
         p = pyaudio.PyAudio()
+        if AUDIO_DEVICE_INDEX is not None:
+            info = p.get_device_info_by_index(AUDIO_DEVICE_INDEX)
+            dbg(f"Usando dispositivo de audio #{AUDIO_DEVICE_INDEX}: {info['name']}")
         stream = p.open(format=pyaudio.paFloat32, channels=2, rate=ESP_RATE,
-                         output=True, frames_per_buffer=CHUNK)
+                         output=True, frames_per_buffer=CHUNK,
+                         output_device_index=AUDIO_DEVICE_INDEX)
     else:
         dbg("SKIP_AUDIO=1 — reproducción desactivada")
 

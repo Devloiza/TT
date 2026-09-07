@@ -1,5 +1,5 @@
 venv/
-venv-laptop/
+venv-*/
 __pycache__/
 .vscode/
 Citas.md
