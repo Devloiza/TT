@@ -10,6 +10,26 @@ Este documento sirve como referencia técnica y bitácora de progreso para el Tr
 
 El sistema de adquisición está compuesto por **dos ESP32-S3** conectados vía USB a una PC con Python. Cada ESP captura 4 micrófonos ICS-43434 mediante dos buses I2S y transmite los datos en un formato interleaved por USB CDC. Python recibe ambos flujos, los sincroniza y los combina en frames de 8 canales listos para DAS (Delay-and-Sum beamforming).
 
+### Fuente de verdad del proyecto
+
+Todo lo técnico en este repositorio debe estar al servicio de lo que se comprometió en **`PROTOCOLO_TT.pdf`** (raíz del repo, no versionado en git por ser documento institucional) — ese archivo es la referencia autoritativa de alcance, no este documento. Lo esencial, para no perderlo de vista:
+
+**Hipótesis:** Un sistema de localización acústica y mejora del habla basado en un arreglo de micrófonos inspirado en las *slit sensilla* de los escorpiones permite incrementar ≥10% las métricas **STOI** y **PESQ** frente a señales degradadas con ruido, y mejorar ≥3 dB la **SNR** respecto a un arreglo lineal uniforme con beamforming delay-and-sum (DAS) convencional — bajo SNR de entrada entre **−5 dB y 10 dB**.
+
+**Objetivo general:** Desarrollar un sistema de adquisición y procesamiento de audio enfocado en localizar la fuente del habla y mejorar su inteligibilidad en entornos acústicamente adversos, basado en el sensado vibracional del escorpión durante su fase de depredación.
+
+**Objetivos específicos:**
+1. Adaptar la geometría/muestreo espacial de las slit sensilla a un arreglo multimicrófono **no uniforme** (diferencias de amplitud y tiempo de llegada).
+2. Diseñar el dispositivo de adquisición multimicrófono. *(hecho — ver secciones 1-4 y 10)*
+3. Recopilar base de datos de habla, ruido y habla+ruido.
+4. Elaborar un modelo de clasificación habla/ruido.
+5. Implementar estimación de DOA + beamforming inspirado en el mecanismo vibracional.
+6. Integrar adquisición + clasificación + localización + procesamiento.
+7. **Comparar contra un arreglo lineal uniforme del mismo número de mics (8), con DAS convencional**, mismas condiciones, SNR −5 a 10 dB. **Con el mismo sistema físico de adquisición** (mismas 2 placas ESP32-S3, mismos 8 micrófonos) reconfigurado geométricamente entre el arreglo bioinspirado no uniforme y uno lineal uniforme — solo cambia la disposición física de los mics y el `geometria.json` correspondiente, no el hardware de captura.
+8. Evaluar el sistema (SNR, PESQ, STOI) en ese mismo rango de SNR.
+
+La geometría no uniforme (4 pares LR1-LR4 con separaciones diferenciadas $d_1$-$d_4$) ya está reflejada en la estructura de pines/pares de este documento (secciones 1.1, 4.2, 5.2) y en el placeholder de `geometria.json` — falta llenarlo con las mediciones reales (ver Pendientes).
+
 ---
 
 ## 1. Hardware
@@ -384,6 +404,8 @@ Herramientas de diagnóstico creadas en el camino, en `Exploration/reconstruccio
 | _06/09/2026_ | _Encontrada la causa raíz real: `Serial`/`Serial0` comparten el mismo periférico UART físico en este hardware — el baud debe coincidir exactamente entre firmware y Python. Validado a 3,000,000 baud con Etapas 1a (transporte puro), 1b (1 mic real), 2 (4 mics, 1 placa) y 3 (sistema completo, 2 placas + SYNC) — todas OK. Ver sección 10._ | _esp32_stage1a/1b/2/3, transport_check.py, stage1b_record_plot.py, monitor_stage2/3.py_ |
 | _06/09/2026_ | _Cerrado el ciclo de reconstrucción: Etapa 3 promovida a los nombres oficiales `esp32_8micLR.txt`/`monitor_8LR.py`; archivos de las Etapas 1a/1b/2 movidos a `Exploration/reconstruccion_sept2026/`; versiones previas (nunca sincronizaban de forma estable) eliminadas del árbol de trabajo._ | _esp32_8micLR.txt, monitor_8LR.py, Exploration/reconstruccion_sept2026/*_ |
 | _06/09/2026_ | _Primer despliegue funcional en Raspberry Pi 4/5: acceso SSH, grupos `dialout`/`audio`, transporte validado a 3,000,000 baud en ambas placas simultáneamente, sistema completo (8 mics + SYNC) corriendo y con audio de salida funcionando. Se corrigió además un bug real de falsos positivos de sincronización (patrón de 2 bits calzando por azar), exigiendo 3 grupos consecutivos (`N_VERIF_SYNC`) para aceptar sync/realineamiento._ | _monitor_8LR.py, Documentation.md_ |
+| _07/09/2026_ | _Bug más grave encontrado en la Pi: la búsqueda de realineamiento solo reagrupaba bytes en pares fijos, por lo que un corrimiento de un número IMPAR de bytes era irrecuperable — corregido probando ambas paridades. Preparado el sistema para demo sin supervisión: autoarranque vía `systemd` (con symlinks de `udev` para puertos estables, `DEBUG` apagado por defecto, fix de apagado prematuro por `EOFError` del hilo de teclado bajo systemd, `AUTO_CYCLE_SECONDS` para recorrer los 4 pares de mics sin teclado), y salida de audio por adaptador USB en vez del jack integrado (más limpio). Tag `v0.2.0`._ | _monitor_8LR.py, CHANGELOG.md_ |
+| _08/09/2026_ | _Leído `PROTOCOLO_TT.pdf` como fuente de verdad del alcance del TT. Se agregó un resumen de hipótesis/objetivos a este documento (sección "Fuente de verdad del proyecto") y se registró como pendiente el Objetivo 7 (arreglo lineal uniforme de comparación, mismo hardware reconfigurado)._ | _Documentation.md_ |
 <!-- | _dd/mm/aa_ | _descripción_         | _archivo_             | # FORMATO -->
 
 ---
@@ -483,4 +505,5 @@ tmux attach -t prueba   # para volver a entrar
 - [ ] Implementar estimación de DOA (TDOA/GCC-PHAT) sobre `q_combinada`.
 - [ ] Implementar algoritmo de clasificación habla/ruido.
 - [ ] Evaluar con métricas PESQ, STOI y mejora de SNR.
+- [ ] **Objetivo 7 del protocolo:** diseñar/probar una configuración de **arreglo lineal uniforme** (mismas 2 placas ESP32-S3 y mismos 8 mics, geometría física reconfigurada) procesada con DAS convencional, para comparar contra el arreglo bioinspirado no uniforme bajo las mismas condiciones (SNR −5 a 10 dB). Requiere su propio `geometria.json` (o una segunda variante del archivo) con las coordenadas uniformes.
 - [ ] ¿Diseñar e implementar PCB definitiva?.
