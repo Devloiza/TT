@@ -29,7 +29,11 @@ import os
 
 os.system('cls' if os.name == 'nt' else 'clear')
 
-DEBUG = True
+# DEBUG apagado por defecto (para el autoarranque headless por systemd, sin
+# nadie viendo la consola). Al conectarte por SSH y correrlo a mano, actívalo
+# explícitamente:
+#   python Avances/monitor_8LR.py debug=true
+DEBUG = any(a.strip().lower() == "debug=true" for a in sys.argv[1:])
 
 def dbg(msg):
     if DEBUG:
