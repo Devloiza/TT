@@ -65,8 +65,11 @@ PARA CONECTAR LOS AUDIFONOS:
         10      128             default
         11      2               dmix
     
-    - export AUDIO_DEVICE_INDEX = EJ:1*** 
+    - export AUDIO_DEVICE_INDEX = EJ:1***
     [Elegir NUMERO que sea CX31993 384Khz HIFI AUDIO: USB Audio (hw:3,0)]
+
+PARA DEMOS SIN TECLADO (cambia de par solo, cada N segundos):
+    - export AUTO_CYCLE_SECONDS=20
 
 '''
 
@@ -85,6 +88,12 @@ SKIP_AUDIO = os.environ.get("SKIP_AUDIO", "0") == "1"
 # PyAudio puede terminar saliendo por un dispositivo distinto al esperado.
 _audio_device_index_env = os.environ.get("AUDIO_DEVICE_INDEX")
 AUDIO_DEVICE_INDEX = int(_audio_device_index_env) if _audio_device_index_env else None
+
+# AUTO_CYCLE_SECONDS>0 cambia el par activo automáticamente cada N segundos
+# (0/sin definir = desactivado, se controla a mano con 1-4 como siempre).
+# Pensado para demos sin teclado (systemd): recorre los 4 pares para
+# demostrar que los 8 mics funcionan sin depender de input().
+AUTO_CYCLE_SECONDS = float(os.environ.get("AUTO_CYCLE_SECONDS", "0")) or None
 
 ESP_BAUD  = 3000000   # DEBE coincidir con PROJECT_BAUD en el firmware
 ESP_RATE  = 16000
@@ -438,6 +447,19 @@ def stats():
               f"\n  ESP2         : OK={stats_data['esp2_ok']}  ERR={stats_data['esp2_err']}  Realign={stats_data['esp2_realign']}"
               f"  tasa={rate2:.0f} B/s (esperado ~{BYTES_ESPERADOS_POR_SEG})")
 
+## ── HILO AUTO-CAMBIO DE PAR (demos sin teclado) ──────────────────────────────────
+
+def auto_cambiar_par():
+    global PAR_ACTIVO
+    n_pares = len(PAR_INFO)
+    dbg(f"[AUTO] Cambiando de par cada {AUTO_CYCLE_SECONDS}s")
+    while not stop_evt.wait(AUTO_CYCLE_SECONDS):
+        with par_lock:
+            PAR_ACTIVO = (PAR_ACTIVO + 1) % n_pares
+            par = PAR_ACTIVO
+        _, _, desc = PAR_INFO[par]
+        dbg(f"[AUTO] Par {par}: {desc}")
+
 ## ── HILO TECLADO ──────────────────────────────────────────────────────────────
 
 def _manejar_señal_apagado(signum, frame):
@@ -536,6 +558,7 @@ def monitor():
     t_sync    = threading.Thread(target=hilo_sincronizador, daemon=True)
     t_audio   = threading.Thread(target=reproducir, daemon=True) if not SKIP_AUDIO else None
     t_stats   = threading.Thread(target=stats, daemon=True)
+    t_auto    = threading.Thread(target=auto_cambiar_par, daemon=True) if AUTO_CYCLE_SECONDS else None
 
     # El hilo de teclado (input() de 1-4/g/q) solo tiene sentido con una
     # terminal real. Bajo systemd (sin tty) input() lanza EOFError de
@@ -548,6 +571,8 @@ def monitor():
     if t_audio:
         t_audio.start()
     t_stats.start()
+    if t_auto:
+        t_auto.start()
     if t_teclado:
         t_teclado.start()
     else:
@@ -560,7 +585,7 @@ def monitor():
 
     print("\nDeteniendo...")
     stop_evt.set()
-    for t in (t_l1, t_l2, t_sync, t_audio):
+    for t in (t_l1, t_l2, t_sync, t_audio, t_auto):
         if t:
             t.join(timeout=2)
 
