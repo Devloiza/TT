@@ -23,6 +23,7 @@ import serial.tools.list_ports
 import json
 import sys
 import time
+import signal
 import threading
 import queue
 import os
@@ -439,6 +440,15 @@ def stats():
 
 ## ── HILO TECLADO ──────────────────────────────────────────────────────────────
 
+def _manejar_señal_apagado(signum, frame):
+    """SIGTERM/SIGINT → apagado ordenado. Necesario para correr como
+    servicio de systemd sin terminal: no hay teclado para escribir 'q',
+    así que `systemctl stop` (o `systemctl restart`) debe poder parar el
+    programa limpio en vez de dejarlo colgado."""
+    dbg(f"Señal {signum} recibida — deteniendo...")
+    stop_evt.set()
+
+
 def escuchar_teclado():
     global PAR_ACTIVO
     while not stop_evt.is_set():
@@ -513,6 +523,12 @@ def monitor():
     print(f"\n  Par activo: {PAR_INFO[PAR_ACTIVO][2]}")
     print("\n  Comandos: 1-4 cambiar par | g grabar/guardar | q salir\n")
 
+    # SIGTERM/SIGINT → apagado ordenado. Imprescindible corriendo como
+    # servicio de systemd: `systemctl stop`/`restart` mandan SIGTERM, y sin
+    # esto el proceso no tendría forma de enterarse y cerrar limpio.
+    signal.signal(signal.SIGTERM, _manejar_señal_apagado)
+    signal.signal(signal.SIGINT, _manejar_señal_apagado)
+
     t_l1 = threading.Thread(target=hilo_lector, args=(ser1, resto1, "ESP1", q_esp1, ESP1_MICS,
                              "esp1_ok", "esp1_err", "esp1_realign", "esp1_bytes"), daemon=True)
     t_l2 = threading.Thread(target=hilo_lector, args=(ser2, resto2, "ESP2", q_esp2, ESP2_MICS,
@@ -520,14 +536,27 @@ def monitor():
     t_sync    = threading.Thread(target=hilo_sincronizador, daemon=True)
     t_audio   = threading.Thread(target=reproducir, daemon=True) if not SKIP_AUDIO else None
     t_stats   = threading.Thread(target=stats, daemon=True)
-    t_teclado = threading.Thread(target=escuchar_teclado, daemon=True)
+
+    # El hilo de teclado (input() de 1-4/g/q) solo tiene sentido con una
+    # terminal real. Bajo systemd (sin tty) input() lanza EOFError de
+    # inmediato, lo que antes se interpretaba como "salir" y apagaba todo
+    # el programa medio segundo después de arrancar.
+    interactivo = sys.stdin.isatty()
+    t_teclado = threading.Thread(target=escuchar_teclado, daemon=True) if interactivo else None
 
     t_l1.start(); t_l2.start(); t_sync.start()
     if t_audio:
         t_audio.start()
-    t_stats.start(); t_teclado.start()
+    t_stats.start()
+    if t_teclado:
+        t_teclado.start()
+    else:
+        dbg("Sin terminal interactiva — corriendo hasta recibir SIGTERM/SIGINT")
 
-    t_teclado.join()
+    if t_teclado:
+        t_teclado.join()
+    else:
+        stop_evt.wait()
 
     print("\nDeteniendo...")
     stop_evt.set()
