@@ -507,3 +507,24 @@ tmux attach -t prueba   # para volver a entrar
 - [ ] Evaluar con métricas PESQ, STOI y mejora de SNR.
 - [ ] **Objetivo 7 del protocolo:** diseñar/probar una configuración de **arreglo lineal uniforme** (mismas 2 placas ESP32-S3 y mismos 8 mics, geometría física reconfigurada) procesada con DAS convencional, para comparar contra el arreglo bioinspirado no uniforme bajo las mismas condiciones (SNR −5 a 10 dB). Requiere su propio `geometria.json` (o una segunda variante del archivo) con las coordenadas uniformes.
 - [ ] ¿Diseñar e implementar PCB definitiva?.
+
+---
+
+## 14. Ideas de mejora / Trabajo a futuro
+
+Decisiones de arquitectura consideradas y descartadas (por ahora) — se documentan para no volver a evaluarlas desde cero si la situación cambia.
+
+### 14.1 Python vs. Rust vs. híbrido (sept 2026)
+
+**Pregunta:** ¿vale la pena bocetar en Python y reescribir en Rust las partes lentas, o incluso hacer todo el sistema en Rust, para mejorar el rendimiento?
+
+**Decisión: quedarse en Python + NumPy/SciPy vectorizado para todo, por ahora.** No optimizar nada de forma anticipada — medir primero con datos reales y solo entonces decidir si hace falta una extensión puntual en Rust (vía `PyO3`/`maturin`) para una función específica.
+
+**Razonamiento:**
+- La mayoría de los problemas de "Python es lento" en este tipo de pipeline vienen de escribir un loop de Python donde debía ir una operación vectorizada de numpy — exactamente el bug que encontramos y arreglamos en la búsqueda de realineamiento (sección 4.5/10). Numpy/SciPy ya delegan las operaciones pesadas a C/Fortran por debajo.
+- El DAS (delay-and-sum) es, según la propia literatura citada en `PROTOCOLO_TT.pdf`, uno de los algoritmos de beamforming **más simples computacionalmente que existen** — alinear y sumar 8 señales es trivial incluso interpretado.
+- GCC-PHAT/TDOA para estimar DOA es una FFT por par de micrófonos — numpy ya la delega a una implementación en C optimizada; para ventanas de 512-2048 muestras son microsegundos.
+- Con `CHUNK=512` a 16kHz hay **~32ms de presupuesto por frame** en tiempo real — ya se cumple hoy sin que el cómputo sea el cuello de botella (el único que hubo fue un bug de código, no un límite del lenguaje).
+- La evaluación de las métricas del protocolo (**PESQ, STOI, SNR**, objetivo 8) se hace **sobre grabaciones, en modo offline/batch** — no hay presión de tiempo real ahí en absoluto, por lo que la velocidad de ejecución del análisis es prácticamente irrelevante para cumplir la hipótesis.
+
+**Cuándo reconsiderar esto:** si en algún momento se busca convertir el sistema en un producto/proyecto más allá de la tesis — muchos más canales, un microcontrolador con mucha menos capacidad que una Raspberry Pi, o garantías de tiempo real más estrictas que las de este protocolo. Ahí las ventajas reales de Rust (sin GIL, sin pausas de recolector de basura, menor uso de memoria, despliegue como binario único sin depender de un entorno Python) sí entran en juego.
