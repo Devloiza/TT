@@ -12,7 +12,11 @@ El sistema de adquisición está compuesto por **dos ESP32-S3** conectados vía 
 
 ### Fuente de verdad del proyecto
 
-Todo lo técnico en este repositorio debe estar al servicio de lo que se comprometió en **`PROTOCOLO_TT.pdf`** (raíz del repo, no versionado en git por ser documento institucional) — ese archivo es la referencia autoritativa de alcance, no este documento. Lo esencial, para no perderlo de vista:
+Todo lo técnico en este repositorio debe estar al servicio de lo que se comprometió en **`PROTOCOLO_TT.pdf`** (raíz del repo, no versionado en git por ser documento institucional) — ese archivo es la referencia autoritativa de alcance, no este documento.
+
+> **Ver `CONTEXTO.md`** (raíz del repo): es el documento base que destila el protocolo en compromisos verificables, criterios de éxito numéricos, compromisos de diseño implícitos, el orden de construcción con sus dependencias, y las extensiones opcionales. Este documento (`Documentation.md`) describe *cómo* está implementado el sistema; `CONTEXTO.md` define *qué* hay que construir y en qué orden.
+
+Lo esencial, para no perderlo de vista:
 
 **Hipótesis:** Un sistema de localización acústica y mejora del habla basado en un arreglo de micrófonos inspirado en las *slit sensilla* de los escorpiones permite incrementar ≥10% las métricas **STOI** y **PESQ** frente a señales degradadas con ruido, y mejorar ≥3 dB la **SNR** respecto a un arreglo lineal uniforme con beamforming delay-and-sum (DAS) convencional — bajo SNR de entrada entre **−5 dB y 10 dB**.
 

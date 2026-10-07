@@ -9,3 +9,5 @@ PROTOCOLO_TT.pdf
 # solo el marcador de la carpeta (ver SALIDAS/README.md)
 SALIDAS/*
 !SALIDAS/README.md
+# Configuración personal de Claude Code por máquina (la compartida es .claude/settings.json)
+.claude/settings.local.json
