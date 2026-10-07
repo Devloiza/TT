@@ -6,7 +6,7 @@
 >
 > 1. **`PROTOCOLO_TT.pdf`** — documento institucional entregado y firmado (18 hojas, 26/06/2026). Fuente última. Si algo de este archivo lo contradice, se corrige *este* archivo.
 > 2. **`CONTEXTO.md`** (este documento) — el protocolo destilado a compromisos verificables, el orden de construcción, y lo que se añade por encima.
-> 3. **`Avances/Documentation.md`** — bitácora técnica de *cómo* está implementado (pines, hilos, protocolo serie, despliegue). Describe la implementación; **no define alcance**.
+> 3. **`Avances/Documentation.md`** — bitácora técnica de *cómo* está implementado (pines, hilos, protocolo serie, despliegue) — y los **README de cada carpeta** (p. ej. `Exploration/beamforming_algorithms/README.md`). Describen la implementación; **no definen alcance**.
 > 4. **El código.**
 
 ---
@@ -97,7 +97,7 @@ Están en la prosa del protocolo (Solución Propuesta, pp. 6-8) y obligan igual 
 | D6 | Caracterización de SNR con **sonómetro**, por **dos mediciones consecutivas** (ruido de fondo sin habla, luego con habla activa); el resultado es una **estimación aproximada** | pp. 7-8 | El sonómetro no mide SNR directamente. Reportarlo como medición exacta es incorrecto y el protocolo ya lo advierte |
 | D7 | La base de datos usa **dos estrategias complementarias**: mezclas sintéticas de bases públicas + grabaciones propias con el dispositivo en entornos controlados | pp. 7-8 | Solo sintético o solo propio incumple el Obj. 3 tal como está redactado |
 | D8 | **Entorno acústicamente adverso** := SNR entre −5 y 10 dB **con al menos una fuente de ruido activa simultánea** a la fuente de habla | p. 8 | La simultaneidad es parte de la definición, no un detalle |
-| D9 | **Implementación del sistema de adquisición a PCB** es una meta del Gantt (meta 5, $1,000, 3 semanas) | Tabla 2, p. 16 | `Documentation.md` la tiene como pregunta abierta ("¿Diseñar e implementar PCB definitiva?"). **No es opcional: está calendarizada y presupuestada** |
+| D9 | **Implementación del sistema de adquisición a PCB** es una meta del Gantt (meta 5, $1,000, 3 semanas) | Tabla 2, p. 16 | **No es opcional: está calendarizada y presupuestada.** ✅ **Cumplida:** el prototipo de adquisición ya está en PCB definitiva, sin cambios planeados por ahora (registrado 2026-10-07) |
 | D10 | STOI y PESQ **requieren señal de referencia limpia**; SNR puede estimarse sin ella | p. 11 | Condiciona el diseño experimental: para C1/C2 hace falta grabar/sintetizar con referencia limpia disponible |
 
 ### 2.6 Presupuesto comprometido
@@ -144,7 +144,9 @@ Obj 3 (base de datos) ──► Obj 4 (clasificador habla/ruido) ─────
 ```
 
 > **Cuello de botella actual: `geometria.json` con medidas reales (Obj. 1).**
-> Sin coordenadas físicas verdaderas, los retardos del DAS son ficticios y **nada aguas abajo es confiable**: ni la estimación de DOA, ni el beamforming, ni las métricas del Obj. 8. Es una tarea barata (medir con calibrador y registrar $d_1$–$d_4$) que desbloquea la parte más cara del proyecto. **Debe hacerse antes que cualquier código de DAS.**
+> Sin coordenadas físicas verdaderas, los retardos del DAS son ficticios y **nada aguas abajo es confiable**: ni la estimación de DOA, ni el beamforming, ni las métricas del Obj. 8. Es una tarea barata (medir con calibrador y registrar $d_1$–$d_4$) que desbloquea la parte más cara del proyecto. **Debe hacerse antes de integrar el DAS al pipeline o de reportar cualquier resultado con hardware.**
+>
+> *Aclaración (2026-10-07):* el desarrollo del DAS **en simulación** (`Exploration/beamforming_algorithms/`) no viola esta regla. Ahí la geometría es un parámetro, así que el algoritmo se verifica contra resultados analíticos con cualquier geometría y la medida real entra después cambiando solo el `.json`. Además sirve para elegir la geometría (Obj. 1) antes de fijarla físicamente. Lo que **sigue bloqueado** por el Obj. 1 es llevar el DAS a `monitor_8LR.py` y medir con hardware.
 
 ### 3.3 Correspondencia con el Gantt (Tabla 2 del protocolo)
 
@@ -173,19 +175,19 @@ Obj 3 (base de datos) ──► Obj 4 (clasificador habla/ruido) ─────
 
 - Las dos metas largas de TT1 son **base de datos (10 sem)** y **módulo de localización (15 sem)**, y corren en paralelo con la redacción. Son el verdadero contenido de TT1.
 - **El Obj. 7 (comparación contra arreglo lineal uniforme) no tiene fila propia en el Gantt.** Presumiblemente vive dentro de las metas 14–17, pero conviene decidirlo explícitamente para que no se quede sin tiempo asignado — es un objetivo comprometido y es la mitad de la hipótesis (C3).
-- La meta 5 (PCB) está calendarizada y presupuestada — ver D9.
+- La meta 5 (PCB) ya está cumplida — ver D9.
 
 ### 3.4 Dónde estamos (actualizar conforme avance)
 
 | Obj. | Estado | Detalle |
 |:--:|:--|:--|
-| 1 | 🟡 **Parcial** | Estructura de 4 pares LR definida (pines, buses, nomenclatura PCB). `geometria.json` con **placeholders**; faltan las mediciones físicas reales $d_1$–$d_4$. **Verificar además que la geometría real sea no lineal (D1)** |
-| 2 | 🟢 **Cerrado (protoboard)** | Adquisición de 8 mics validada end-to-end en PC y Raspberry Pi 4/5, SYNC estable, 0 underruns. **Falta la PCB definitiva (meta 5 / D9)** |
+| 1 | 🟡 **Parcial** | Estructura de 4 pares LR definida (pines, buses, nomenclatura PCB). `geometria.json` con **placeholders**; faltan las mediciones físicas reales $d_1$–$d_4$. **Verificar además que la geometría real sea no lineal (D1)**. Los mics están montados en **bases movibles**, así que la geometría se puede reconfigurar para cada prueba sin reimprimir nada. La **forma final (collar) sigue pendiente**. Las geometrías candidatas ya se pueden comparar en simulación (`Exploration/beamforming_algorithms/`) antes de fijarla |
+| 2 | 🟢 **Cerrado** | Electrónica en **PCB definitiva** (meta 5 / D9 cumplida; sin cambios planeados por ahora): una PCB para los dos ESP32-S3 y una PCB acondicionada por micrófono, unidas por cables. La forma final del arreglo (collar) es parte del Obj. 1. Adquisición de 8 mics validada end-to-end en PC y Raspberry Pi 4/5, SYNC estable, 0 underruns |
 | 3 | 🔴 **No iniciado** | Meta más larga de TT1 (10 sem) + $2,000. Requiere sonómetro (D6) y las dos estrategias (D7) |
 | 4 | 🔴 **No iniciado** | Bloqueado por Obj. 3 |
-| 5 | 🔴 **No iniciado** | Punto de inserción ya identificado: `hilo_sincronizador` en `Avances/monitor_8LR.py`, sobre el frame `(512, 8)`. Bloqueado por Obj. 1 |
+| 5 | 🟡 **En simulación** (desde 2026-10-07) | DAS con retardos fraccionarios, DOA por SRP y TDOA por GCC-PHAT implementados y verificados contra resultados analíticos en 4 geometrías (`Exploration/beamforming_algorithms/`). Falta: ruido direccional, pesos diferenciados (D2), versión en tiempo real por frames. Integración en `hilo_sincronizador` (`Avances/monitor_8LR.py`, frame `(512, 8)`) **bloqueada por Obj. 1** |
 | 6 | 🔴 **No iniciado** | Bloqueado por 4 y 5 |
-| 7 | 🔴 **No iniciado** | Requiere una segunda variante de `geometria.json` (lineal uniforme) y reconfiguración física del arreglo (D3) |
+| 7 | 🔴 **No iniciado** | Requiere una segunda variante de `geometria.json` (lineal uniforme) y reconfiguración física del arreglo (D3), que las bases movibles de los mics facilitan. El baseline ya existe en simulación (`ula_2cm`), donde se ve su ambigüedad frente/espalda |
 | 8 | 🔴 **No iniciado** | Bloqueado por 7 |
 
 ---
@@ -262,18 +264,20 @@ Obj 3 (base de datos) ──► Obj 4 (clasificador habla/ruido) ─────
 
 | # | Riesgo | Mitigación |
 |:--:|:--|:--|
-| R1 | `geometria.json` sigue con placeholders y todo el DAS depende de él | Medir y registrar $d_1$–$d_4$ **antes** de escribir código de beamforming (§3.2) |
+| R1 | `geometria.json` sigue con placeholders y todo el DAS depende de él | Medir y registrar $d_1$–$d_4$ **antes** de integrar el beamforming al pipeline o reportar resultados con hardware (§3.2) |
 | R2 | La geometría real podría quedar colineal, contradiciendo D1 | Verificar explícitamente que el arreglo sea 2D no lineal al medirlo |
 | R3 | Obj. 7 sin tiempo asignado en el Gantt | Decidir en qué meta vive (§3.3) |
 | R4 | Base de datos (10 sem, $2,000) es la meta larga de TT1 y no ha iniciado | Es la ruta crítica de TT1 junto con el módulo de localización |
-| R5 | PCB tratada como opcional en `Documentation.md` cuando está comprometida | Ver D9 |
+| R5 | PCB tratada como opcional en `Documentation.md` cuando está comprometida | ✅ Cerrado: la PCB ya está implementada (D9) y `Documentation.md` §13 lo refleja (2026-10-07) |
 | R6 | Beck et al. contradice una frase del Estado del Arte | Reformular antes de entregar (§4.1) |
 | R7 | Reportar mejora de PESQ/STOI sin la señal de referencia limpia | Diseñar el experimento con referencia disponible desde el inicio (D10) |
+| R8 | **Deriva de reloj entre las dos ESP32-S3**: el SYNC alinea solo el arranque y cada placa muestrea con su propio cristal, así que el desfase entre M1–M4 y M5–M8 puede crecer con el tiempo y desalinear el DAS (sin medir aún) | Medirla **antes de integrar el DAS**: grabar un pulso o chirp largo y seguir con GCC-PHAT el TDOA entre un mic de cada placa. Si la pendiente no es despreciable, se necesita resincronización periódica o compensación en software (ver `Exploration/beamforming_algorithms/README.md` §10) |
 
 ---
 
 ## 6. Mantenimiento de este documento
 
 - Se actualiza cuando **cambia el estado de un objetivo** (§3.4) o cuando se descubre un compromiso implícito del protocolo que no estaba registrado (§2.5).
+- Al cambiar §3.4, actualizar también la tabla resumen de `README.md` §3 (la tabla de aquí es la autoritativa).
 - **No** se usa como bitácora técnica: eso va en `Avances/Documentation.md`, y los cambios de código en `CHANGELOG.md`.
 - Si el protocolo se modifica ante la academia, este archivo se reconcilia contra la nueva versión del PDF y se anota el cambio aquí.

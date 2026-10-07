@@ -5,8 +5,8 @@ import wave
 import time
 import sys
 import os
-from filtros_fourier import pasa_bajos, pasa_altos, pasa_banda, notch
-from filtros_fourier import aplicar_filtro, graficar_filtros, guardar_filtros
+from Exploration.Primeros_intentos.filtros_fourier import pasa_bajos, pasa_altos, pasa_banda, notch
+from Exploration.Primeros_intentos.filtros_fourier import aplicar_filtro, graficar_filtros, guardar_filtros
 
 try:
     import serial

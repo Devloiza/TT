@@ -314,6 +314,12 @@ Los retardos en muestras para cada micrófono `n` hacia una DOA se calculan como
 
 donde `d_n` es la distancia del micrófono al origen del arreglo proyectada en la dirección θ, `v_sonido = 343 m/s` y `Fs = 16000 Hz`.
 
+> **Actualización (07/10/2026): no redondear los retardos.** La fórmula de arriba fue el boceto inicial. La simulación en `Exploration/beamforming_algorithms/` mostró dos cosas:
+> - Con la apertura del arreglo, los retardos entre mics son de 0 a ~6 muestras y casi nunca enteros.
+> - Redondearlos cuesta pérdida de ganancia coherente: ≈ −0.9 dB a 4 kHz y ≈ −2.9 dB a 7 kHz.
+>
+> Hay que usar **retardos fraccionarios**. La implementación de referencia (`das.py`) y su justificación están en la §3.5 de su README. En tiempo real se hará con un FIR de retardo fraccionario y overlap-save sobre los frames de 512 muestras.
+
 ---
 
 ## 7. Notas importantes
@@ -410,6 +416,7 @@ Herramientas de diagnóstico creadas en el camino, en `Exploration/reconstruccio
 | _06/09/2026_ | _Primer despliegue funcional en Raspberry Pi 4/5: acceso SSH, grupos `dialout`/`audio`, transporte validado a 3,000,000 baud en ambas placas simultáneamente, sistema completo (8 mics + SYNC) corriendo y con audio de salida funcionando. Se corrigió además un bug real de falsos positivos de sincronización (patrón de 2 bits calzando por azar), exigiendo 3 grupos consecutivos (`N_VERIF_SYNC`) para aceptar sync/realineamiento._ | _monitor_8LR.py, Documentation.md_ |
 | _07/09/2026_ | _Bug más grave encontrado en la Pi: la búsqueda de realineamiento solo reagrupaba bytes en pares fijos, por lo que un corrimiento de un número IMPAR de bytes era irrecuperable — corregido probando ambas paridades. Preparado el sistema para demo sin supervisión: autoarranque vía `systemd` (con symlinks de `udev` para puertos estables, `DEBUG` apagado por defecto, fix de apagado prematuro por `EOFError` del hilo de teclado bajo systemd, `AUTO_CYCLE_SECONDS` para recorrer los 4 pares de mics sin teclado), y salida de audio por adaptador USB en vez del jack integrado (más limpio). Tag `v0.2.0`._ | _monitor_8LR.py, CHANGELOG.md_ |
 | _08/09/2026_ | _Leído `PROTOCOLO_TT.pdf` como fuente de verdad del alcance del TT. Se agregó un resumen de hipótesis/objetivos a este documento (sección "Fuente de verdad del proyecto") y se registró como pendiente el Objetivo 7 (arreglo lineal uniforme de comparación, mismo hardware reconfigurado)._ | _Documentation.md_ |
+| _07/10/2026_ | _Inicio del Obj. 5 en simulación: playground de DAS/DOA con geometría como parámetro (placeholder, ULA baseline, circular tipo Beck, ejemplo no lineal), retardos fraccionarios exactos, SRP/SRP-PHAT, GCC-PHAT y batería de verificación contra resultados analíticos (todas las geometrías pasan). Hallazgos: redondear retardos cuesta hasta ~3 dB (ver nota en §6); un arreglo lineal tiene ambigüedad frente/espalda (argumento para D1); riesgo nuevo de deriva de reloj entre placas (pendiente de medir). Reorganizada la documentación: README raíz como portada, README por carpeta, primeros prototipos movidos a `Exploration/Primeros_intentos/`._ | _Exploration/beamforming_algorithms/*, README.md, CONTEXTO.md_ |
 <!-- | _dd/mm/aa_ | _descripción_         | _archivo_             | # FORMATO -->
 
 ---
@@ -505,12 +512,14 @@ tmux attach -t prueba   # para volver a entrar
 - [ ] Dejar corriendo el sistema completo en la Raspberry Pi por un periodo largo (varios minutos) para confirmar que el fix de falsos positivos de sincronización (sección 4.5/12) realmente elimina las cascadas de desalineamiento intermitentes.
 - [ ] Medir y registrar las distancias físicas reales entre micrófonos en el arreglo (d1–d4).
 - [ ] Editar `geometria.json` con las coordenadas reales del collar/arreglo.
-- [ ] Implementar `calcular_retardos()` y `delay_and_sum()` en `hilo_sincronizador`.
-- [ ] Implementar estimación de DOA (TDOA/GCC-PHAT) sobre `q_combinada`.
+- [ ] **Medir la deriva de reloj entre las dos ESP32-S3** (grabar un pulso o chirp largo y seguir con GCC-PHAT el TDOA entre un mic de cada placa a lo largo del tiempo) antes de integrar el DAS. Ver `CONTEXTO.md` R8.
+- [x] ~~Implementar DAS y estimación de DOA (TDOA/GCC-PHAT, SRP) en simulación~~: hecho en `Exploration/beamforming_algorithms/` (07/10/2026).
+- [ ] Versión en tiempo real del DAS (retardo fraccionario FIR + overlap-save sobre frames de 512) e integración en `hilo_sincronizador`. Bloqueado por la geometría real.
+- [ ] DOA en tiempo real sobre `q_combinada` (SRP-PHAT coarse-to-fine, actualizado cada N frames).
 - [ ] Implementar algoritmo de clasificación habla/ruido.
 - [ ] Evaluar con métricas PESQ, STOI y mejora de SNR.
 - [ ] **Objetivo 7 del protocolo:** diseñar/probar una configuración de **arreglo lineal uniforme** (mismas 2 placas ESP32-S3 y mismos 8 mics, geometría física reconfigurada) procesada con DAS convencional, para comparar contra el arreglo bioinspirado no uniforme bajo las mismas condiciones (SNR −5 a 10 dB). Requiere su propio `geometria.json` (o una segunda variante del archivo) con las coordenadas uniformes.
-- [ ] ¿Diseñar e implementar PCB definitiva?.
+- [x] ~~Diseñar e implementar la PCB definitiva del sistema de adquisición~~ (meta 5 del Gantt, `CONTEXTO.md` D9): hecho. Una PCB para los dos ESP32-S3 y una PCB acondicionada por micrófono, unidas por cables; no se planean cambios por ahora. Los mics están en bases movibles para reconfigurar la geometría por prueba. La forma final del arreglo (collar) sigue pendiente.
 
 ---
 

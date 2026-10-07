@@ -1,7 +1,7 @@
 """
 monitor_stage2_4mic.py — Etapa 2: 4 micrófonos, 1 placa, sin SYNC.
 
-Basado en Exploration/monitor_4LR.py, con el baud corregido a 3,000,000
+Basado en Exploration/Primeros_intentos/monitor_4LR.py, con el baud corregido a 3,000,000
 (la causa raíz encontrada en la Etapa 1a: Serial y Serial0 comparten el
 mismo periférico UART físico en esta placa, así que firmware y Python
 deben coincidir exactamente en el baud).

@@ -62,7 +62,7 @@ hilo_lector ESP2 ─┘
 ```
 
 - `hilo_lector` (uno por placa): lee bytes serie, valida el patrón de canal `[0,1,2,3]` en `N_VERIF_SYNC` grupos consecutivos antes de aceptar sincronización/realineamiento (evita falsos positivos — el ID de canal son solo 2 bits), prueba ambas paridades de byte al buscar offset (un desplazamiento de un número impar de bytes es irrecuperable si solo se prueba una paridad), produce frames `(CHUNK, 4)`.
-- `hilo_sincronizador`: empareja frames de ambas placas (descarta ambos si uno no llega en 50 ms) y produce el frame combinado `(CHUNK, 8)` — **este es el único punto de extensión para el DAS** (delay-and-sum beamforming), aún no implementado.
+- `hilo_sincronizador`: empareja frames de ambas placas (descarta ambos si uno no llega en 50 ms) y produce el frame combinado `(CHUNK, 8)` — **este es el único punto de extensión para el DAS** (delay-and-sum beamforming), aún no integrado en el pipeline (se desarrolla en simulación en `Exploration/beamforming_algorithms/`; usar retardos fraccionarios, no redondeados).
 - `reproducir`: extrae el par activo del frame de 8 canales y lo manda a PyAudio.
 - Normalización: int16 → float32 `[-1.0, 1.0]` (÷32768); canales deshabilitados se fuerzan a `0.0`.
 
@@ -78,7 +78,15 @@ Se evaluó y descartó (por ahora) reescribir partes en Rust. Decisión: quedars
 
 ### `Exploration/`
 
-Prototipos y herramientas de diagnóstico, incluyendo `reconstruccion_sept2026/` (reconstrucción incremental por etapas del sistema completo — transporte puro → 1 mic → 4 mics — usada como referencia histórica y para depurar problemas de transporte futuros). No es código de producción del TT.
+Prototipos y herramientas de diagnóstico; no es código de producción del TT (índice en `Exploration/README.md`):
+
+- `beamforming_algorithms/` — **activo**: DAS/DOA en simulación (geometría como parámetro, retardos fraccionarios exactos, SRP, GCC-PHAT). `python Exploration/beamforming_algorithms/verificar.py` es el test del DAS: correrlo tras cualquier cambio en `das.py`/`campo.py`. Teoría, criterios de diseño y API en su `README.md`. Lo que pase sus criterios de promoción (§11 de ese README) se lleva a `Avances/`.
+- `reconstruccion_sept2026/` — reconstrucción incremental por etapas del sistema completo (transporte puro → 1 mic → 4 mics), referencia histórica y herramientas para depurar transporte serie.
+- `Primeros_intentos/` — prototipos históricos de 1–4 mics; usan baudios y pines viejos.
+
+### Mapa de documentación
+
+`README.md` (portada: qué es, qué será, estado) → `CONTEXTO.md` (alcance, autoritativo; §3.4 es la tabla de estado y debe mantenerse sincronizada con `README.md` §3) → `Avances/Documentation.md` y READMEs de carpeta (implementación) → código.
 
 ## Notas operativas importantes
 

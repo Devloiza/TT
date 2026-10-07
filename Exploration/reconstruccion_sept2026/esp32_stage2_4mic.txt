@@ -2,7 +2,7 @@
 // esp32_stage2_4mic.txt  (renombra a .ino antes de abrir en Arduino IDE)
 //
 // ETAPA 2 — 4 micrófonos, ambos buses I2S, UNA sola placa. Sin SYNC, sin
-// segunda placa todavía. Igual que Exploration/esp32_4micLR.txt pero con
+// segunda placa todavía. Igual que Exploration/Primeros_intentos/esp32_4micLR.txt pero con
 // el baud corregido a 3,000,000 (la causa raíz encontrada en la Etapa 1a).
 //
 // Protocolo de canal — bits [1:0] de cada muestra (para que Python valide
