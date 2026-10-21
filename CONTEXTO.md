@@ -6,7 +6,7 @@
 >
 > 1. **`PROTOCOLO_TT.pdf`** — documento institucional entregado y firmado (18 hojas, 26/06/2026). Fuente última. Si algo de este archivo lo contradice, se corrige *este* archivo.
 > 2. **`CONTEXTO.md`** (este documento) — el protocolo destilado a compromisos verificables, el orden de construcción, y lo que se añade por encima.
-> 3. **`Avances/Documentation.md`** — bitácora técnica de *cómo* está implementado (pines, hilos, protocolo serie, despliegue) — y los **README de cada carpeta** (p. ej. `Exploration/beamforming_algorithms/README.md`). Describen la implementación; **no definen alcance**.
+> 3. **`Avances/Documentation.md`** — bitácora técnica de *cómo* está implementado (pines, hilos, protocolo serie, despliegue) — y los **README de cada carpeta**. Describen la implementación; **no definen alcance**.
 > 4. **El código.**
 
 ---
@@ -144,9 +144,7 @@ Obj 3 (base de datos) ──► Obj 4 (clasificador habla/ruido) ─────
 ```
 
 > **Cuello de botella actual: `geometria.json` con medidas reales (Obj. 1).**
-> Sin coordenadas físicas verdaderas, los retardos del DAS son ficticios y **nada aguas abajo es confiable**: ni la estimación de DOA, ni el beamforming, ni las métricas del Obj. 8. Es una tarea barata (medir con calibrador y registrar $d_1$–$d_4$) que desbloquea la parte más cara del proyecto. **Debe hacerse antes de integrar el DAS al pipeline o de reportar cualquier resultado con hardware.**
->
-> *Aclaración (2026-10-07):* el desarrollo del DAS **en simulación** (`Exploration/beamforming_algorithms/`) no viola esta regla. Ahí la geometría es un parámetro, así que el algoritmo se verifica contra resultados analíticos con cualquier geometría y la medida real entra después cambiando solo el `.json`. Además sirve para elegir la geometría (Obj. 1) antes de fijarla físicamente. Lo que **sigue bloqueado** por el Obj. 1 es llevar el DAS a `monitor_8LR.py` y medir con hardware.
+> Sin coordenadas físicas verdaderas, los retardos del DAS son ficticios y **nada aguas abajo es confiable**: ni la estimación de DOA, ni el beamforming, ni las métricas del Obj. 8. Es una tarea barata (medir con calibrador y registrar $d_1$–$d_4$) que desbloquea la parte más cara del proyecto. **Debe hacerse antes que cualquier código de DAS.**
 
 ### 3.3 Correspondencia con el Gantt (Tabla 2 del protocolo)
 
@@ -181,13 +179,13 @@ Obj 3 (base de datos) ──► Obj 4 (clasificador habla/ruido) ─────
 
 | Obj. | Estado | Detalle |
 |:--:|:--|:--|
-| 1 | 🟡 **Parcial** | Estructura de 4 pares LR definida (pines, buses, nomenclatura PCB). `geometria.json` con **placeholders**; faltan las mediciones físicas reales $d_1$–$d_4$. **Verificar además que la geometría real sea no lineal (D1)**. Los mics están montados en **bases movibles**, así que la geometría se puede reconfigurar para cada prueba sin reimprimir nada. La **forma final (collar) sigue pendiente**. Las geometrías candidatas ya se pueden comparar en simulación (`Exploration/beamforming_algorithms/`) antes de fijarla |
+| 1 | 🟡 **Parcial** | Estructura de 4 pares LR definida (pines, buses, nomenclatura PCB). `geometria.json` con **placeholders**; faltan las mediciones físicas reales $d_1$–$d_4$. **Verificar además que la geometría real sea no lineal (D1)**. Los mics están montados en **bases movibles**, así que la geometría se puede reconfigurar para cada prueba sin reimprimir nada. La **forma final (collar) sigue pendiente** |
 | 2 | 🟢 **Cerrado** | Electrónica en **PCB definitiva** (meta 5 / D9 cumplida; sin cambios planeados por ahora): una PCB para los dos ESP32-S3 y una PCB acondicionada por micrófono, unidas por cables. La forma final del arreglo (collar) es parte del Obj. 1. Adquisición de 8 mics validada end-to-end en PC y Raspberry Pi 4/5, SYNC estable, 0 underruns |
 | 3 | 🔴 **No iniciado** | Meta más larga de TT1 (10 sem) + $2,000. Requiere sonómetro (D6) y las dos estrategias (D7) |
 | 4 | 🔴 **No iniciado** | Bloqueado por Obj. 3 |
-| 5 | 🟡 **En simulación** (desde 2026-10-07) | DAS con retardos fraccionarios, DOA por SRP y TDOA por GCC-PHAT implementados y verificados contra resultados analíticos en 4 geometrías (`Exploration/beamforming_algorithms/`). Falta: ruido direccional, pesos diferenciados (D2), versión en tiempo real por frames. Integración en `hilo_sincronizador` (`Avances/monitor_8LR.py`, frame `(512, 8)`) **bloqueada por Obj. 1** |
+| 5 | 🔴 **No iniciado** | Punto de inserción ya identificado: `hilo_sincronizador` en `Avances/monitor_8LR.py`, sobre el frame `(512, 8)`. Bloqueado por Obj. 1 |
 | 6 | 🔴 **No iniciado** | Bloqueado por 4 y 5 |
-| 7 | 🔴 **No iniciado** | Requiere una segunda variante de `geometria.json` (lineal uniforme) y reconfiguración física del arreglo (D3), que las bases movibles de los mics facilitan. El baseline ya existe en simulación (`ula_2cm`), donde se ve su ambigüedad frente/espalda |
+| 7 | 🔴 **No iniciado** | Requiere una segunda variante de `geometria.json` (lineal uniforme) y reconfiguración física del arreglo (D3), que las bases movibles de los mics facilitan |
 | 8 | 🔴 **No iniciado** | Bloqueado por 7 |
 
 ---
@@ -264,14 +262,14 @@ Obj 3 (base de datos) ──► Obj 4 (clasificador habla/ruido) ─────
 
 | # | Riesgo | Mitigación |
 |:--:|:--|:--|
-| R1 | `geometria.json` sigue con placeholders y todo el DAS depende de él | Medir y registrar $d_1$–$d_4$ **antes** de integrar el beamforming al pipeline o reportar resultados con hardware (§3.2) |
+| R1 | `geometria.json` sigue con placeholders y todo el DAS depende de él | Medir y registrar $d_1$–$d_4$ **antes** de escribir código de beamforming (§3.2) |
 | R2 | La geometría real podría quedar colineal, contradiciendo D1 | Verificar explícitamente que el arreglo sea 2D no lineal al medirlo |
 | R3 | Obj. 7 sin tiempo asignado en el Gantt | Decidir en qué meta vive (§3.3) |
 | R4 | Base de datos (10 sem, $2,000) es la meta larga de TT1 y no ha iniciado | Es la ruta crítica de TT1 junto con el módulo de localización |
 | R5 | PCB tratada como opcional en `Documentation.md` cuando está comprometida | ✅ Cerrado: la PCB ya está implementada (D9) y `Documentation.md` §13 lo refleja (2026-10-07) |
 | R6 | Beck et al. contradice una frase del Estado del Arte | Reformular antes de entregar (§4.1) |
 | R7 | Reportar mejora de PESQ/STOI sin la señal de referencia limpia | Diseñar el experimento con referencia disponible desde el inicio (D10) |
-| R8 | **Deriva de reloj entre las dos ESP32-S3**: el SYNC alinea solo el arranque y cada placa muestrea con su propio cristal, así que el desfase entre M1–M4 y M5–M8 puede crecer con el tiempo y desalinear el DAS (sin medir aún) | Medirla **antes de integrar el DAS**: grabar un pulso o chirp largo y seguir con GCC-PHAT el TDOA entre un mic de cada placa. Si la pendiente no es despreciable, se necesita resincronización periódica o compensación en software (ver `Exploration/beamforming_algorithms/README.md` §10) |
+| R8 | Pregunta abierta: ¿se mantiene la alineación temporal entre las dos ESP32-S3 a lo largo de una grabación larga? (sin verificar) | Investigarlo antes de integrar el DAS |
 
 ---
 

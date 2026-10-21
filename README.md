@@ -58,11 +58,11 @@ Cadena de bloques del protocolo (Fig. 2), con el estado de cada bloque:
             │
             ├──────────────────────────────┐
             ▼                              ▼
- Clasificación habla / ruido      Estimación de dirección (DOA)    🔴 / 🟡 en simulación
+ Clasificación habla / ruido      Estimación de dirección (DOA)    🔴 / 🔴 pendiente
             │                              │
             └──────────────┬───────────────┘
                            ▼
-            Beamforming (DAS con pesos diferenciados)              🟡 en simulación
+            Beamforming (DAS con pesos diferenciados)              🔴 pendiente
                            │
                            ▼
             Señal de salida mejorada
@@ -85,13 +85,13 @@ Además del sistema, el protocolo compromete:
 
 | Obj. | Qué | Estado | Dónde está el detalle |
 |:--:|:--|:--|:--|
-| 1 | Geometría bioinspirada no uniforme | 🟡 **Parcial**: 4 pares LR definidos; mics en **bases movibles** (la geometría se reconfigura por prueba sin reimprimir). Pendientes: la **forma final (collar)** y las medidas reales $d_1$–$d_4$ en `geometria.json` (hoy placeholders). Las candidatas ya se pueden evaluar en simulación. | [`Documentation.md` §5](Avances/Documentation.md#5-archivo-geometriajson) · [playground §8.1](Exploration/beamforming_algorithms/README.md#81-probar-una-geometría-nueva) |
+| 1 | Geometría bioinspirada no uniforme | 🟡 **Parcial**: 4 pares LR definidos; mics en **bases movibles** (la geometría se reconfigura por prueba sin reimprimir). Pendientes: la **forma final (collar)** y las medidas reales $d_1$–$d_4$ en `geometria.json` (hoy placeholders). | [`Documentation.md` §5](Avances/Documentation.md#5-archivo-geometriajson) |
 | 2 | Dispositivo de adquisición | 🟢 **Cerrado**: electrónica en **PCB definitiva** (meta 5; sin cambios planeados por ahora): PCB de los ESP32-S3 + PCB acondicionada por micrófono, unidas por cables. 8 mics + SYNC estables en PC y Raspberry Pi 4/5, 0 underruns. | [`Documentation.md` §1–4, §10, §12](Avances/Documentation.md) |
 | 3 | Base de datos habla / ruido | 🔴 No iniciado. Es la meta más larga de TT1 (10 semanas). | [`CONTEXTO.md` D6, D7](CONTEXTO.md#25-compromisos-de-diseño-fáciles-de-perder-de-vista) |
 | 4 | Clasificador habla / ruido | 🔴 No iniciado (depende del Obj. 3). | — |
-| 5 | DOA + beamforming | 🟡 **En simulación**: DAS con retardos fraccionarios, SRP y GCC-PHAT verificados contra resultados analíticos. Integrarlo al pipeline real depende de la geometría medida (Obj. 1). | [`Exploration/beamforming_algorithms/`](Exploration/beamforming_algorithms/README.md) |
+| 5 | DOA + beamforming | 🔴 No iniciado. Punto de inserción identificado: `hilo_sincronizador` en `monitor_8LR.py`. Depende de la geometría medida (Obj. 1). | [`Documentation.md` §6](Avances/Documentation.md#6-punto-de-extensión-das-beamforming) |
 | 6 | Integración de módulos | 🔴 No iniciado (depende de 4 y 5). | — |
-| 7 | Comparación vs. arreglo lineal uniforme | 🔴 No iniciado en hardware. El baseline ya existe en simulación (`ula_2cm`). | [`CONTEXTO.md` §4.1](CONTEXTO.md#41-beck-et-al-2016-como-referencia-externa) · [playground §3.7](Exploration/beamforming_algorithms/README.md#37-ambigüedades-geométricas) |
+| 7 | Comparación vs. arreglo lineal uniforme | 🔴 No iniciado. | [`CONTEXTO.md` §4.1](CONTEXTO.md#41-beck-et-al-2016-como-referencia-externa) |
 | 8 | Evaluación PESQ / STOI / SNR | 🔴 No iniciado (depende del Obj. 7). | — |
 
 ### Hitos
@@ -103,14 +103,11 @@ Además del sistema, el protocolo compromete:
 | 06/09/2026 | **v0.1.0**: adquisición de 8 mics estable, tras reconstruir el sistema por etapas (causa raíz: baud compartido `Serial`/`Serial0`) | [`Documentation.md` §10](Avances/Documentation.md#10-reconstrucción-por-etapas-sept-2026) |
 | 07/09/2026 | **v0.2.0**: despliegue en Raspberry Pi con autoarranque (systemd) y correcciones de sincronización | [`Documentation.md` §12](Avances/Documentation.md#12-despliegue-en-raspberry-pi-sept-2026) |
 | 09/2026 | Alcance destilado del protocolo en `CONTEXTO.md`; Beck et al. (2016) verificado como referencia externa | [`CONTEXTO.md`](CONTEXTO.md) |
-| 07/10/2026 | Playground de simulación para DAS y DOA, verificado en 4 geometrías | [`beamforming_algorithms`](Exploration/beamforming_algorithms/README.md) |
-
 ### Lo que sigue (ruta crítica)
 
-1. **Medir la geometría real** ($d_1$–$d_4$) y registrarla en `Avances/geometria.json`, verificando que sea no lineal (D1). Es lo que desbloquea integrar el DAS al pipeline ([`CONTEXTO.md` R1](CONTEXTO.md#5-riesgos-conocidos)).
-2. **Medir la deriva de reloj entre las dos ESP32-S3.** El SYNC alinea el arranque, pero cada placa muestrea con su propio cristal. Si la deriva es apreciable, el DAS se desalinea con el tiempo ([`CONTEXTO.md` R8](CONTEXTO.md#5-riesgos-conocidos)).
-3. **Arrancar la base de datos** (Obj. 3): es la meta más larga de TT1 y bloquea al clasificador.
-4. **Ruido direccional en la simulación**, para empezar a medir la mejora de SNR que exige C3.
+1. **Medir la geometría real** ($d_1$–$d_4$) y registrarla en `Avances/geometria.json`, verificando que sea no lineal (D1). Es lo que desbloquea el DAS ([`CONTEXTO.md` R1](CONTEXTO.md#5-riesgos-conocidos)).
+2. **Arrancar la base de datos** (Obj. 3): es la meta más larga de TT1 y bloquea al clasificador.
+3. **Pregunta abierta:** ¿se mantiene la alineación temporal entre las dos ESP32-S3 a lo largo de una grabación larga? ([`CONTEXTO.md` R8](CONTEXTO.md#5-riesgos-conocidos)).
 
 ---
 
@@ -123,7 +120,6 @@ Cada documento responde una pregunta distinta. Si dos se contradicen, gana el de
 | 1 | `PROTOCOLO_TT.pdf` *(no versionado)* | Lo comprometido ante la academia | Hay duda sobre el alcance oficial |
 | 2 | [`CONTEXTO.md`](CONTEXTO.md) | **Qué** hay que construir, con qué criterios y en qué orden; compromiso vs. extensión; riesgos | **Antes de cualquier decisión de alcance** |
 | 3 | [`Avances/Documentation.md`](Avances/Documentation.md) | **Cómo** está implementado el sistema oficial: hardware, protocolo serie, hilos, despliegue y bitácora | Se trabaja sobre el sistema de adquisición |
-| 3 | [`Exploration/beamforming_algorithms/README.md`](Exploration/beamforming_algorithms/README.md) | Teoría, diseño y uso del DAS/DOA en simulación | Se trabaja en localización o beamforming |
 | 3 | READMEs de carpeta ([`Avances/`](Avances/README.md), [`Exploration/`](Exploration/README.md), [`SALIDAS/`](SALIDAS/README.md)) | Qué hay en cada carpeta y para qué sirve | Se busca un archivo |
 | — | [`CHANGELOG.md`](CHANGELOG.md) | Qué cambió entre versiones | Se corta una versión o se busca cuándo cambió algo |
 | — | [`CLAUDE.md`](CLAUDE.md) y [`.claude/agents/`](.claude/agents/) | Guía del repo para Claude Code y agentes del proyecto (`buscador`, `programador`, `redactor`) | Se trabaja con Claude Code |
@@ -146,7 +142,6 @@ Cada documento responde una pregunta distinta. Si dos se contradicen, gana el de
 │   ├── geometria.json        ← posiciones de los 8 mics (placeholders por ahora)
 │   └── analisis.py, listar_audio.py, visualizar.py
 ├── Exploration/              ← PROTOTIPOS (no producción)
-│   ├── beamforming_algorithms/   ← DAS / DOA en simulación (activo)
 │   ├── reconstruccion_sept2026/  ← reconstrucción por etapas + diagnóstico de transporte
 │   └── Primeros_intentos/        ← primeros prototipos (1–4 mics), históricos
 ├── SALIDAS/                  ← resultados generados (.npy, .png), no versionados
@@ -177,15 +172,6 @@ python Avances/monitor_8LR.py                 # teclas: 1–4 par de mics · g g
 
 Puertos (`ESP1_PORT`, `ESP2_PORT`), audio (`AUDIO_DEVICE_INDEX`, `SKIP_AUDIO`), modo demo (`AUTO_CYCLE_SECONDS`) y despliegue en Raspberry Pi: [`Documentation.md` §4 y §12](Avances/Documentation.md#4-arquitectura-python-monitor_8lrpy).
 
-### Simulación de beamforming (sin hardware)
-
-```bash
-python Exploration/beamforming_algorithms/verificar.py     # ¿el DAS está bien?
-python Exploration/beamforming_algorithms/prueba_das.py GEOMETRIA=ula_2cm SENAL=multitono
-```
-
-Detalle: [`beamforming_algorithms/README.md`](Exploration/beamforming_algorithms/README.md).
-
 ### Análisis offline de una grabación
 
 Ajustar `ARCHIVO` y `MIC_ACTIVO` en `Avances/analisis.py` y correr `python Avances/analisis.py`.
@@ -195,7 +181,7 @@ Ajustar `ARCHIVO` y `MIC_ACTIVO` en `Avances/analisis.py` y correr `python Avanc
 ## 7. Convenciones de trabajo
 
 - **Compromiso antes que extensión.** Lo que está en el protocolo se cierra primero; lo demás solo refuerza ([`CONTEXTO.md` §0](CONTEXTO.md#0-regla-de-oro)).
-- **`Exploration/` → `Avances/`.** Se prototipa en `Exploration/`; solo lo verificado se promueve a `Avances/`. Los criterios para el beamforming están en el [playground §11](Exploration/beamforming_algorithms/README.md#11-criterios-para-promover-un-algoritmo-a-avances).
+- **`Exploration/` → `Avances/`.** Se prototipa en `Exploration/`; solo lo verificado se promueve a `Avances/`.
 - **Resultados a `SALIDAS/`**, nunca a la raíz ni a `Avances/`.
 - **Python + NumPy vectorizado**, sin loops de Python por muestra en tiempo real. La decisión de no usar Rust está en [`Documentation.md` §14.1](Avances/Documentation.md#141-python-vs-rust-vs-híbrido-sept-2026).
 - **Commits** en español con prefijo convencional (`feat:`, `fix:`, `docs:`, `perf:`, `chore:`). El `CHANGELOG.md` se consolida al cortar cada versión.

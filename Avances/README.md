@@ -11,6 +11,6 @@ La documentación técnica completa (hardware, pines, protocolo serie, hilos, de
 | [`geometria.json`](geometria.json) | Posiciones $(x, y, z)$ de los 8 mics. **Contiene placeholders**: faltan las medidas reales $d_1$–$d_4$ (Obj. 1). | [`Documentation.md` §5](Documentation.md#5-archivo-geometriajson) |
 | [`analisis.py`](analisis.py) | Análisis offline de una grabación `.npy` de `SALIDAS/` (ajustar `ARCHIVO` y `MIC_ACTIVO` en el script). | — |
 | [`listar_audio.py`](listar_audio.py) | Lista los dispositivos de salida de PyAudio con su índice, para `AUDIO_DEVICE_INDEX`. | [`Documentation.md` §12.7](Documentation.md#127-audio-de-salida-jack-35mm) |
-| [`visualizar.py`](visualizar.py) | Boceto que grafica posiciones de micrófonos con coordenadas de prueba. Para geometrías reales, usar el playground de beamforming. | [`beamforming_algorithms`](../Exploration/beamforming_algorithms/README.md) |
+| [`visualizar.py`](visualizar.py) | Boceto que grafica posiciones de micrófonos con coordenadas de prueba. | — |
 
-**Punto de extensión pendiente:** el DAS se insertará en `hilo_sincronizador` de `monitor_8LR.py` ([`Documentation.md` §6](Documentation.md#6-punto-de-extensión-das-beamforming)). Antes de eso tiene que cumplir los criterios de promoción del [playground §11](../Exploration/beamforming_algorithms/README.md#11-criterios-para-promover-un-algoritmo-a-avances).
+**Punto de extensión pendiente:** el DAS se insertará en `hilo_sincronizador` de `monitor_8LR.py` ([`Documentation.md` §6](Documentation.md#6-punto-de-extensión-das-beamforming)).
