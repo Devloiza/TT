@@ -11,3 +11,15 @@ SALIDAS/*
 !SALIDAS/README.md
 # Configuración personal de Claude Code por máquina (la compartida es .claude/settings.json)
 .claude/settings.local.json
+
+# LaTeX (Escrito/): auxiliares de compilación y PDFs, que se regeneran desde los .tex
+Escrito/**/*.aux
+Escrito/**/*.log
+Escrito/**/*.fls
+Escrito/**/*.fdb_latexmk
+Escrito/**/*.synctex.gz
+Escrito/**/*.out
+Escrito/**/*.toc
+Escrito/**/*.bbl
+Escrito/**/*.blg
+Escrito/**/*.pdf

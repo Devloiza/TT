@@ -120,7 +120,7 @@ Cada documento responde una pregunta distinta. Si dos se contradicen, gana el de
 | 1 | `PROTOCOLO_TT.pdf` *(no versionado)* | Lo comprometido ante la academia | Hay duda sobre el alcance oficial |
 | 2 | [`CONTEXTO.md`](CONTEXTO.md) | **Qué** hay que construir, con qué criterios y en qué orden; compromiso vs. extensión; riesgos | **Antes de cualquier decisión de alcance** |
 | 3 | [`Avances/Documentation.md`](Avances/Documentation.md) | **Cómo** está implementado el sistema oficial: hardware, protocolo serie, hilos, despliegue y bitácora | Se trabaja sobre el sistema de adquisición |
-| 3 | READMEs de carpeta ([`Avances/`](Avances/README.md), [`Exploration/`](Exploration/README.md), [`SALIDAS/`](SALIDAS/README.md)) | Qué hay en cada carpeta y para qué sirve | Se busca un archivo |
+| 3 | READMEs de carpeta ([`Avances/`](Avances/README.md), [`Exploration/`](Exploration/README.md), [`Escrito/`](Escrito/README.md), [`SALIDAS/`](SALIDAS/README.md)) | Qué hay en cada carpeta y para qué sirve | Se busca un archivo |
 | — | [`CHANGELOG.md`](CHANGELOG.md) | Qué cambió entre versiones | Se corta una versión o se busca cuándo cambió algo |
 | — | [`CLAUDE.md`](CLAUDE.md) y [`.claude/agents/`](.claude/agents/) | Guía del repo para Claude Code y agentes del proyecto (`buscador`, `programador`, `redactor`) | Se trabaja con Claude Code |
 
@@ -133,7 +133,8 @@ Cada documento responde una pregunta distinta. Si dos se contradicen, gana el de
 ├── README.md                 ← este archivo: qué es, qué será, cómo va
 ├── CONTEXTO.md               ← fuente de verdad de alcance (destila el protocolo)
 ├── CHANGELOG.md              ← historial de versiones
-├── CLAUDE.md                 ← guía para Claude Code
+├── CLAUDE.md                 ← guía para Claude Code (incluye el rol de la IA)
+├── REGISTRO_IA.md            ← control interno de apoyo de IA (no va en la tesina)
 ├── requirements.txt
 ├── Avances/                  ← SISTEMA OFICIAL (validado)
 │   ├── Documentation.md      ← documentación técnica y bitácora
@@ -144,6 +145,10 @@ Cada documento responde una pregunta distinta. Si dos se contradicen, gana el de
 ├── Exploration/              ← PROTOTIPOS (no producción)
 │   ├── reconstruccion_sept2026/  ← reconstrucción por etapas + diagnóstico de transporte
 │   └── Primeros_intentos/        ← primeros prototipos (1–4 mics), históricos
+├── Escrito/                  ← TESINA (LaTeX)
+│   ├── tesina/                   ← el escrito real
+│   ├── pruebas/                  ← pruebas de LaTeX y del revisor (no es tesina)
+│   └── revision.sty, CODIGOS_REVISION.md  ← marcas de revisión y su referencia
 ├── SALIDAS/                  ← resultados generados (.npy, .png), no versionados
 └── .claude/                  ← agentes y configuración compartida de Claude Code
 ```

@@ -1,0 +1,44 @@
+% Marcas de revisión de redacción del TT. Referencia: CODIGOS_REVISION.md
+%   \sobra{texto}      texto prescindible: azul con resaltado amarillo
+%   \falta{qué}        contenido faltante: rojo con resaltado amarillo, como [FALTA: qué]
+%   \sugerencia{qué}   corrección de fondo propuesta: verde con resaltado verde, como [SUGERENCIA: qué]
+% Opción [final]: \sobra imprime el texto sin marca; \falta y \sugerencia no imprimen nada;
+% todas dejan una advertencia en el log para que ninguna marca pase desapercibida.
+% Se carga desde tesina/ o pruebas/ con \usepackage{../revision}. Sin \ProvidesPackage a
+% propósito: con él, LaTeX avisa que "../revision" no coincide con el nombre declarado.
+\NeedsTeXFormat{LaTeX2e}
+
+\newif\ifrev@final
+\DeclareOption{final}{\rev@finaltrue}
+\ProcessOptions\relax
+
+\RequirePackage{xcolor}
+\RequirePackage{soul}
+
+\definecolor{revsobra}{RGB}{0,85,200}
+\definecolor{revfalta}{RGB}{200,0,0}
+\definecolor{revsugerencia}{RGB}{0,110,40}
+\definecolor{revsugerenciafondo}{RGB}{185,240,190}
+\sethlcolor{yellow}
+
+% soul solo acepta dentro de \hl los comandos registrados
+\AtBeginDocument{%
+  \soulregister\cite7
+  \soulregister\ref7
+  \soulregister\pageref7
+  \soulregister\textit7
+  \soulregister\textbf7
+  \soulregister\emph7
+}
+
+\ifrev@final
+  \newcommand{\sobra}[1]{\PackageWarning{revision}{Queda una marca \string\sobra\space sin resolver}#1}
+  \newcommand{\falta}[1]{\PackageWarning{revision}{Queda una marca \string\falta\space sin resolver}}
+  \newcommand{\sugerencia}[1]{\PackageWarning{revision}{Queda una marca \string\sugerencia\space sin resolver}}
+\else
+  \newcommand{\sobra}[1]{{\color{revsobra}\hl{#1}}}
+  \newcommand{\falta}[1]{{\color{revfalta}\hl{[FALTA: #1]}}}
+  \newcommand{\sugerencia}[1]{{\sethlcolor{revsugerenciafondo}\color{revsugerencia}\hl{[SUGERENCIA: #1]}}}
+\fi
+
+\endinput

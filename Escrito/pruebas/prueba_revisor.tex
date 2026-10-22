@@ -1,0 +1,23 @@
+\documentclass[12pt]{article}
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{../revision}
+
+\begin{document}
+
+\section{Introducción}
+
+En el presente trabajo de investigación\sobra{ que aquí se presenta}, se propone un sistema de localización acústica multimicrófono inspirado en el escorpión de arena. Se ha demostrado \falta{cita, p. ej. Brownell y Farley (1979)} que este animal localiza a sus presas a través de las vibraciones del sustrato con una precisión angular notable \falta{cifra: error angular de unos 13 grados según Brownell y Farley (1979), registrado en CONTEXTO.md sec. 4.1}, mediante ocho órganos sensoriales distribuidos en sus patas \falta{nombrar el órgano: las slit sensilla, referencia biológica del protocolo (CONTEXTO.md, D4)}.
+
+\sobra{Cabe mencionar que} el sistema propuesto emplea ocho micrófonos ICS-43434 conectados a dos placas ESP32-S3, los cuales permiten adquirir audio de forma sincronizada. \sobra{Es importante señalar que} las placas ESP32-S3 se sincronizan en hardware mediante un pulso compartido \falta{precisar: el pulso SYNC alinea solo el arranque; la deriva de reloj entre placas aún no se ha medido (CONTEXTO.md, R8)}. Sin embargo, el principal reto no es la adquisición, sino el procesamiento posterior de las señales.
+
+Para el procesamiento se utilizó la técnica de \textit{beamforming delay-and-sum} (DAS), la cual alinea temporalmente las señales de los ocho micrófonos con el fin de \sobra{poder} sumarlas de forma coherente \falta{pesos diferenciados por micrófono, compromiso D2: el DAS de la propuesta es ponderado}. El \textit{beamforming} se aplica sobre una geometría no uniforme \falta{y no lineal, compromiso D1 de CONTEXTO.md}, cuya separación entre micrófonos se eligió según criterios de \textit{aliasing} espacial \falta{respaldo: las separaciones d1 a d4 aún no están medidas y geometria.json tiene valores provisionales; indicar el criterio concreto, p. ej. separación no mayor que media longitud de onda, y la frecuencia resultante}. Actualmente, el DAS opera en tiempo real dentro del \textit{pipeline} de adquisición, y el sistema obtuvo una mejora significativa en la inteligibilidad del habla \falta{respaldo: según CONTEXTO.md sec. 3.4, el DAS solo existe en simulación y su integración en tiempo real está bloqueada por el Obj. 1; no hay mediciones de STOI, PESQ ni SNR (Obj. 8 no iniciado)}.
+
+\section{Hipótesis}
+
+Se plantea que el arreglo bioinspirado, procesado con \textit{beamforming}, logra una mejora de al menos 10\% en STOI y PESQ \falta{definir las siglas STOI y PESQ en su primer uso (Inteligibilidad Objetiva a Corto Plazo y Evaluación Perceptual de la Calidad del Habla) e indicar la referencia de comparación: la señal degradada con ruido, criterios C1 y C2}, así como una mejora de al menos 3~dB en la relación señal-ruido (SNR) respecto a un arreglo lineal uniforme \falta{del mismo número de micrófonos, criterio C5} con \textit{beamforming} DAS convencional, para una SNR de entrada entre $-5$ y $10$~dB. Esta mejora \sobra{en la relación señal-ruido (SNR)} se evaluará en ambientes acústicamente adversos \falta{definición: al menos una fuente de ruido activa simultánea a la de habla (CONTEXTO.md, D8)} con SNR de entrada entre $-5$ y $10$~dB. \sobra{En otras palabras, se espera que el sistema mejore la inteligibilidad del habla en condiciones de ruido.}
+
+\sugerencia{Prueba de que sugiere adecuadamente la cosa}
+
+\end{document}
