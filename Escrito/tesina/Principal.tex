@@ -68,6 +68,10 @@
 \usepackage{configuracion/upiitatesis}
 \renewcommand{\rmdefault}{lmr}   % texto en versión vectorial de la misma fuente (P29: sin cm-super salía en mapa de bits)
 \renewcommand{\ttdefault}{lmtt}  % ídem para \verb y texto monoespaciado
+% P15: en portada y acta, \bf + \fontseries{sb} pide Montserrat "sbx", que no existe; se declara
+% como la negrita que LaTeX ya usaba en su lugar (mismo aspecto, sin avisos)
+{\fontencoding{T1}\fontfamily{Montserrat-TLF}\selectfont}% carga las definiciones de la fuente
+\DeclareFontShape{T1}{Montserrat-TLF}{sbx}{n}{<->ssub * Montserrat-TLF/bold/n}{}
 \usepackage{../revision}  % marcas de revisión (Escrito/CODIGOS_REVISION.md); para entregar: [final]
 %%%%%%%%%%%%%  Datos de la Portada y acta
 \title{TÍTULO TRABAJO TERMINAL}
