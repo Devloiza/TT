@@ -452,8 +452,8 @@ voffset=0cm}
 \renewcommand\nomgroup[1]{
 	\item[\bfseries
 	\ifstrequal{#1}{A}{ACR\'ONIMOS}{
-	\ifstrequal{#1}{B}{S\'MBOLOS}{
-	\ifstrequal{#1}{C}{VARIABLES F\'SICAS}{}}}]}%
+	\ifstrequal{#1}{B}{S\'IMBOLOS}{
+	\ifstrequal{#1}{C}{VARIABLES F\'ISICAS}{}}}]}%
 %%% agrega  valores y unidades a el grupo de nomenclatura variables o constanes físicas
 \newcommand{\nomunit}[1]{
 %	\renewcommand{\nomentryend}{\hspace*{\fill}#1}}%
@@ -469,8 +469,8 @@ voffset=0cm}
 %%%%%%%%%%%%%%%%%%Referencias%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  \newcommand{\referencias}{\cleardoublepage
 \phantomsection
- \bibliographystyle{ieeetr} \nocite{*}  %estilo ieee
- \bibliography{xbiblioteca} }
+ \bibliographystyle{ieeetr}  %estilo ieee; sin \nocite{*}: solo se listan las obras citadas con \cite (P03)
+ \bibliography{XBiblioteca} }
 %%%%%%%%márgene para papel
 \newcommand{\cambiamargen}{%%%%%%%%%%%%% Medidas de los margenes
 %	\pagestyle{fancy}

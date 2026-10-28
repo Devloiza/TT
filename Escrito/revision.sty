@@ -2,7 +2,9 @@
 %   \sobra{texto}      texto prescindible: azul con resaltado amarillo
 %   \falta{qué}        contenido faltante: rojo con resaltado amarillo, como [FALTA: qué]
 %   \sugerencia{qué}   corrección de fondo propuesta: verde con resaltado verde, como [SUGERENCIA: qué]
-% Opción [final]: \sobra imprime el texto sin marca; \falta y \sugerencia no imprimen nada;
+%   \duda{texto}       texto existente que quizá sobra o no aplica; se conserva hasta que el autor decida:
+%                      rojo con resaltado rosa
+% Opción [final]: \sobra y \duda imprimen el texto sin marca; \falta y \sugerencia no imprimen nada;
 % todas dejan una advertencia en el log para que ninguna marca pase desapercibida.
 % Se carga desde tesina/ o pruebas/ con \usepackage{../revision}. Sin \ProvidesPackage a
 % propósito: con él, LaTeX avisa que "../revision" no coincide con el nombre declarado.
@@ -19,6 +21,8 @@
 \definecolor{revfalta}{RGB}{200,0,0}
 \definecolor{revsugerencia}{RGB}{0,110,40}
 \definecolor{revsugerenciafondo}{RGB}{185,240,190}
+\definecolor{revduda}{RGB}{200,0,0}
+\definecolor{revdudafondo}{RGB}{255,205,210}
 \sethlcolor{yellow}
 
 % soul solo acepta dentro de \hl los comandos registrados
@@ -35,10 +39,12 @@
   \newcommand{\sobra}[1]{\PackageWarning{revision}{Queda una marca \string\sobra\space sin resolver}#1}
   \newcommand{\falta}[1]{\PackageWarning{revision}{Queda una marca \string\falta\space sin resolver}}
   \newcommand{\sugerencia}[1]{\PackageWarning{revision}{Queda una marca \string\sugerencia\space sin resolver}}
+  \newcommand{\duda}[1]{\PackageWarning{revision}{Queda una marca \string\duda\space sin resolver}#1}
 \else
   \newcommand{\sobra}[1]{{\color{revsobra}\hl{#1}}}
   \newcommand{\falta}[1]{{\color{revfalta}\hl{[FALTA: #1]}}}
   \newcommand{\sugerencia}[1]{{\sethlcolor{revsugerenciafondo}\color{revsugerencia}\hl{[SUGERENCIA: #1]}}}
+  \newcommand{\duda}[1]{{\sethlcolor{revdudafondo}\color{revduda}\hl{#1}}}
 \fi
 
 \endinput

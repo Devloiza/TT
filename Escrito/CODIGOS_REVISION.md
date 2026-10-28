@@ -4,7 +4,7 @@ Marcas que deja el agente `redactor` al revisar la tesina, para que decidas ante
 
 ## Uso en LaTeX
 
-En el preámbulo de un documento en `tesina/` o `pruebas/`:
+`tesina/Principal.tex` ya lo carga. En el preámbulo de cualquier otro documento en `tesina/` o `pruebas/`:
 
 ```latex
 \usepackage{../revision}          % borrador: marcas visibles
@@ -15,6 +15,7 @@ En el preámbulo de un documento en `tesina/` o `pruebas/`:
 |---|---|---|---|
 | `\sobra{texto}` | El texto no aporta: redundancia, muletilla, repetición o algo ya dicho | Texto **azul** con resaltado amarillo | Borrar la marca y el texto, o conservar el texto quitando solo `\sobra{...}` |
 | `\falta{qué falta}` | Falta contenido: una cifra, una cita, una definición, un paso del argumento | **[FALTA: qué falta]** en **rojo** con resaltado amarillo | Escribir lo que falta en lugar de la marca |
+| `\duda{texto}` | Texto existente (p. ej. de la plantilla) que quizá sobra o no aplica, pero sobre el que hay duda. **No se borra**: se conserva marcado hasta que decidas | Texto **rojo** con resaltado **rosa** | Decidir: conservarlo quitando la marca, o borrarlo |
 | `\sugerencia{qué y por qué}` | Corrección de fondo propuesta: una cifra, afirmación o criterio que contradice el protocolo o el repo, con su razón. Sin límite de extensión, pero no es para reescribir párrafos | **[SUGERENCIA: …]** en **verde** con resaltado verde claro | Decidir: aplicar la corrección con tus palabras o descartarla, y borrar la marca |
 
 `\falta` lleva una nota breve (unas doce palabras como máximo). `\sugerencia` puede extenderse lo que haga falta para explicar la razón.
@@ -30,6 +31,10 @@ así lo fija el criterio C3 del protocolo}.
 ```
 
 Para proponer el reemplazo de un fragmento erróneo, el revisor marca el original con `\sobra` y pone justo después `\sugerencia` con la corrección.
+
+`\sobra` frente a `\duda`: `\sobra` significa "esto se puede quitar" (redundancia clara). `\duda` significa "quizá sobra, decide tú" y se usa sobre todo con texto heredado de la plantilla.
+
+**En archivos sin salida visual** (`.sty`, `.cls`, `.bib`) no se pueden usar estas marcas. Ahí lo dudoso se señala con un comentario `% [DUDA] motivo` en la línea anterior y no se borra.
 
 ## Lo que no se marca
 
@@ -50,3 +55,4 @@ Markdown no admite colores, así que solo se usa el resaltado:
 - Sobra: `<mark>[SOBRA] texto</mark>`
 - Falta: `<mark>[FALTA: qué falta]</mark>`
 - Sugerencia: `<mark>[SUGERENCIA: qué y por qué]</mark>`
+- Duda: `<mark>[DUDA] texto</mark>`

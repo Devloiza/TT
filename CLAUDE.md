@@ -28,7 +28,12 @@ El TT es trabajo académico del autor. Claude y todos los agentes **corrigen, gu
 - **Código nuevo solo con una especificación clara del autor** de qué y cómo lo quiere (p. ej. C++ para Arduino, que no domina). Si la idea no está clara, preguntar en vez de rellenar el diseño.
 - **Scripts de diagnóstico y utilidades** que no son parte del TT (p. ej. `listar_audio.py`): misma regla de especificación, aunque esta puede ser breve.
 - **No decidir el diseño** (geometría, algoritmo, parámetros): dar opciones con ventajas y desventajas, y que el autor decida. No generar resultados ni cifras que puedan presentarse como experimentos del autor.
-- **Tesina:** revisar y marcar con `\sobra`, `\falta` y `\sugerencia` (`Escrito/CODIGOS_REVISION.md`); no redactar contenido por el autor. El escrito real está en `Escrito/tesina/`; `Escrito/pruebas/` son pruebas de LaTeX y del revisor, no contenido de la tesina (ver `Escrito/README.md`).
+- **Tesina:** revisar y marcar con `\sobra`, `\falta`, `\sugerencia` y `\duda` (`Escrito/CODIGOS_REVISION.md`); no redactar contenido por el autor. El escrito real está en `Escrito/tesina/`, sobre la plantilla oficial UPIITA; `Escrito/pruebas/` son pruebas de LaTeX y del revisor, no contenido de la tesina (ver `Escrito/README.md`).
+- **Plantilla UPIITA: contenido sí, forma no.**
+  - El texto normal se puede modificar.
+  - No se tocan los estilos (`upiita.cls`, `configuracion/`), los títulos y divisiones preestablecidos, ni los datos de la universidad.
+  - **Nada se borra sin preguntar.** Lo dudoso se deja marcado con `\duda{...}`, o con `% [DUDA] motivo` en `.sty`, `.cls` y `.bib`.
+  - `Escrito/PLANTILLA.md` es el mapa de la plantilla y el registro de sus problemas (P01…). Cada decisión o corrección actualiza ahí el estado del problema.
 - La documentación del proyecto (`README.md`, `CONTEXTO.md`, bitácora de `Documentation.md`) sí la puede mantener Claude, reflejando avances que hizo el autor.
 - **`REGISTRO_IA.md`** es el control interno de qué hizo el autor y en qué apoyó la IA, por si hay que declararlo; no se incluye en la tesina. Claude agrega una fila cada vez que contribuya a algo del repo y deja en blanco el aporte del autor para que el autor lo complete. Los commits en que Claude participa llevan `Co-Authored-By: Claude`.
 

@@ -12,7 +12,7 @@ SALIDAS/*
 # Configuración personal de Claude Code por máquina (la compartida es .claude/settings.json)
 .claude/settings.local.json
 
-# LaTeX (Escrito/): auxiliares de compilación y PDFs, que se regeneran desde los .tex
+# LaTeX (Escrito/): auxiliares de compilación, que se regeneran desde los .tex
 Escrito/**/*.aux
 Escrito/**/*.log
 Escrito/**/*.fls
@@ -20,6 +20,28 @@ Escrito/**/*.fdb_latexmk
 Escrito/**/*.synctex.gz
 Escrito/**/*.out
 Escrito/**/*.toc
+Escrito/**/*.lof
+Escrito/**/*.lot
 Escrito/**/*.bbl
 Escrito/**/*.blg
-Escrito/**/*.pdf
+Escrito/**/*.idx
+Escrito/**/*.ind
+Escrito/**/*.ilg
+Escrito/**/*.nlo
+Escrito/**/*.nls
+Escrito/**/*.eix
+Escrito/**/*.nlg
+Escrito/**/*.lol
+Escrito/**/*.loa
+Escrito/**/*.bcf
+Escrito/**/*.run.xml
+Escrito/**/*.xdv
+Escrito/**/*.dvi
+Escrito/**/*.synctex(busy)
+Escrito/**/*.auxlock
+# Solo el PDF compilado de cada documento (tesina/, pruebas/); los PDF de logos/ e imagenes/ sí se versionan
+Escrito/*/*.pdf
+# Copia comprimida de la plantilla original: duplica lo que ya está en tesina/ (se conserva local)
+Escrito/TT_UPIITA_2023.zip
+# Material de consulta de la plantilla (manuales y diccionarios); no se compila (PLANTILLA.md, P23; se conserva local)
+Escrito/tesina/adicionales/
