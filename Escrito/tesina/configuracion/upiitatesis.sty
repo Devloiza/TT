@@ -1,0 +1,556 @@
+%tesisupiita )Tesis: UPIITA-IPN
+%   Copyright (C) 2023v1 Juan Carlos Guzmán Salgado
+%                      Griselda Sánchez Otero
+%                      Diego Alonso Flores Hernández
+\typeout{NOTICE:  This macro file is NOT proprietary and may be
+freely copied and distributed.}
+%
+\NeedsTeXFormat{LaTeX2e}[1995/12/01]
+ \ProvidesPackage{upiitatesis}[2023/05/09v2 LaTeX package (Revised chapters)]
+%%%%%%%interlineado%%%%
+\def\baselinestretch{2}
+%%%---Incrementa el espacio entre la última línea del texto y el pie de página
+\skip\footins 20pt plus4pt minus4pt
+%% A single spaced quote (say) is done by surrounding singlespace with quote.
+\def\singlespace{%
+\vskip\parskip%
+\vskip\baselineskip%
+\def\baselinestretch{1}%
+\ifx\undefined\selectfont %then new font selection scheme not invoked-MAR
+\ifx\@currsize\normalsize\@normalsize\else\@currsize\fi%
+\else %else new font selection scheme is invoked-MAR
+\@newbaseline %include new baselinestretch-MAR
+\fi %-MAR
+\vskip-\parskip%
+\vskip-\baselineskip%
+}%
+\def\endsinglespace{\par}
+\def\baselinestretch{1.5}%
+%%% End of formatting parameters %%
+%%%  fuentes y símbolos %%%
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bbding}
+\usepackage{fourier-orns}
+\usepackage{eucal}
+\usepackage{mathrsfs}
+\usepackage{montserrat} %fuente
+\usepackage{pifont}
+\usepackage{textcomp}
+%%% formato texto %%%
+\usepackage{configuracion/romanidx}
+\usepackage{lettrine} %t produces adropped capital
+\usepackage{multicol} % typesets text in multiple columns
+\usepackage{nextpage}
+\usepackage{color}
+\usepackage{xcolor}
+%%% formato general %%%
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{titling}
+\usepackage{titlesec}
+\usepackage[Sonny]{fncychap}
+\usepackage{fancyhdr}
+\usepackage{ifthen}
+\usepackage{geometry}
+\usepackage[pdftex,colorlinks=true,linkcolor=black,pdfpagelayout=TwoPageRight ,pdfstartpage=3]{hyperref}
+\usepackage{bookmark}
+\usepackage{pdflscape}
+\usepackage{pdfpages}
+\usepackage{makeidx}
+\usepackage[intoc,spanish]{nomencl}
+\usepackage{siunitx}
+\usepackage{afterpage}
+%\usepackage{appendix}
+%%% formato flotantes %%%
+\usepackage{colortbl}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{multirow} %construction for table cells that span more
+\usepackage{rotating}
+\usepackage{listings}  %adición de código fuente de múltiples lenguajes de programación
+%\usepackage{booktabs}  modifica vista de tablas estilo SIAM *
+%\usepackage{tcolorbox} cajas de color: bloques, tablas, etc ***
+%\usepackage{makecell}  Tablas ***
+%\usepackage{subcaption}
+\usepackage{subfigure} % subfiguras
+%\usepackage{subfig}
+%%probar
+%\usepackage{layouts}
+%\usepackage{layout}\mathrm{}
+%\usepackage{lipsum}
+%% configuración de subfiguras en  lof
+%\captionsetup[subfigure]{labelformat=simple,labelsep=colon,listofformat=subsimple}
+%\captionsetup{lofdepth=2}
+%%agrega ruta para carpeta predeterminada para imagenes
+\graphicspath{{imagenes/}}
+%%% Define todas las partes que van en la hoja de firmas y portada
+%%% \title y \author ya existen
+%%% Redefinición de numeración de secciones, variables
+\def\tablename{Tabla}
+\def\refname{Referencias}
+\def\abstractname{Resumen}
+\def\bibname{Referencias}
+\def\chaptername{Cap\'{\i}tulo}
+\def\anexoname{Anexo}
+\def\contentsname{\'Indice General}
+\def\listtablename{\'Indice de Tablas}
+\def\Ipn{Instituto Polit\'ecnico Nacional}
+%\def\IPN{INSTITUTO POLIT\'ECNICO NACIONAL}
+\def\IPN{\uppercase\expandafter{\Ipn}}
+\def\upiita{Unidad Profesional Interdisciplinaria en Ingenier\'ia y Tecnolog\'ias Avanzadas}
+\def\Upiita{\uppercase\expandafter{\upiita}}
+%\def\Upiita{UNIDAD PROFESIONAL INTERDISCIPLINARIA EN INGENIER\'IA Y TECNOLOG\'IAS AVANZADAS}
+\def\unidad#1{\gdef\@unidad{#1}}
+\def\academia#1{\gdef\@academia{#1}}
+\def\nasesores#1{\gdef\@nasesores{#1}}
+\def\nalumnos#1{\gdef\@nalumnos{#1}}
+\def\asesora#1{\gdef\@asesora{#1}}
+\def\asesorb#1{\gdef\@asesorb{#1}}
+\def\asesorc#1{\gdef\@asesorc{#1}}
+\def\alumnoa#1{\gdef\@alumnoa{#1}}
+\def\alumnob#1{\gdef\@alumnob{#1}}
+\def\alumnoc#1{\gdef\@alumnoc{#1}}
+\def\alumnod#1{\gdef\@alumnod{#1}}
+\def\Titular#1{\gdef\@Titular{#1}}
+\def\Presidente#1{\gdef\@Presidente{#1}}
+\def\grado#1{\setbox0\hbox{#1}  \gdef\@grado{#1}}
+\def\mes#1{\gdef\@mes{#1}}
+\def\anio#1{\gdef\@anio{#1}} %%Sólo mes y año
+\def\thesisdate#1{\gdef\@thesisdate{#1}}
+\def\materia#1{\gdef\@materia{#1}}
+\def\first{pdf}
+\ifx\undefined\@impreso\def\impreso{papel}\fi
+\def\impreso#1{\gdef\@impreso{#1}}
+\def\EstiloRef#1{\gdef\@EstiloRef{#1}}
+%%%%%%%%%% funciones matemáticas en español ya incluidas en babel
+%\def\sen{\mathop{\rm sen}\nolimits} % Sustituye a \sin
+%\def\mcd{\mathop{\rm mcd}\nolimits} % Sustituye a \gcd
+%\def\senh{\mathop{\rm senh}\nolimits} % Sustituye a \sinh
+%\def\arcsen{\mathop{\rm arcsen}\nolimits} % Ni el arcsin ni el
+%    % arccos originales dejan espacio entre arc y sin o cos.
+%\def\max{\mathop{\rm m\acute ax}}
+%\def\min{\mathop{\rm m\acute\mathchar"7010n}}
+%\def\inf{\mathop{\rm \acute\mathchar"7010nf}}
+%\def\lim{\mathop{\rm l\acute\mathchar"7010m}}
+%\def\limsup{\mathop{\rm l\acute\mathchar"7010m\, sup}} % El limsup
+%% y el liminf originales dejan espacio entre lim y sup o inf.
+%\def\liminf{\mathop{\rm l\acute\mathchar"7010m\, inf}}
+%% Creación de la logos y lineas
+\newcommand\Vlines{%
+\def\VL{\rule[0pt]{1pt}{17cm}\hspace{1mm}\relax}
+\VL\VL\VL\VL\VL}
+\newcommand\LogosVL{%%\fbox{	
+		\parbox{2.1cm}{
+		\begin{center}
+			\includegraphics[width=2cm]{logos/LOGOPOLI.png}
+		\end{center}
+		\begin{center}
+			\Vlines
+		\end{center}
+		\begin{center}
+			\includegraphics[width=2cm]{logos/logoupiita.pdf}
+		\end{center}}}%}
+%%%márgenes frontmatter
+\setlength{\textheight}{23cm}
+\setlength{\textwidth}{17cm}
+\setlength{\hoffset}{0mm}
+\setlength{\oddsidemargin}{20mm}
+\setlength{\marginparwidth}{0mm}
+\setlength{\voffset}{-20mm}
+\setlength{\topmargin}{0pt}
+\setlength{\headheight}{0pt}
+\setlength{\headsep}{0pt}
+\setlength{\footskip}{0pt}
+%%%%%%%%%%%%Selección de alumnos y asesores%%%%%%%%%
+\newcommand\Alumnosc{
+\parbox{6.5cm}{\centering\rule{6.5cm}{1pt}\\ \@alumnoa}
+%\parbox{5.5cm}{\centering\rule{5.5cm}{1pt}\\ \ifcsvoid{\@alumnoa}{\@alumnoa{falta nombre alumno a}}{\@alumnoa}}
+\hfill
+%\parbox{1cm}{\centering\makebox[1cm]{} }
+\parbox{6.5cm}{\centering\rule{6.5cm}{1pt}\\ \@alumnob}
+\par\vskip 1.5cm
+\parbox{6.5cm}{\centering\rule{6.5cm}{1pt}\\ \@alumnoc}
+\hfill%\parbox{1cm}{\centering\makebox[1cm]{} }
+\parbox{6.5cm}{\centering\rule{6.5cm}{1pt}\\ \@alumnod}}%\end{center}}
+\newcommand\Alumnost{\parbox{6.5cm}{\centering\rule{6.5cm}{1pt}\\ \@alumnoa}
+\hfill%\parbox{1cm}{\centering\makebox[1cm]{} }
+ \parbox{6.5cm}{\centering\rule{6.5cm}{1pt}\\ \@alumnob}
+\par\vskip 1.5cm
+\parbox{8cm}{\centering\rule{6.5cm}{1pt}\\ \@alumnoc}}
+\newcommand\Alumnosd{\parbox{6.5cm}{\centering\rule{6.5cm}{1pt}\\ \@alumnoa}
+\hfill%\parbox{1cm}{\centering\makebox[1cm]{} }
+\parbox{6.5cm}{\centering\rule{6.5cm}{1pt}\\ \@alumnob}}
+\newcommand\Alumnosu{\parbox{6.5cm}{\centering\rule{6.5cm}{1pt}\\ \@alumnoa}}
+\newcommand\Asesort{	\parbox{6.5cm}{\centering\rule{6.5cm}{1pt}\\ \@asesora}
+\hfill	%\parbox{0.2cm}{\makebox[0.2cm]{} }
+	\parbox{6.5cm}{\centering\rule{6.5cm}{1pt}\\ \@asesorb}
+	\par\vskip 1.5cm
+	\parbox{8cm}{\centering\rule{6.5cm}{1pt}\\ \@asesorc}}
+\newcommand\Asesord{	\parbox{6.5cm}{\centering\rule{6.5cm}{1pt}\\ \@asesora}
+\hfill%	\parbox{0.5cm}{\makebox[0.5cm]{} }
+	\parbox{6.5cm}{\centering\rule{6.5cm}{1pt}\\ \@asesorb}}
+\newcommand\Asesoru{	\parbox{5.5cm}{\centering\rule{5.5cm}{1pt}\\ \@asesora}}
+%%%%%%%% Define caratula
+\def\portada{
+%\begin{titlingpage}	
+%%{impresion \@impreso}
+%%\ifblank{\@alumnod{#1}{htruei}{falta nombre alumno d}
+%%{\ifx\first\@impreso {pdf}\else {papel} \fi} %\def\impreso{papel}	
+%%\ifcsvoid{\@impreso}
+%%{ \def\impreso{papel} }
+%%{\@impreso }\par
+%		\parindent=0pt \pagestyle{empty} \parindent=0pt
+%		\par\phantomsection
+%		\rule[0pt]{0pt}{300pt}\hspace{1mm}\relax
+%%		\par	\dotfill Centred content\dotfill
+%\end{titlingpage}
+%\begin{titlingpage}	
+%			\parindent=0pt \pagestyle{empty} \parindent=0pt
+%	\par\phantomsection\cleardoublepage
+%\end{titlingpage}
+\begin{titlingpage}
+		\parindent=-65pt \pagestyle{empty}  \parindent=-65pt
+\LogosVL \hspace*{.5cm}\parbox{14cm}{	
+\centering {\par \huge \bf {\fontfamily{Montserrat-TLF}\fontseries{sb}\selectfont\Ipn}\par}
+ \vskip 2.5em \textsc{\@unidad}
+ \vskip 1.5em %
+ \large{\def\baselinestretch{1.2}\Large\bf\it \@materia  \par}
+\vskip 2.0em%
+\large{\def\baselinestretch{1.2}\Large\bf {\fontfamily{Montserrat-TLF}\fontseries{sb}\selectfont``\MakeUppercase{\@title}''}\par}%
+\pdfbookmark{Portada}{portada}
+\vskip 3em%
+{\it Que para obtener el t\'itulo de\par}
+%\vskip 1em%
+{\Large \emph{\bf ``\@grado''}}
+\vskip 5em%
+\ifnum \@nalumnos = 4 Presentan:\par%
+ {\Large \bf \@alumnoa\par\@alumnob\par\@alumnoc\par\@alumnod\par}%
+ \else \ifnum \@nalumnos =3 Presentan:\par  %
+ {\Large \bf \@alumnoa\par\@alumnob\par\@alumnoc\par\vskip 2em}%
+  \else \ifnum \@nalumnos = 2 Presentan:\par%
+{\Large \bf \@alumnoa\par\@alumnob\par\vskip 3em}%
+ \else Presenta:\par {\Large \bf \@alumnoa \par\vskip 4em}%
+ \fi \fi \fi%
+ \vskip 2.5em %
+ Asesores:%
+ \ifnum \@nasesores = 1 \par {\Large \@asesora\par} \vskip 4em%
+\else \ifnum \@nasesores = 2\par  {\Large\@asesora\par\@asesorb\par\vskip 3em}%
+ \else \ifnum \@nasesores = 3 \par  {\Large \@asesora\par\@asesorb\par\@asesorc\par\vskip 2em}%
+ \fi \fi \fi\vskip 2.5em %
+ \par  \@mes\ \@anio}%
+\vskip 0.5em
+%\par	\dotfill Centred content\dotfill
+\end{titlingpage}}%}%\cleardoublepage
+%%%%Construcción de acta de firmas
+\def\acta{
+\begin{titlingpage}	
+		\parindent=0pt \pagestyle{empty} \parindent=0pt\cleardoublepage
+		%\rule[0pt]{0pt}{200pt}\hspace{1mm}\relax\pdfbookmark{acta}{acta}
+\end{titlingpage}
+\begin{titlingpage}
+\parindent=0pt \pagestyle{empty} \parindent=0pt
+\LogosVL \hspace*{0.5cm}\parbox{14cm}
+{\centering {\par \huge\bf{\fontfamily{Montserrat-TLF}\fontseries{sb}\selectfont\Ipn}\par}
+\vskip 2.5em \textsc{\@unidad} \vskip 1.5em
+\large{\def\baselinestretch{1.2}\Large\bf\it \@materia \par} \vskip 2em
+\large{\def\baselinestretch{1.2}\Large\bf {\fontfamily{Montserrat-TLF}\fontseries{sb}\selectfont``\MakeUppercase{\@title}''}\par}
+\vskip 3em {\it Que para obtener el t\'itulo de\par} \vskip 0.5em {\Large \emph{\bf ``\@grado''}}
+\vskip2em \vfill
+ \ifnum \@nalumnos = 4
+{\large Presentan:}
+\par \vskip 1cm
+\begin{center}\normalsize\Alumnosc
+\end{center}
+\ifnum \@nasesores = 1 {  \vskip 1.5em\large Asesor:} \vskip 1.5em
+\begin{center}\normalsize\Asesoru
+\vskip 1.5em
+\end{center}  \vskip 3em
+\else \ifnum \@nasesores = 2 { \vskip 1.5em\large Asesores:} \vskip 1.5em
+\begin{center}\normalsize\Asesord
+\end{center} \vskip 3em
+\else \ifnum \@nasesores = 3 {\large Asesores:} \vskip 1.5em
+\begin{center}\normalsize\Asesort
+\end{center} \vskip1 em \fi \fi \fi
+ \else \ifnum \@nalumnos =3
+{\large Presenta:}
+\par \vskip 1cm
+\begin{center}\normalsize\Alumnost
+\end{center}
+\ifnum \@nasesores = 1 {  \vskip 1.5em\large Asesor:} \vskip 1.5em
+\begin{center}\normalsize\Asesoru
+\vskip 1.5em
+\end{center}  \vskip 3em
+\else \ifnum \@nasesores = 2 { \vskip 1.5em\large Asesores:} \vskip 1.5em
+\begin{center}\normalsize\Asesord
+\end{center} \vskip 3em
+\else \ifnum \@nasesores = 3 {\large Asesores:} \vskip 1.5em
+\begin{center}\normalsize\Asesort
+\end{center} \vskip1 em \fi \fi \fi
+ \else \ifnum \@nalumnos = 2
+{\vskip 2em\large Presenta:}
+\par \vskip 1.5cm
+\begin{center}\normalsize\Alumnosd
+\end{center}\vskip 2em
+\ifnum \@nasesores = 1 {  \vskip 1.5em\large Asesor:} \vskip 1.5em
+\begin{center}\normalsize\Asesoru
+\vskip 1.5em
+\end{center}  \vskip 3em
+\else \ifnum \@nasesores = 2 { \vskip 1.5em\large Asesores:} \vskip 1.5em
+\begin{center}\normalsize\Asesord
+\end{center} \vskip 3em
+\else \ifnum \@nasesores = 3 {\large Asesores:} \vskip 1.5em
+\begin{center}\normalsize\Asesort
+\end{center} \vskip1 em \fi \fi \fi
+\else { \vskip 1cm \large Presenta:}
+\par \vskip 1cm
+\begin{center}\normalsize\Alumnosu
+\end{center}
+\vskip 1.5em
+\ifnum \@nasesores = 1 {  \vskip 1.5em\large Asesor:} \vskip 1.5em
+\begin{center}\normalsize\Asesoru
+\end{center}  \vskip 3.5em
+\else \ifnum \@nasesores = 2 { \vskip 1.5em\large Asesores:} \vskip 1.5em
+\begin{center}\normalsize\Asesord
+\end{center} \vskip 3.5em
+\else \ifnum \@nasesores = 3 {\large Asesores:} \vskip 1.5em
+\begin{center}\normalsize\Asesort
+\end{center} \vskip 2em\fi \fi \fi
+ \fi \fi \fi
+\vskip 1.5em
+\begin{center}\normalsize
+\parbox{6.5cm}{\centering
+{\bf Presidente del Jurado}\vspace*{.7cm}
+\rule{6.5cm}{1pt}\\ \@Presidente}
+%\parbox{1cm}{\makebox[1cm]{} }
+\hfill
+\parbox{6.5cm}{\centering
+{\bf Profesor titular}\vspace*{.7cm}
+\rule{6.5cm}{1pt}\\ \@Titular}
+\end{center}
+%\vskip 1em
+%\newpage \thispagestyle{plain}
+}\end{titlingpage}
+%	\begin{titlingpage}	
+%	%		\parindent=0pt \pagestyle{empty} \parindent=0pt
+%		%	\rule[0pt]{0pt}{200pt}\hspace{1mm}\relax
+%		\parbox{1cm}{\makebox[1cm]{} }
+%		\end{titlingpage}
+} %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%página de dedicatoria
+\def\dedicatoria{
+%\cambiamargen
+\newgeometry{twoside, bindingoffset=1cm,hmargin={2cm,3cm},head=1.5cm, foot=1.5cm,%
+tmargin=1.5cm,marginparsep=0.1cm,marginparwidth=0.1cm, headsep=1cm,footskip=1.5cm,includeheadfoot,textheight=20cm,%
+voffset=0cm}
+	\begin{titlepage}\cleartoevenpage\pagestyle{empty}
+\ifx\marcadorDedicatorias\undefined \ifpdf
+   \pdfbookmark{Dedicatoria}{dedicatoria}
+\fi \def\marcadorDedicatorias{1}\fi
+%\setcounter{page}{1}
+ {\centering {\par \huge \bf \sffamily DEDICATORIA\par}} \vskip 5em
+\input{preliminares/dedicatoria}
+ \newpage \thispagestyle{plain}%\pagestyle{empty}
+\end{titlepage}\cleardoublepage}
+%%%%%%%%pagina de agradecimientos
+\def\agradecimientos{\begin{titlepage}\cleartoevenpage\pagestyle{empty}
+\ifx\marcadorAgradecimients\undefined \ifpdf
+   \pdfbookmark{Agradecimientos}{agradecimientos}
+\fi \def\marcadorAgradecimientos{1} \fi
+\setcounter{page}{7}
+ {\centering {\par \huge \bf\sffamily  AGRADECIMIENTOS\par}} \vskip 5em
+\input{preliminares/agradecimientos}
+ \newpage  \thispagestyle{plain}%\pagestyle{empty}
+\end{titlepage}\cleardoublepage}
+\makeatletter
+\def\cleardoublepage{\clearpage\if@twoside \ifodd\c@page\else
+\hbox{} \vspace*{\fill}
+\begin{center}
+\vspace{\fill} \thispagestyle{empty}
+\end{center}
+\newpage%\layout
+\if@twocolumn\hbox{}\newpage\fi\fi\fi} \makeatother
+%%%%%%%%%%%%%define la utilización del . como separador decimal
+\spanishdecimal{.} %%%%
+%%%%%%%%%genera sección de índice %%%%%%%%%
+\makeindex
+%%% encabezados
+\pagestyle{fancy}
+\renewcommand{\chaptermark}[1]{\markboth{}{#1}}%
+%\renewcommand{\sectionmark}[1]{\markboth{#1}{}}%
+%%%%%%%%%%%%%%%%%%%%entorno de teoremas%%%%%%%%%%%%%%%%%5
+%\usepackage{margenes}%\usepackage{bookmark}
+\newtheorem{reconocimientos}{Reconocimientos}[section]
+\newtheorem{teorema}{Teorema}[section]
+\newtheorem{definicion}{Definici\'on}[section]
+\newtheorem{ejemplo}{Ejemplo}[section]
+\newtheorem{axioma}{Axioma}[section]
+\newtheorem{caso}{Caso}[section]
+\newtheorem{creditos}{Cr\'editos}[section]
+\newtheorem{algoritmo}{Algoritmo}[section]
+\newtheorem{conclusion}{Conclusi\'on}[section]
+\newtheorem{observacion}{Observaci\'on}[section]
+\newtheorem{condicion}{Condici\'on}[section]
+\newtheorem{conjectura}{Conjectura}[section]
+\newtheorem{corolario}{Corolario}[section]
+\newtheorem{criterio}{Criterio}[section]
+\newtheorem{ejercicio}{Ejercicio}[section]
+\newtheorem{lema}{Lema}[section]
+\newtheorem{metodo}{M{\'e}todo}
+\newtheorem{notacion}{Notaci\'on}
+\newtheorem{problema}{Problema}[section]
+\newtheorem{proposicion}{Proposici\'on}[section]
+\newtheorem{comentario}{Comentario}
+\newtheorem{solucion}{Soluci\'on}
+\newtheorem{resumen}{Resumen}
+\newenvironment{prueba}[1][Prueba]{\textbf{#1.} }{\ \rule{0.5em}{0.1em}}
+%%% Cambio de nombres a español México
+\addto{\captionsspanish}{\def\contentsname{Contenido}}
+\addto{\captionsspanish}{\def\listtablename{\'Indice de tablas}}
+\addto{\captionsspanish}{\def\indexname{\'Indice alfab\'etico}}
+\addto{\captionsspanish}{\def\bibname{Referencias}}
+\addto{\captionsspanish}{\def\figurename{Imagen}}
+\addto{\captionsspanish}{\def\tablename{Tabla}}
+%\addto\captionsspanish{  \renewcommand\appendixname{Anexo}
+%                         \renewcommand\appendixpagename{Anexos}}
+\newcommand{\tabladecontenido}{
+\ifx\marcadorContenido\undefined \ifpdf
+   \pdfbookmark{Contenido}{Contenido}
+\fi\def\marcadorContenido{1}\fi \tableofcontents }
+\newcommand{\listadefiguras}{
+ \ifx\marcadorFiguras\undefined \ifpdf
+  % \pdfbookmark{Indice de Figuras}{Figuras}
+\fi\listoffigures\def\marcadorFiguras{1}
+\addcontentsline{toc}{chapter}{\protect\listfigurename}\cleardoublepage\phantomsection\fi }
+\newcommand{\listadetablas}{
+\ifx\marcadorTablas\undefined \ifpdf
+\cleardoublepage\phantomsection
+\fi\listoftables\def\marcadorTablas{1}
+\addcontentsline{toc}{chapter}{\protect\listtablename}\cleardoublepage\phantomsection \fi }
+\newcommand{\IndiceAlfabetico}{
+\cleardoublepage\phantomsection\printindex
+ \addcontentsline{toc}{part}{\protect\indexname}\cleardoublepage\phantomsection }%
+%%%% Entorno nomenclatura
+\makenomenclature
+\newcommand{\nomenclatura}{
+	\renewcommand{\nomname}{Nomenclatura}
+	%If you are using e. g. the documentclassbookwith page
+	% headings youshould also take care of correct headings:
+	\cleardoublepage % or \clearpage
+\fancyhead[RO]{\nomname} %
+ \fancyhead[LE]{\nomname}
+	\printnomenclature[2cm]
+\cleardoublepage
+\fancyhead[RO]{{\scriptsize\sffamily{\rightmark}}} %
+ \fancyhead[LE]{\raggedright{\scriptsize\sffamily{\leftmark}}}
+}%
+%%%%%%%%%%% crea grupos en nomenclatura  %%%%%%%%%%%%%%%%%%%%%%
+\sisetup{group-digits=integer}
+\renewcommand\nomgroup[1]{
+	\item[\bfseries
+	\ifstrequal{#1}{A}{ACR\'ONIMOS}{
+	\ifstrequal{#1}{B}{S\'MBOLOS}{
+	\ifstrequal{#1}{C}{VARIABLES F\'SICAS}{}}}]}%
+%%% agrega  valores y unidades a el grupo de nomenclatura variables o constanes físicas
+\newcommand{\nomunit}[1]{
+%	\renewcommand{\nomentryend}{\hspace*{\fill}#1}}%
+%\newcommand{\nomunit}[1]{%
+ \renewcommand{\nomentryend}{\hspace*{\fill}\unit{#1}}}
+ \sisetup{per-mode = symbol}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\Introduccion}{\mainmatter %\inicial archivo introduccion.tex
+\include{preliminares/introduccion}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\MarcodeReferencia}{\media %\inicial
+\include{capitulos/marcoreferencia}}  %archivo marcodereferencia.tex
+%%%%%%%%%%%%%%%%%%Referencias%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \newcommand{\referencias}{\cleardoublepage
+\phantomsection
+ \bibliographystyle{ieeetr} \nocite{*}  %estilo ieee
+ \bibliography{xbiblioteca} }
+%%%%%%%%márgene para papel
+\newcommand{\cambiamargen}{%%%%%%%%%%%%% Medidas de los margenes
+%	\pagestyle{fancy}
+%\setlength{\hoffset}{0mm}
+%\setlength{\voffset}{0pt}
+%\setlength{\voffset}{-36pt}
+\setlength{\headheight}{12pt}
+\setlength{\headsep}{35pt}
+ \setlength{\footskip}{35pt}
+\setlength{\oddsidemargin}{72pt} % O Odd impar
+\setlength{\evensidemargin}{0pt} % E even par
+%\setlength{\topmargin}{0pt} %
+\setlength\textheight{612pt}%%29\baselineskip
+\setlength{\textwidth}{438pt} \setlength{\marginparwidth}{52pt}
+\setlength{\marginparsep}{1pt}
+%\oddpagelayoutfalse%\setlength{\marginparpush}{65pt}
+%\newgeometry{hmargin={3cm,2cm}, tmargin=2.5in, lines=40, includeheadfoot}
+ }%
+
+ %%%%%%%%%%%%margenes para PDF
+
+%  %\ifx\first\@impreso {pdf}\else {papel} \fi
+%\ifx\first\@impreso
+%{ %pdf
+%	\newcommand{\cambiamargen}{%%%%%%%%%%%%% Medidas de los margenes
+%		\newgeometry{ hmargin={3cm,2cm},tmargin=6cm, headsep=3cm, head=1.5cm,textheight=28cm, bottom=3cm}
+%		%	\setlength{\hoffset}{0mm}
+%		%	\setlength{\oddsidemargin}{0pt} % O Odd impar
+%		%	\setlength{\evensidemargin}{0pt} % E even par
+%		%	\setlength{\textwidth}{508pt}
+%		%	\setlength{\marginparwidth}{2pt}
+%		%	\setlength{\marginparsep}{1pt}
+%		%	%\setlength{\marginparpush}{0pt}
+%		%	\setlength{\voffset}{-36pt}
+%		%	\setlength{\headsep}{35pt}
+%		%	\setlength{\footskip}{35pt}
+%		%	%\setlength{\topmargin}{0pt}
+%		%	%\setlength{\headheight}{12pt}
+%		%	\setlength\textheight{612pt}%%29\baselineskip
+%		%	\oddpagelayoutfalse
+%	}
+%}
+%\else
+%{		%papel
+%	\newcommand{\cambiamargen}{%%%%%%%%%%%%% Medidas de los margenes
+%		\setlength{\hoffset}{0mm}
+%		\setlength{\voffset}{-36pt}
+%		\setlength{\headsep}{35pt}
+%		\setlength{\footskip}{35pt}
+%		\setlength{\oddsidemargin}{72pt} % O Odd impar
+%		\setlength{\evensidemargin}{0pt} % E even par
+%		%\setlength{\topmargin}{0pt}
+%		%\setlength{\headheight}{12pt}
+%		\setlength\textheight{612pt}%%29\baselineskip
+%		\setlength{\textwidth}{438pt}
+%		\setlength{\marginparwidth}{52pt}
+%		\setlength{\marginparsep}{1pt}
+%		%	\oddpagelayoutfalse
+%		%\setlength{\marginparpush}{65pt}
+%	}
+%}
+%\fi
+%\def\quad{\hskip 1em\relax}
+%\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+%\renewcommand{\sectionmark}[1]{\markright{#1}}
+%%%%%%%%%%%%%%%%
+%% Modificación CESIÓN DE DERECHOS
+% %%%%%%%%%%%%
+%
+%\def\permisos{\par\noindent{\centering
+%  El autor cede los derechos a la  \Upiita\ para reproducir y \\*
+%  distribuir copias de esta tesis en cualquiera de sus partes o completa.}\par}
+%
+%
+%%%%%%%%%%%
+
+%%%% pagina en blanco
+%\newcommand*{\enblanco}
+%{\begingroup
+%    \newpage{\ }
+%    \thispagestyle{empty}
+%\endgroup}
+\endinput
