@@ -7,7 +7,7 @@
 | | |
 |:--|:--|
 | **Alumnos** | Deloiza Rodríguez Arturo · Jiménez Jiménez Atenea |
-| **Asesores** | Ing. Carlos Ríos Ramírez · Dr. Álvaro Anzueto Ríos · Dr. Carlos Carrizales Velázquez (externo) |
+| **Asesores** | Ing. Carlos Ríos Ramírez · Dr. Álvaro Anzueto Ríos · Dr. Carlos Carrizales Velazquez (externo) |
 | **Profesora titular** | Dra. Lilia Martínez Pérez |
 | **Versión del sistema** | `v0.2.0`: adquisición de 8 micrófonos estable en PC y Raspberry Pi (ver [`CHANGELOG.md`](CHANGELOG.md)) |
 

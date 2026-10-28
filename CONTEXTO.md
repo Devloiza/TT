@@ -38,7 +38,7 @@ Todo lo que aparece en este repositorio cae en una de dos categorías, y **nunca
 | Alumno 2 | Jiménez Jiménez Atenea |
 | Asesor 1 | Ing. Carlos Ríos Ramírez (Biónica, interno) |
 | Asesor 2 | Dr. Álvaro Anzueto Ríos (Biónica, interno) |
-| Asesor 3 | Dr. Carlos Carrizales Velázquez (externo) |
+| Asesor 3 | Dr. Carlos Carrizales Velazquez (externo) |
 | Profesora titular | Dra. Lilia Martínez Pérez |
 | Fecha de propuesta | 18/05/2026 · Protocolo fechado 26/06/2026 |
 | Confidencialidad | PÚBLICO |
