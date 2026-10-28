@@ -188,7 +188,7 @@ freely copied and distributed.}
 \newcommand\Asesort{	\parbox{6.5cm}{\centering\rule{6.5cm}{1pt}\\ \@asesora}
 \hfill	%\parbox{0.2cm}{\makebox[0.2cm]{} }
 	\parbox{6.5cm}{\centering\rule{6.5cm}{1pt}\\ \@asesorb}
-	\par\vskip 1.5cm
+	\par\vskip 1.2cm% espacio para firmar; era 1.5cm (decisión del autor 2026-10-28, para alinear la fecha del acta)
 	\parbox{8cm}{\centering\rule{6.5cm}{1pt}\\ \@asesorc}}
 \newcommand\Asesord{	\parbox{6.5cm}{\centering\rule{6.5cm}{1pt}\\ \@asesora}
 \hfill%	\parbox{0.5cm}{\makebox[0.5cm]{} }
@@ -214,13 +214,12 @@ freely copied and distributed.}
 %\end{titlingpage}
 \begin{titlingpage}
 		\parindent=-65pt \pagestyle{empty}  \parindent=-65pt
-\LogosVL \hspace*{.5cm}\parbox{14cm}{	
+\LogosVL \hspace*{.5cm}\parbox{14cm}{\def\baselinestretch{1.3}\selectfont% interlineado 1.3 solo aquí, para que quepa un título largo (decisión del autor 2026-10-28)
 \centering {\par \huge \bf {\fontfamily{Montserrat-TLF}\fontseries{sb}\selectfont\Ipn}\par}
- \vskip 2.5em \textsc{\@unidad}
- \vskip 1.5em %
- \large{\def\baselinestretch{1.2}\Large\bf\it \@materia  \par}
+ \vskip 2.5em \textsc{\@unidad}\par
+ {\large\bf UPIITA\par}% decisión del autor 2026-10-28: "UPIITA" en negritas pegado a la unidad, en lugar de \@materia
 \vskip 2.0em%
-\large{\def\baselinestretch{1.2}\Large\bf {\fontfamily{Montserrat-TLF}\fontseries{sb}\selectfont``\MakeUppercase{\@title}''}\par}%
+\large{\def\baselinestretch{1.2}\Large\bf {\fontfamily{Montserrat-TLF}\fontseries{sb}\selectfont``\@title''}\par}% sin \MakeUppercase: respeta mayúsculas y minúsculas (decisión del autor)
 \pdfbookmark{Portada}{portada}
 \vskip 3em%
 {\it Que para obtener el t\'itulo de\par}
@@ -254,10 +253,11 @@ freely copied and distributed.}
 \begin{titlingpage}
 \parindent=0pt \pagestyle{empty} \parindent=0pt
 \LogosVL \hspace*{0.5cm}\parbox{14cm}
-{\centering {\par \huge\bf{\fontfamily{Montserrat-TLF}\fontseries{sb}\selectfont\Ipn}\par}
-\vskip 2.5em \textsc{\@unidad} \vskip 1.5em
-\large{\def\baselinestretch{1.2}\Large\bf\it \@materia \par} \vskip 2em
-\large{\def\baselinestretch{1.2}\Large\bf {\fontfamily{Montserrat-TLF}\fontseries{sb}\selectfont``\MakeUppercase{\@title}''}\par}
+{\def\baselinestretch{1.3}\selectfont% igual que en la portada (decisión del autor 2026-10-28)
+\centering {\par \huge\bf{\fontfamily{Montserrat-TLF}\fontseries{sb}\selectfont\Ipn}\par}
+\vskip 2.5em \textsc{\@unidad}\par
+{\large\bf UPIITA\par}\vskip 2em% igual que en la portada (decisión del autor 2026-10-28)
+\large{\def\baselinestretch{1.2}\Large\bf {\fontfamily{Montserrat-TLF}\fontseries{sb}\selectfont``\@title''}\par}% sin \MakeUppercase
 \vskip 3em {\it Que para obtener el t\'itulo de\par} \vskip 0.5em {\Large \emph{\bf ``\@grado''}}
 \vskip2em \vfill
  \ifnum \@nalumnos = 4
@@ -291,8 +291,8 @@ freely copied and distributed.}
 \begin{center}\normalsize\Asesort
 \end{center} \vskip1 em \fi \fi \fi
  \else \ifnum \@nalumnos = 2
-{\vskip 2em\large Presentan:}
-\par \vskip 1.5cm
+{\large Presentan:}% sin el \vskip 2em que solo tenía el caso de 2 alumnos (decisión del autor 2026-10-28)
+\par \vskip 1.2cm% espacio para firmar; era 1.5cm (decisión del autor 2026-10-28)
 \begin{center}\normalsize\Alumnosd
 \end{center}\vskip 2em
 \ifnum \@nasesores = 1 {  \vskip 1.5em\large Asesor:} \vskip 1.5em
@@ -320,7 +320,7 @@ freely copied and distributed.}
 \begin{center}\normalsize\Asesort
 \end{center} \vskip 2em\fi \fi \fi
  \fi \fi \fi
-\vskip 1.5em
+\vskip 1em% antes del jurado; era 1.5em (decisión del autor 2026-10-28)
 \begin{center}\normalsize
 \parbox{6.5cm}{\centering
 {\bf Presidente del Jurado}\vspace*{.7cm}
@@ -331,6 +331,7 @@ freely copied and distributed.}
 {\bf Profesor titular}\vspace*{.7cm}
 \rule{6.5cm}{1pt}\\ \@Titular}
 \end{center}
+\par \@mes\ \@anio% fecha, igual que en la portada (decisión del autor 2026-10-28)
 %\vskip 1em
 %\newpage \thispagestyle{plain}
 }\end{titlingpage}
