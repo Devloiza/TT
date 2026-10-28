@@ -135,6 +135,7 @@ Cada documento responde una pregunta distinta. Si dos se contradicen, gana el de
 ├── CHANGELOG.md              ← historial de versiones
 ├── CLAUDE.md                 ← guía para Claude Code (incluye el rol de la IA)
 ├── REGISTRO_IA.md            ← control interno de apoyo de IA (no va en la tesina)
+├── GUIA_GIT.md               ← comandos de git para trabajar en ramas (copiar y pegar)
 ├── requirements.txt
 ├── Avances/                  ← SISTEMA OFICIAL (validado)
 │   ├── Documentation.md      ← documentación técnica y bitácora
@@ -191,5 +192,6 @@ Ajustar `ARCHIVO` y `MIC_ACTIVO` en `Avances/analisis.py` y correr `python Avanc
 - **`Exploration/` → `Avances/`.** Se prototipa en `Exploration/`; solo lo verificado se promueve a `Avances/`.
 - **Resultados a `SALIDAS/`**, nunca a la raíz ni a `Avances/`.
 - **Python + NumPy vectorizado**, sin loops de Python por muestra en tiempo real. La decisión de no usar Rust está en [`Documentation.md` §14.1](Avances/Documentation.md#141-python-vs-rust-vs-híbrido-sept-2026).
+- **Ramas:** nadie hace commit directo a `main`. Cada tarea va en su rama, `persona/tarea` (p. ej. `arturo/portada`), y entra a `main` por **Pull Request** en GitHub. Para empezar: `git switch main`, `git pull --ff-only` y `git switch -c persona/tarea`. Para integrar: `git push -u origin persona/tarea` y abrir el PR. Comandos para copiar y pegar en [`GUIA_GIT.md`](GUIA_GIT.md); detalle en `CLAUDE.md`, "Flujo de trabajo con git".
 - **Commits** en español con prefijo convencional (`feat:`, `fix:`, `docs:`, `perf:`, `chore:`). El `CHANGELOG.md` se consolida al cortar cada versión.
 - **Mantener sincronizados** `CONTEXTO.md` §3.4 y la tabla de la [§3](#3-estado-actual) de este README cuando cambie el estado de un objetivo.
