@@ -43,6 +43,19 @@ El TT es trabajo académico del autor. Claude y todos los agentes **corrigen, gu
 
 Antecedente: en oct 2026 se eliminó `Exploration/beamforming_algorithms/`, una exploración de DAS/DOA que Claude hizo casi por completo (commit `610d0c6`).
 
+## Flujo de trabajo con git
+
+Trabajan dos personas en el repo (Arturo y Atenea; regla acordada el 2026-10-28):
+
+- **Nadie hace commit directo a `main`.** Todo se trabaja en una rama por tarea, con el formato `persona/tarea` (p. ej. `arturo/portada`, `atenea/geometria-estadistica`).
+- **Para empezar una tarea:** `git switch main`, `git pull --ff-only` y `git switch -c persona/tarea`.
+- **Para integrar:** se sube la rama (`git push -u origin persona/tarea`) y se abre un **Pull Request en GitHub** hacia `main`. Se fusiona desde GitHub, y la otra persona puede revisarlo. Al fusionar, la rama se borra.
+- **Claude:**
+  - trabaja siempre en la rama de la tarea en curso; si está en `main`, crea la rama antes de cualquier commit;
+  - sube su rama, pero abre o fusiona Pull Requests solo cuando el autor lo pide;
+  - nunca hace `push --force` ni reescribe la historia de `main`;
+  - si un push se rechaza por cambios de la otra persona, integra con `git pull --rebase` sobre su propia rama y revisa los cambios ajenos antes de seguir.
+
 ## Setup y comandos
 
 No hay build system, linter ni suite de tests — es un proyecto de investigación con scripts Python ejecutados directamente.
