@@ -35,6 +35,10 @@ El TT es trabajo académico del autor. Claude y todos los agentes **corrigen, gu
   - **Nada se borra sin preguntar.** Lo dudoso se deja marcado con `\duda{...}`, o con `% [DUDA] motivo` en `.sty`, `.cls` y `.bib`.
   - `Escrito/PLANTILLA.md` es el mapa de la plantilla y el registro de sus problemas (P01…). Cada decisión o corrección actualiza ahí el estado del problema.
 - La documentación del proyecto (`README.md`, `CONTEXTO.md`, bitácora de `Documentation.md`) sí la puede mantener Claude, reflejando avances que hizo el autor.
+- **Consistencia de la documentación:**
+  - **Antes de cada commit** que toque documentación o estado, Claude invoca al agente `verificador`.
+  - Las correcciones mecánicas que reporte (sincronizar tablas, enlaces, estados ya decididos) Claude las aplica.
+  - Las que sean "decisión del autor" (alcance, `CONTEXTO.md`, contenido de la tesina) se consultan antes.
 - **`REGISTRO_IA.md`** es el control interno de qué hizo el autor y en qué apoyó la IA, por si hay que declararlo; no se incluye en la tesina. Claude agrega una fila cada vez que contribuya a algo del repo y deja en blanco el aporte del autor para que el autor lo complete. Los commits en que Claude participa llevan `Co-Authored-By: Claude`.
 
 Antecedente: en oct 2026 se eliminó `Exploration/beamforming_algorithms/`, una exploración de DAS/DOA que Claude hizo casi por completo (commit `610d0c6`).
@@ -111,6 +115,7 @@ Prototipos y herramientas de diagnóstico; no es código de producción del TT (
 
 - `reconstruccion_sept2026/` — reconstrucción incremental por etapas del sistema completo (transporte puro → 1 mic → 4 mics), referencia histórica y herramientas para depurar transporte serie.
 - `Primeros_intentos/` — prototipos históricos de 1–4 mics; usan baudios y pines viejos.
+- `Geometria_estadistica/` — trabajo del autor, en curso: recopilación de fuentes e imágenes de escorpiones del género *Heterometrus* para hacer estadística sobre imágenes, como apoyo al Obj. 1 (geometría bioinspirada). Los enlaces vacíos del índice de `Fuentes.md` son pendientes de la recopilación, no errores.
 
 ### Mapa de documentación
 

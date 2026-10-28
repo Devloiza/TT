@@ -7,7 +7,7 @@ Qué hace cada archivo y cada sección de la plantilla oficial (UpiiTeXis 2023),
 - **Forma no:** no se tocan los estilos, los títulos y divisiones preestablecidos ni los datos de la universidad.
 - **Nada se borra sin preguntar.** Lo dudoso se marca con `\duda{...}` o con `% [DUDA]` (ver [`CODIGOS_REVISION.md`](CODIGOS_REVISION.md)).
 
-> Los números de línea son del **2026-10-27** y se recorren cuando un archivo cambia. Si no coinciden, busca el nombre del comando.
+> Los números de línea son del **2026-10-28** y se recorren cuando un archivo cambia. Si no coinciden, busca el nombre del comando.
 
 ---
 
@@ -30,24 +30,24 @@ Lo que aparece en el PDF, en orden, y de dónde sale.
 
 | Parte del PDF | Comando (`Principal.tex`) | Lo define | Contenido en | ¿Se modifica? |
 |:--|:--|:--|:--|:--|
-| Portada | `\portada` ([113](tesina/Principal.tex#L113)) | `upiitatesis.sty` | Datos de [`Principal.tex:73-105`](tesina/Principal.tex#L73-L105) | Solo los datos (título, alumnos, asesores, fecha) |
-| Acta de firmas | `\acta` ([114](tesina/Principal.tex#L114)) | `upiitatesis.sty` | Mismos datos + jurado | Solo los datos |
-| Dedicatoria | `\dedicatoria` ([115](tesina/Principal.tex#L115)) | `upiitatesis.sty` | [`preliminares/dedicatoria.tex`](tesina/preliminares/dedicatoria.tex) | Texto sí |
-| Agradecimientos | `\agradecimientos` ([116](tesina/Principal.tex#L116)) | `upiitatesis.sty` | [`preliminares/agradecimientos.tex`](tesina/preliminares/agradecimientos.tex) | Texto sí |
-| Contenido (índice general) | `\tabladecontenido` ([117](tesina/Principal.tex#L117)) | `upiitatesis.sty` | Automático | No |
-| Resumen / Abstract | `\include` ([118-119](tesina/Principal.tex#L118-L119)) | — | [`preliminares/resumen.tex`](tesina/preliminares/resumen.tex), [`abstract.tex`](tesina/preliminares/abstract.tex) | Texto sí; título no |
-| Índice de figuras y de tablas | `\listadefiguras`, `\listadetablas` ([120-121](tesina/Principal.tex#L120-L121)) | `upiitatesis.sty` | Automático | No |
-| Nomenclatura | `\include` ([123](tesina/Principal.tex#L123)) | `upiitatesis.sty` (`\nomenclatura`) | [`preliminares/nomenclatura.tex`](tesina/preliminares/nomenclatura.tex) | Entradas sí |
-| Introducción (inicia numeración arábiga) | `\Introduccion` ([131](tesina/Principal.tex#L131)) | `upiitatesis.sty` (`\mainmatter` + `\include`) | [`preliminares/introduccion.tex`](tesina/preliminares/introduccion.tex) | Texto sí; secciones preestablecidas no |
-| Cap. Marco de referencia | `\MarcodeReferencia` ([145](tesina/Principal.tex#L145)) | `upiitatesis.sty` (activa numeración de secciones) | [`capitulos/marcoreferencia.tex`](tesina/capitulos/marcoreferencia.tex) | Texto sí |
-| Cap. Diseño del sistema | `\include` ([153](tesina/Principal.tex#L153), [157](tesina/Principal.tex#L157)) | — | [`capitulos/diseconceptual.tex`](tesina/capitulos/diseconceptual.tex) + [`disedetallado.tex`](tesina/capitulos/disedetallado.tex) (continuación, sin `\chapter`) | Texto sí |
-| Cap. Implementación | `\include` ([160](tesina/Principal.tex#L160)) | — | [`capitulos/implementacion.tex`](tesina/capitulos/implementacion.tex) | Texto sí |
-| Cap. Discusión / Análisis de resultados | `\include` ([164](tesina/Principal.tex#L164)) | — | [`capitulos/discusion.tex`](tesina/capitulos/discusion.tex) | Texto sí |
-| Conclusiones (sin numerar secciones) | `\setcounter{secnumdepth}{-1}` + `\include` ([168-170](tesina/Principal.tex#L168-L170)) | — | [`capitulos/conclusiones.tex`](tesina/capitulos/conclusiones.tex) | Texto sí |
-| Referencias | `\referencias` ([177](tesina/Principal.tex#L177)) | `upiitatesis.sty` (estilo IEEE) | [`XBiblioteca.bib`](tesina/XBiblioteca.bib) | Entradas sí |
-| Apéndices (A, B, C…) | `\part` + `\appendix` + `\include` ([181-185](tesina/Principal.tex#L181-L185)) | `upiita.cls` | [`apendices/apendice*.tex`](tesina/apendices/) | Texto sí |
-| Anexos | `\part` + `\anexo` + `\include` ([186-190](tesina/Principal.tex#L186-L190)) | `upiita.cls` | [`apendices/anexo*.tex`](tesina/apendices/) | Texto sí |
-| Índice alfabético | `\IndiceAlfabetico` ([194](tesina/Principal.tex#L194)) | `upiitatesis.sty` | Entradas `\index{...}` en el texto | Entradas sí |
+| Portada | `\portada` ([115](tesina/Principal.tex#L115)) | `upiitatesis.sty` | Datos de [`Principal.tex:75-107`](tesina/Principal.tex#L75-L107) | Solo los datos (título, alumnos, asesores, fecha) |
+| Acta de firmas | `\acta` ([116](tesina/Principal.tex#L116)) | `upiitatesis.sty` | Mismos datos + jurado | Solo los datos |
+| Dedicatoria | `\dedicatoria` ([117](tesina/Principal.tex#L117)) | `upiitatesis.sty` | [`preliminares/dedicatoria.tex`](tesina/preliminares/dedicatoria.tex) | Texto sí |
+| Agradecimientos | `\agradecimientos` ([118](tesina/Principal.tex#L118)) | `upiitatesis.sty` | [`preliminares/agradecimientos.tex`](tesina/preliminares/agradecimientos.tex) | Texto sí |
+| Contenido (índice general) | `\tabladecontenido` ([119](tesina/Principal.tex#L119)) | `upiitatesis.sty` | Automático | No |
+| Resumen / Abstract | `\include` ([120-121](tesina/Principal.tex#L120-L121)) | — | [`preliminares/resumen.tex`](tesina/preliminares/resumen.tex), [`abstract.tex`](tesina/preliminares/abstract.tex) | Texto sí; título no |
+| Índice de figuras y de tablas | `\listadefiguras`, `\listadetablas` ([122-123](tesina/Principal.tex#L122-L123)) | `upiitatesis.sty` | Automático | No |
+| Nomenclatura | `\include` ([125](tesina/Principal.tex#L125)) | `upiitatesis.sty` (`\nomenclatura`) | [`preliminares/nomenclatura.tex`](tesina/preliminares/nomenclatura.tex) | Entradas sí |
+| Introducción (inicia numeración arábiga) | `\Introduccion` ([133](tesina/Principal.tex#L133)) | `upiitatesis.sty` (`\mainmatter` + `\include`) | [`preliminares/introduccion.tex`](tesina/preliminares/introduccion.tex) | Texto sí; secciones preestablecidas no |
+| Cap. Marco de referencia | `\MarcodeReferencia` ([147](tesina/Principal.tex#L147)) | `upiitatesis.sty` (activa numeración de secciones) | [`capitulos/marcoreferencia.tex`](tesina/capitulos/marcoreferencia.tex) | Texto sí |
+| Cap. Diseño del sistema | `\include` ([155](tesina/Principal.tex#L155), [159](tesina/Principal.tex#L159)) | — | [`capitulos/diseconceptual.tex`](tesina/capitulos/diseconceptual.tex) + [`disedetallado.tex`](tesina/capitulos/disedetallado.tex) (continuación, sin `\chapter`) | Texto sí |
+| Cap. Implementación | `\include` ([162](tesina/Principal.tex#L162)) | — | [`capitulos/implementacion.tex`](tesina/capitulos/implementacion.tex) | Texto sí |
+| Cap. Discusión / Análisis de resultados | `\include` ([166](tesina/Principal.tex#L166)) | — | [`capitulos/discusion.tex`](tesina/capitulos/discusion.tex) | Texto sí |
+| Conclusiones (sin numerar secciones) | `\setcounter{secnumdepth}{-1}` + `\include` ([170-172](tesina/Principal.tex#L170-L172)) | — | [`capitulos/conclusiones.tex`](tesina/capitulos/conclusiones.tex) | Texto sí |
+| Referencias | `\referencias` ([179](tesina/Principal.tex#L179)) | `upiitatesis.sty` (estilo IEEE) | [`XBiblioteca.bib`](tesina/XBiblioteca.bib) | Entradas sí |
+| Apéndices (A, B, C…) | `\part` + `\appendix` + `\include` ([183-187](tesina/Principal.tex#L183-L187)) | `upiita.cls` | [`apendices/apendice*.tex`](tesina/apendices/) | Texto sí |
+| Anexos | `\part` + `\anexo` + `\include` ([188-192](tesina/Principal.tex#L188-L192)) | `upiita.cls` | [`apendices/anexo*.tex`](tesina/apendices/) | Texto sí |
+| Índice alfabético | `\IndiceAlfabetico` ([196](tesina/Principal.tex#L196)) | `upiitatesis.sty` | Entradas `\index{...}` en el texto | Entradas sí |
 
 ---
 
@@ -60,12 +60,13 @@ Lo que aparece en el PDF, en orden, y de dónde sale.
 | [1-68](tesina/Principal.tex#L1-L68) | Comentarios: descripción de archivos, créditos y licencia (LPPL / CC-BY-SA) | No: la licencia pide conservar la atribución |
 | [69](tesina/Principal.tex#L69) | Carga la clase `upiita` (carta, 11 pt) | No |
 | [70](tesina/Principal.tex#L70) | Carga `configuracion/upiitatesis.sty` | No |
-| [71](tesina/Principal.tex#L71) | Carga las marcas de revisión (`../revision.sty`). **Agregada**; para entregar se cambia a `[final]` | Solo la opción `[final]` |
-| [73-80](tesina/Principal.tex#L73-L80) | Datos de portada: título, unidad, materia, academia, grado, mes, año | Sí, excepto `\unidad` (dato de la universidad) |
-| [82-83](tesina/Principal.tex#L82-L83) | Presidente del jurado y profesor titular (para el acta) | Sí |
-| [91-105](tesina/Principal.tex#L91-L105) | Número de alumnos (1-4) y asesores (1-3), con sus nombres. La portada y el acta se acomodan según el número | Sí |
-| [107-195](tesina/Principal.tex#L107-L195) | Cuerpo: el orden de la §2 | Solo qué archivos se incluyen |
-| [108](tesina/Principal.tex#L108) | Fuerza números romanos en minúscula para las páginas preliminares | No |
+| [71-72](tesina/Principal.tex#L71-L72) | Versión vectorial de la fuente del texto y de la monoespaciada (`lmr`, `lmtt`). **Agregadas** ([P29](#4-registro-de-problemas)) | No |
+| [73](tesina/Principal.tex#L73) | Carga las marcas de revisión (`../revision.sty`). **Agregada**; para entregar se cambia a `[final]` | Solo la opción `[final]` |
+| [75-82](tesina/Principal.tex#L75-L82) | Datos de portada: título, unidad, materia, academia, grado, mes, año | Sí, excepto `\unidad` (dato de la universidad) |
+| [84-85](tesina/Principal.tex#L84-L85) | Presidente del jurado y profesor titular (para el acta) | Sí |
+| [93-107](tesina/Principal.tex#L93-L107) | Número de alumnos (1-4) y asesores (1-3), con sus nombres. La portada y el acta se acomodan según el número | Sí |
+| [109-197](tesina/Principal.tex#L109-L197) | Cuerpo: el orden de la §2 | Solo qué archivos se incluyen |
+| [110](tesina/Principal.tex#L110) | Fuerza números romanos en minúscula para las páginas preliminares | No |
 
 ### 3.2 `upiita.cls` — clase (forma: no se modifica)
 
@@ -110,7 +111,7 @@ Derivada de la clase estándar `book` de LaTeX.
 | [368-375](tesina/configuracion/upiitatesis.sty#L368-L375) | Redefine `\cleardoublepage`: las páginas en blanco para empezar capítulo en página impar quedan sin encabezado |
 | [376-383](tesina/configuracion/upiitatesis.sty#L376-L383) | Punto como separador decimal, activa el índice alfabético y los encabezados |
 | [384-409](tesina/configuracion/upiitatesis.sty#L384-L409) | Entornos tipo teorema en español (`teorema`, `definicion`, `ejemplo`…) |
-| [410-418](tesina/configuracion/upiitatesis.sty#L410-L418) | Nombres en español: "Contenido", "Índice de tablas", "Imagen" para figuras ([P11](#4-registro-de-problemas)) |
+| [410-418](tesina/configuracion/upiitatesis.sty#L410-L418) | Nombres en español: "Contenido", "Índice de tablas", "Figura" ([P11](#4-registro-de-problemas)) |
 | [419-435](tesina/configuracion/upiitatesis.sty#L419-L435) | `\tabladecontenido`, `\listadefiguras`, `\listadetablas`, `\IndiceAlfabetico` (los agregan al índice y a los marcadores del PDF) |
 | [436-462](tesina/configuracion/upiitatesis.sty#L436-L462) | Nomenclatura: tres grupos, A = acrónimos, B = símbolos, C = variables físicas con unidades |
 | [464-468](tesina/configuracion/upiitatesis.sty#L464-L468) | `\Introduccion` y `\MarcodeReferencia` |
@@ -173,34 +174,36 @@ Tipo:
 
 | ID | Dónde | Problema | Tipo | Estado |
 |:--:|:--|:--|:--:|:--|
-| P01 | [`XBiblioteca.bib:21-39`](tesina/XBiblioteca.bib#L21-L39) | Molde `@BOOK{,` vacío. En el original traía 18 caracteres invisibles `DEL` (`0x7F`), uno por campo: eran los "caracteres inválidos", y ya no están (se eliminaron al guardar el archivo el 2026-10-27). Además, BibTeX lo procesaba como referencia real y salía una referencia [3] vacía | Error | **Resuelto** 2026-10-27: molde desactivado y conservado, con cada línea comentada con `%`. `@comment` se descartó porque rompe el lector de bibliografía de LaTeX Workshop. **Ojo:** en un `.bib`, `%` no es comentario para BibTeX; cualquier `@`, aunque esté en una línea con `%`, inicia una entrada |
-| P02 | [`XBiblioteca.bib:235`](tesina/XBiblioteca.bib#L235) | A la entrada `TR02` le falta una coma tras `title`: error de BibTeX | Error | **Resuelto** 2026-10-27 por el autor: agregó la coma |
-| P03 | [`upiitatesis.sty:472`](tesina/configuracion/upiitatesis.sty#L472) | `\nocite{*}` mete todas las entradas del `.bib` en las referencias, citadas o no | Error | **Resuelto** 2026-10-27: quitado por decisión del autor; solo se listan las obras citadas con `\cite`. **Mientras no haya ninguna cita**, BibTeX avisa "I found no \citation commands" y las referencias salen vacías; es esperado |
+| P01 | [`XBiblioteca.bib:21-43`](tesina/XBiblioteca.bib#L21-L43) | Molde `@BOOK{,` vacío. En el original traía 18 caracteres invisibles `DEL` (`0x7F`), uno por campo: eran los "caracteres inválidos", y ya no están (se eliminaron al guardar el archivo el 2026-10-27). Además, BibTeX lo procesaba como referencia real y salía una referencia [3] vacía | Error | **Resuelto** 2026-10-27: molde desactivado y conservado, con cada línea comentada con `%`. `@comment` se descartó porque rompe el lector de bibliografía de LaTeX Workshop. **Ojo:** en un `.bib`, `%` no es comentario para BibTeX; cualquier `@`, aunque esté en una línea con `%`, inicia una entrada |
+| P02 | [`XBiblioteca.bib:239`](tesina/XBiblioteca.bib#L239) | A la entrada `TR02` le falta una coma tras `title`: error de BibTeX | Error | **Resuelto** 2026-10-27 por el autor: agregó la coma |
+| P03 | [`upiitatesis.sty:472`](tesina/configuracion/upiitatesis.sty#L472) | `\nocite{*}` mete todas las entradas del `.bib` en las referencias, citadas o no | Error | **Resuelto** 2026-10-27: quitado por decisión del autor; solo se listan las obras citadas con `\cite`. Sin ninguna `\cite`, BibTeX avisa "I found no \citation commands" y las referencias salen vacías. Desde `116301c` hay una cita de prueba del autor (`\cite{AR17}` en `conclusiones.tex`) |
 | P04 | [`upiitatesis.sty:473`](tesina/configuracion/upiitatesis.sty#L473) | `\bibliography{xbiblioteca}` contra `XBiblioteca.bib`: falla en Linux y Overleaf | Error | **Resuelto** 2026-10-27: el `.sty` ahora dice `\bibliography{XBiblioteca}` |
 | P05 | Compilación | La nomenclatura no se generaba | Error | **Resuelto** 2026-10-27: `latexmkrc` |
 | P06 | [`upiita.cls:252`](tesina/upiita.cls#L252) | "Ing. Mecatrónica" fijo en el pie de página | Forma | Pendiente |
 | P07 | [`upiitatesis.sty:455-456`](tesina/configuracion/upiitatesis.sty#L455-L456) | `S\'MBOLOS`, `F\'SICAS`: salen "SḾBOLOS" y "FŚICAS" | Error | **Resuelto** 2026-10-27: `S\'IMBOLOS` y `F\'ISICAS`; el PDF dice "SÍMBOLOS" y "VARIABLES FÍSICAS" |
 | P08 | [`upiitatesis.sty:58`](tesina/configuracion/upiitatesis.sty#L58) | `hyperref` se carga antes de unos diez paquetes; opciones `pdftex` y `pdfstartpage=3`; desactiva la numeración de páginas en el visor de PDF | Aviso | Pendiente |
 | P09 | [`diseconceptual.tex:14`](tesina/capitulos/diseconceptual.tex#L14) | Título con matemáticas: avisos de `hyperref` en los marcadores del PDF | Aviso | Pendiente |
-| P10 | `upiitatesis.sty` [158-167](tesina/configuracion/upiitatesis.sty#L158-L167), [346](tesina/configuracion/upiitatesis.sty#L346), [475-491](tesina/configuracion/upiitatesis.sty#L475-L491) | Márgenes definidos de tres formas que pueden chocar | Aviso | Pendiente: revisar en el PDF |
-| P11 | `upiita.cls` [713-714](tesina/upiita.cls#L713-L714), [723-726](tesina/upiita.cls#L723-L726); [`upiitatesis.sty:415`](tesina/configuracion/upiitatesis.sty#L415) | Nombres inconsistentes ("Lista de Figures", figuras llamadas "Imagen"); `\today` en inglés | Aviso | Pendiente: revisar en el PDF |
+| P10 | `upiitatesis.sty` [158-167](tesina/configuracion/upiitatesis.sty#L158-L167), [346](tesina/configuracion/upiitatesis.sty#L346), [475-491](tesina/configuracion/upiitatesis.sty#L475-L491) | Márgenes definidos de tres formas. **Diagnóstico 2026-10-28** (valores reales medidos en el PDF): portada y acta usan `\cambiamargen` (izquierdo 50.7 mm en impares y 25.4 mm en pares, texto de 153.9 mm); desde la dedicatoria hasta el final rige el `\newgeometry` de la dedicatoria, que nunca se revierte (30/30 mm, texto de 155.9 mm). El cuerpo es consistente. **Efecto visible:** el encabezado y el pie miden 170 mm (los 17 cm de la línea 159, tomados al activar `fancyhdr`) y sobresalen 14 mm hacia el margen exterior | Forma | **Se conserva** 2026-10-28, por decisión del autor: forma original de la plantilla |
+| P11 | `upiita.cls` [713-714](tesina/upiita.cls#L713-L714), [723-726](tesina/upiita.cls#L723-L726); [`upiitatesis.sty:415`](tesina/configuracion/upiitatesis.sty#L415) | Nombres. **Diagnóstico 2026-10-28:** las listas salen bien ("Contenido", "Índice de figuras", "Índice de tablas"); los nombres en inglés de la clase no se usan. `\today` no se usa en ningún archivo. **Queda:** cada figura se rotula "Imagen 3.1" mientras la lista se titula "Índice de figuras" (línea 415) | Forma | **Resuelto** 2026-10-28: `\figurename` pasa a "Figura" (línea 415); el pie dice "Figura 3.1", verificado con una figura de prueba |
 | P12 | [`upiitatesis.sty:363`](tesina/configuracion/upiitatesis.sty#L363) | `\setcounter{page}{7}` fijo en agradecimientos | Aviso | Pendiente |
 | P13 | `upiitatesis.sty` [46-47](tesina/configuracion/upiitatesis.sty#L46-L47), [79](tesina/configuracion/upiitatesis.sty#L79) | `color` y `xcolor` duplicados; `subfigure` obsoleto | Aviso | Pendiente |
 | P14 | [`Principal.tex:70`](tesina/Principal.tex#L70) | Carga por ruta (`configuracion/upiitatesis`): aviso de nombre de paquete | Aviso | Pendiente |
 | P15 | Portada | La negrita de Montserrat (`sbx`) no existe y se sustituye | Aviso | Pendiente |
 | P16 | [`upiitatesis.sty:360`](tesina/configuracion/upiitatesis.sty#L360) | Errata `\marcadorAgradecimients` | Aviso | Pendiente |
 | P17 | [`upiita.cls:138-143`](tesina/upiita.cls#L138-L143) | La opción `latin1` activa `utf8` | Aviso | Pendiente |
-| P18 | — | Una página sale 59 pt más alta de lo que cabe (`Overfull \vbox`) | Aviso | Pendiente: ubicar |
+| P18 | `\acta` ([`upiitatesis.sty:249-342`](tesina/configuracion/upiitatesis.sty#L249-L342)) | El acta de firmas mide 59 pt más de lo que cabe (54 pt con 2 alumnos y 3 asesores, los datos reales). No se corta nada: la última línea (jurado) invade el margen inferior y queda más baja que en la portada | Forma | **Se conserva** 2026-10-28, por decisión del autor: no se corta nada |
 | P19 | [`diseconceptual.tex:1`](tesina/capitulos/diseconceptual.tex#L1), [`disedetallado.tex:1`](tesina/capitulos/disedetallado.tex#L1) | Declaraban `% !TeX encoding = ISO-8859-1`, pero son UTF-8: TeXstudio y TeXworks los abrirían con caracteres raros (VS Code no lee esa línea) | Error | **Resuelto** 2026-10-27: ahora declaran `UTF-8` |
 | P20 | [`anexo2.tex:13`](tesina/apendices/anexo2.tex#L13), [`anexo3.tex:10`](tesina/apendices/anexo3.tex#L10) | `\verb+\+bigskip` imprime literalmente "\bigskip" | Error | **Resuelto** 2026-10-27: `\bigskip`, como en `anexo1.tex` |
 | P21 | [`Principal.tex:24`](tesina/Principal.tex#L24), [`:31`](tesina/Principal.tex#L31) | Los comentarios mencionan `config.tex` y `mecatexis.prj`, que no existen | Sobrante | Pendiente |
 | P22 | `configuracion/` | Copias de paquetes no usadas, `estilodoc.tex` comentado, `texput.log` | Sobrante | Pendiente |
 | P23 | `adicionales/`, `Estructura de -libro.jpg` | Material de consulta que no se compila | Sobrante | Pendiente. 2026-10-27: `adicionales/` queda fuera de git (`.gitignore`) y se conserva local; falta decidir si se borra |
 | P24 | Contenido (§3.5), `XBiblioteca.bib`, `imagenes/img106.jpg` | Contenido de ejemplo de otras tesis | Ejemplo | Pendiente |
-| P25 | `marcoreferencia.tex:1`, `disedetallado.tex`, `implementacion.tex` | Erratas en títulos preestablecidos: "referencíal", "M{l}" (letra L por el número 1), "módulo 2 (M{n})", paréntesis faltante, sección duplicada | Forma | Pendiente |
+| P25 | `marcoreferencia.tex:1`, `disedetallado.tex`, `implementacion.tex` | Erratas en títulos preestablecidos: "referencíal", "M{l}" (letra L por el número 1), "módulo 2 (M{n})", paréntesis faltante, sección duplicada. Además, numeración con niveles saltados ("4.0.1" en `discusion.tex`, "3.1.0.1" en `implementacion.tex`), porque usan una subsección sin sección | Forma | Pendiente |
 | P26 | `introduccion.tex`, `marcoreferencia.tex`, `disedetallado.tex` | Títulos pensados para Mecatrónica ("Enfoque mecatrónico", "Metodología mecatrónica", "sistema mecatrónico") | Forma | Pendiente: consultar con asesor |
-| P27 | `apendices/*.tex` | `\stepcounter{chapter}` "necesario para cambiar numeración": verificar la numeración de apéndices y anexos en el PDF | Aviso | Pendiente: revisar en el PDF |
-| P28 | [`Principal.tex:73-105`](tesina/Principal.tex#L73-L105) | Datos de ejemplo: nombres ficticios, Mecatrónica, "Mes", "Año" | Ejemplo | Pendiente: llenar |
+| P27 | `apendices/*.tex` | `\stepcounter{chapter}`. **Diagnóstico 2026-10-28:** los títulos llevan el número escrito a mano ("Apéndice 1"); el `\stepcounter` numera las figuras y tablas internas (Apéndice 1 → "Imagen A.1"). **Problema:** los anexos repiten las letras de los apéndices (la figura del Anexo 1 también es "A.1"), así que una referencia "Imagen A.1" es ambigua | Forma | **Se conserva** 2026-10-28, por decisión del autor. Al citar figuras de anexos, conviene nombrar el anexo en el texto para evitar la ambigüedad |
+| P28 | [`Principal.tex:75-107`](tesina/Principal.tex#L75-L107) | Datos de ejemplo: nombres ficticios, Mecatrónica, "Mes", "Año" | Ejemplo | Pendiente: llenar |
+| P29 | Fuentes del texto principal | **El texto se genera con fuentes de mapa de bits (Type 3)**, porque la fuente estándar en codificación T1 necesita `cm-super`, que no está instalado. Efectos: el texto se ve borroso con zoom, y al buscar o copiar en el PDF se pierden las ligaduras ("figuras" → "guras", "ficha" → "cha"). Probado: `\rmdefault{lmr}` (más `\ttdefault{lmtt}` para `\verb`) deja el texto vectorial y buscable, sin mover saltos de línea ni páginas y conservando Montserrat en los títulos. `lmodern` completo se descartó porque cambia la fuente de los títulos | Error | **Resuelto** 2026-10-28: `\rmdefault{lmr}` y `\ttdefault{lmtt}` en `Principal.tex`. Verificado: 0 fuentes de mapa de bits, búsqueda y copiado correctos, 56 páginas y Montserrat en los títulos |
+| P30 | [`upiitatesis.sty:279`](tesina/configuracion/upiitatesis.sty#L279), [`:294`](tesina/configuracion/upiitatesis.sty#L294) | El acta dice "Presenta:" (singular) con 3 y con 2 alumnos; la portada dice bien "Presentan:". Afecta los datos reales (2 alumnos) | Error | **Resuelto** 2026-10-28: "Presentan:" en los casos de 3 y 2 alumnos del acta |
 
 ---
 
@@ -221,23 +224,25 @@ Método acordado para cada problema: Claude explica qué hace la pieza, prueba l
 - Hallazgos que conviene recordar:
   - En un `.bib`, `%` no es comentario para BibTeX y cualquier `@` inicia una entrada.
   - LaTeX Workshop no entiende `@comment`.
-  - Mientras no haya ninguna `\cite`, BibTeX avisa "I found no \citation commands" y las referencias salen vacías (efecto esperado de P03).
+  - Sin ninguna `\cite`, BibTeX avisa "I found no \citation commands" y las referencias salen vacías (efecto esperado de P03). Hoy hay una cita de prueba del autor (`\cite{AR17}` en `conclusiones.tex`).
   - Al escribir la bibliografía propia: los autores institucionales van entre llaves dobles, `{{...}}`, y los nombres propios de los títulos se protegen, `{M}éxico`.
+
+### Sesión 2026-10-28
+
+- Primera revisión del agente `verificador`: 8 hallazgos, ninguna contradicción. Se aplicaron los mecánicos: commits en `REGISTRO_IA.md`, líneas del `.bib` en este mapa, `PLANTILLA.md` en el árbol del README y aclaración del `.zip`.
+- Diagnosticados en el PDF, con mediciones y pruebas en copias: P10, P11, P18 y P27.
+- **Problemas nuevos:** P29 (fuentes de mapa de bits) y P30 ("Presenta:" en el acta). También se amplió P25 con los niveles de numeración saltados.
+- **Decisiones del autor:**
+  - **Resueltos:** P11 ("Figura"), P29 (fuentes vectoriales) y P30 ("Presentan:").
+  - **Se conservan como en el original:** P10, P18 y P27.
 
 ### Pendientes, en el orden propuesto
 
-1. **Revisar en el PDF** (pueden cambiar cómo se ve la tesina):
-   - **P10:** márgenes de cada tipo de página;
-   - **P11:** nombres de las listas y fecha;
-   - **P18:** la página que se sale 59 pt;
-   - **P27:** numeración de apéndices y anexos.
-
-   ← **Retomar aquí.**
-2. **Forma**, que decide el autor:
+1. **Forma**, que decide el autor ← **Retomar aquí.**
    - **P06:** "Ing. Mecatrónica" en el pie de página;
    - **P25:** erratas en títulos preestablecidos;
    - **P26:** títulos pensados para Mecatrónica, a consultar con el asesor.
-3. **Avisos técnicos**, que no cambian lo que se ve: P08 (`hyperref`), P09, P12, P13, P14, P15, P16, P17.
-4. **Sobrantes y contenido de ejemplo:**
+2. **Avisos técnicos**, que no cambian lo que se ve: P08 (`hyperref`), P09, P12, P13, P14, P15, P16, P17.
+3. **Sobrantes y contenido de ejemplo:**
    - P21, P22, P23;
    - P24, el contenido de ejemplo, junto con los datos reales de P28.

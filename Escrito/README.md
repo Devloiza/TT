@@ -24,6 +24,6 @@
 - **Forma no:** los estilos, los títulos y divisiones preestablecidos de la plantilla, y los datos de la universidad.
 - **Ante la duda, no se borra:** se marca con `\duda{...}` (o con `% [DUDA]` en `.sty`, `.cls` y `.bib`) y se pregunta.
 
-El original de la plantilla está en `TT_UPIITA_2023.zip`, en esta carpeta.
+El original de la plantilla está en `TT_UPIITA_2023.zip`, en esta carpeta (local, no versionado). En git, el original es el commit `eafaa96`.
 
 Los auxiliares de compilación y el PDF de cada documento no se versionan (ver `.gitignore`); se regeneran desde los `.tex`. Los PDF de `logos/` e `imagenes/` sí se versionan, porque son parte del documento.

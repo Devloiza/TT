@@ -5,6 +5,7 @@ Nada en esta carpeta es código de producción. Aquí se prototipa, se diagnosti
 | Carpeta | Estado | Para qué sirve | Documentación |
 |:--|:--|:--|:--|
 | [`reconstruccion_sept2026/`](reconstruccion_sept2026/) | 📦 Histórico, con herramientas vigentes | Reconstrucción por etapas del sistema de adquisición (transporte puro → 1 mic → 4 mics) que llevó a `v0.1.0`. `transport_check.py` y `diag_raw_dump.py` siguen siendo útiles para depurar problemas de transporte serie. | [`Documentation.md` §10](../Avances/Documentation.md#10-reconstrucción-por-etapas-sept-2026) |
+| [`Geometria_estadistica/`](Geometria_estadistica/) | 🟡 En curso (autor) | Recopilación de fuentes e imágenes de especies del género *Heterometrus* para hacer estadística sobre las imágenes, como apoyo al Obj. 1 (geometría del arreglo inspirada en las *slit sensilla*). El índice de especies de `Fuentes.md` se completa conforme avanza la recopilación. | [`Fuentes.md`](Geometria_estadistica/Fuentes.md) |
 | [`Primeros_intentos/`](Primeros_intentos/) | 📦 Histórico | Primeros prototipos de 1, 2 y 4 micrófonos, previos a la reconstrucción. Superados por `Avances/`. | Esta página |
 
 ## `Primeros_intentos/`
