@@ -21,15 +21,12 @@
 %       marcoreferencia.tex, diseconceptual.tex, disedetallado.tex
 %       implementacón.tex, discusion.tex, conclusiones.tex
 %       apendices/*.tex: apéndices y anexos del documento
-%       config.tex : configuración de la "compilación" del documento
 %       Principal.tex: Archivo maestro del documento desde el cual se realiza
 %       la compilación
 %       upiita.cls : Archivo de la clase de documento, contiene las definiciones
 %       y estructura del formato
 %       upiitatesis.sty Configuración y definiciones del documento
 %       XBiblioteca.bib: Archivo de las referencias
-%       mecatexis.prj: permite utilizar los documentos como un proyecto en WinEdt
-%           esto permite compilar desde cualquier archivo sin que se elija el principal.
 % ---------------------------------------------------------------------
 %       Inicio del documento se define la clase y
 %           UpiiTeXis: Formatos de Reporte de Trabajo termina o Proyecto Terninal UPIITA-IPN
@@ -67,6 +64,7 @@
 %---------------------------------------------------------------------
 \typeout{Copyright Juan Carlos Guzmán Salgado Griselda Sánchez Otero   Diego Alonso Flores Hernández}
 \documentclass[letterpaper,11pt]{upiita}
+\pagenumbering{arabic}  % P08: define \thepage antes de hyperref, para que el visor muestre i, ii... y 1, 2...
 \usepackage{configuracion/upiitatesis}
 \renewcommand{\rmdefault}{lmr}   % texto en versión vectorial de la misma fuente (P29: sin cm-super salía en mapa de bits)
 \renewcommand{\ttdefault}{lmtt}  % ídem para \verb y texto monoespaciado

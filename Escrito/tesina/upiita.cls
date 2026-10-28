@@ -249,7 +249,7 @@
  \fancyfoot[RO,LE]{\thepage}
  \fancyfoot[CO]{UPIITA}
  \fancyfoot[CE]{IPN}
- \fancyfoot[RE,LO]{Ing. Mecatrónica}}%%
+ \fancyfoot[RE,LO]{Ing. Biónica}}%% P06: era "Ing. Mecatrónica"
 \newcommand\inicial{%
 \setcounter{secnumdepth}{-1}}
 \newcommand\media{%
