@@ -1,5 +1,4 @@
 # Contexto
-![alt text](image.png)
 Para fines de obtener la mayor cantidad de imagenes se tomarán las especies de escorpiones que comparten género (Hetrometrus).
 En estos enlaces se encuentran descripciones generales (por lo observado):
 - "A review of the genus Heterometrus Ehrenberg, 1828, with descriptions of seven new species (Scorpiones, Scorpionidae): "https://mds.marshall.edu/euscorpius/vol2004/iss15/1/

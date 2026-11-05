@@ -519,7 +519,7 @@ tmux attach -t prueba   # para volver a entrar
 
 ## 14. Ideas de mejora / Trabajo a futuro
 
-Decisiones de arquitectura consideradas y descartadas (por ahora) — se documentan para no volver a evaluarlas desde cero si la situación cambia.
+Decisiones y mejoras consideradas y descartadas o pospuestas (por ahora) — se documentan para no volver a evaluarlas desde cero si la situación cambia.
 
 ### 14.1 Python vs. Rust vs. híbrido (sept 2026)
 
@@ -535,3 +535,7 @@ Decisiones de arquitectura consideradas y descartadas (por ahora) — se documen
 - La evaluación de las métricas del protocolo (**PESQ, STOI, SNR**, objetivo 8) se hace **sobre grabaciones, en modo offline/batch** — no hay presión de tiempo real ahí en absoluto, por lo que la velocidad de ejecución del análisis es prácticamente irrelevante para cumplir la hipótesis.
 
 **Cuándo reconsiderar esto:** si en algún momento se busca convertir el sistema en un producto/proyecto más allá de la tesis — muchos más canales, un microcontrolador con mucha menos capacidad que una Raspberry Pi, o garantías de tiempo real más estrictas que las de este protocolo. Ahí las ventajas reales de Rust (sin GIL, sin pausas de recolector de basura, menor uso de memoria, despliegue como binario único sin depender de un entorno Python) sí entran en juego.
+
+### 14.2 Portabilidad de `estadistica_imagenes.py` (nov 2026)
+
+El script de estadística sobre las anotaciones de patas (`Exploration/Geometria_estadistica/`, trabajo del autor) usa rutas con `\` relativas a la raíz del repo y `os.system('cls')`, así que solo funciona en Windows y ejecutado desde la raíz. **Decisión: dejarlo así por ahora**, porque solo se usa en la PC del autor para obtener la geometría a partir de las imágenes recopiladas. Más adelante se valora si conviene hacerlo portable (rutas relativas al propio script, sin depender del sistema operativo).

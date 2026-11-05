@@ -128,7 +128,7 @@ Prototipos y herramientas de diagnóstico; no es código de producción del TT (
 
 - `reconstruccion_sept2026/` — reconstrucción incremental por etapas del sistema completo (transporte puro → 1 mic → 4 mics), referencia histórica y herramientas para depurar transporte serie.
 - `Primeros_intentos/` — prototipos históricos de 1–4 mics; usan baudios y pines viejos.
-- `Geometria_estadistica/` — trabajo del autor, en curso: recopilación de fuentes e imágenes de escorpiones del género *Heterometrus* para hacer estadística sobre imágenes, como apoyo al Obj. 1 (geometría bioinspirada). Los enlaces vacíos del índice de `Fuentes.md` son pendientes de la recopilación, no errores.
+- `Geometria_estadistica/` — trabajo del autor, en curso: recopilación de fuentes e imágenes de escorpiones del género *Heterometrus* para hacer estadística sobre imágenes, como apoyo al Obj. 1 (geometría bioinspirada). Los enlaces vacíos del índice de `Fuentes.md` son pendientes de la recopilación, no errores. `anotar_patas.py` es una utilidad de anotación hecha por Claude con la especificación del autor (eje del cuerpo, patas P1–P4 con lado deducido, círculo por ajuste o mínimo, dos CSV en `datos/`); `estadistica_imagenes.py` y el análisis son del autor. Las fotos (`fotos/`) no se versionan.
 
 ### Mapa de documentación
 

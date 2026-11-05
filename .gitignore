@@ -45,3 +45,7 @@ Escrito/*/*.pdf
 Escrito/TT_UPIITA_2023.zip
 # Material de consulta de la plantilla (manuales y diccionarios); no se compila (PLANTILLA.md, P23; se conserva local)
 Escrito/tesina/adicionales/
+
+# Fotos de escorpiones para la anotación de patas: se quedan locales (derechos de autor y tamaño);
+# los CSV de anotaciones (Exploration/Geometria_estadistica/datos/) sí se versionan
+Exploration/Geometria_estadistica/fotos/
