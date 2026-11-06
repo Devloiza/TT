@@ -19,7 +19,7 @@ estadística), paralela al eje (0° al frente, 180° atrás) y perpendicular (90
 pata muestra su ángulo respecto al frente (0 a 180°, igual para las dos patas en espejo); es solo una
 guía visual y no se guarda: la perpendicular y los ángulos se deducen del eje en el análisis.
 
-Uso:  python Exploration/Geometria_estadistica/anotar_patas.py
+Uso:  python Exploration/Geometria_estadistica/patainador.py
 
 Teclas:
   1-4      elegir el par de la pata que se va a marcar
@@ -56,6 +56,11 @@ CARPETA_DATOS = CARPETA_BASE / "datos"
 METODO_CIRCULO = "ajuste"  # "ajuste" (mínimos cuadrados) o "minimo" (el menor que encierra los centroides)
 MIN_PUNTOS_PATA = 5
 MOSTRAR_ANGULOS = True  # ángulo de cada pata respecto al frente, solo en pantalla (no se guarda)
+
+# Tamaños del dibujo (solo en pantalla; útiles para capturas en presentaciones)
+TEXT_SIZE = 15  # todos los textos: encabezado, etiquetas de patas y de la cruz de referencia
+LINE_SIZE = 3  # grosor de todas las líneas: eje, cruz de referencia y círculo
+CENTROID_SIZE = 20  # tamaño del marcador del centroide de cada pata
 
 EXTENSIONES = {".jpg", ".jpeg", ".png", ".tif", ".tiff", ".bmp"}
 PARES = ("P1", "P2", "P3", "P4")
@@ -187,6 +192,13 @@ class Anotacion:
         if self.estado != "descartada":
             self.estado = "completa" if not self.faltantes() else "en_progreso"
 
+    def firma(self):
+        """Todo lo que se guarda en los CSV salvo la fecha, redondeado como en el CSV (para detectar cambios reales)."""
+        redondear = lambda p: None if p is None else tuple(_num(v) for v in p)
+        patas = tuple(sorted((k, v["visible"], tuple(redondear(p) for p in v["puntos"])) for k, v in self.patas.items()))
+        return (redondear(self.eje_frente), redondear(self.eje_atras), redondear(self.circulo),
+                self.circulo_metodo if self.circulo else "", self.circulo_manual, self.estado, self.motivo, patas)
+
 
 # ----------------------------------------------------------------- CSV
 def _num(v):
@@ -300,6 +312,7 @@ class Anotador:
         with Image.open(ruta) as im:
             imagen = np.asarray(ImageOps.exif_transpose(im).convert("RGB"))
         self.a = self._anotacion_de(ruta, tamano=(imagen.shape[1], imagen.shape[0]))
+        self.firma_guardada = self.a.firma()  # antes de recalcular: un cambio de METODO_CIRCULO sí cuenta como cambio
         self.a.recalcular_circulo()  # con el METODO_CIRCULO vigente, salvo que se haya ajustado a mano
         self.par_actual, self.puntos_actuales, self.esperando_lado_oculto = None, [], False
         self.ax.clear()
@@ -311,7 +324,9 @@ class Anotador:
 
     def guardar(self):
         self.a.actualizar_estado()
-        self.a.fecha = datetime.date.today().isoformat()
+        if self.a.firma() != self.firma_guardada:  # la fecha es la de la última modificación, no la de la última vista
+            self.a.fecha = datetime.date.today().isoformat()
+            self.firma_guardada = self.a.firma()
         guardar_csv(self.anotaciones, self.carpeta_datos)
 
     # ---- dibujo
@@ -328,7 +343,7 @@ class Anotador:
         origen = None
         if eje_listo:
             xs, ys = zip(a.eje_atras, a.eje_frente)
-            dib(self.ax.plot(xs, ys, "w--", lw=1)[0])
+            dib(self.ax.plot(xs, ys, "w--", lw=LINE_SIZE)[0])
             # Cruz de referencia: paralela al eje (0° al frente, 180° atrás) y perpendicular (90°), en el centro
             # del círculo (origen de la estadística) o, sin círculo, en el punto medio del eje.
             if a.circulo:
@@ -340,10 +355,10 @@ class Anotador:
             ox, oy = origen
             for (dx, dy), etiquetas in (((ux, uy), ("0°", "180°")), ((vx, vy), ("90°", "90°"))):
                 dib(self.ax.plot([ox - dx * largo, ox + dx * largo], [oy - dy * largo, oy + dy * largo],
-                                 color="yellow", lw=0.8, ls=":")[0])
+                                 color="yellow", lw=LINE_SIZE, ls=":")[0])
                 for signo, texto in ((1, etiquetas[0]), (-1, etiquetas[1])):
                     dib(self.ax.annotate(texto, (ox + signo * dx * largo, oy + signo * dy * largo), color="yellow",
-                                         fontsize=8, ha="center", va="center",
+                                         fontsize=TEXT_SIZE, ha="center", va="center",
                                          bbox={"fc": "black", "alpha": 0.5, "pad": 1, "lw": 0}))
         for (par, lado), pata in a.patas.items():
             if not pata["visible"] or not pata["puntos"]:
@@ -351,21 +366,21 @@ class Anotador:
             pts = np.array(pata["puntos"])
             dib(self.ax.plot(pts[:, 0], pts[:, 1], "o", color=COLORES[par], ms=4, mec="k", mew=0.5)[0])
             cx, cy = a.centroide((par, lado))
-            dib(self.ax.plot(cx, cy, "P", color=COLORES[par], ms=10, mec="w")[0])
+            dib(self.ax.plot(cx, cy, "P", color=COLORES[par], ms=CENTROID_SIZE, mec="w")[0])
             aviso = "!" if len(pts) < MIN_PUNTOS_PATA else ""
             angulo = ""
             if MOSTRAR_ANGULOS and origen is not None:
                 theta = angulo_respecto_al_frente(origen, a.eje_frente, a.eje_atras, (cx, cy))
                 angulo = f" {theta:.0f}°" if theta is not None else ""
             dib(self.ax.annotate(f"{par}-{lado}{aviso}{angulo}", (cx, cy), xytext=(6, 6), textcoords="offset points",
-                                 color="w", fontsize=9, bbox={"fc": COLORES[par], "alpha": 0.7, "pad": 1}))
+                                 color="w", fontsize=TEXT_SIZE, bbox={"fc": COLORES[par], "alpha": 0.7, "pad": 1}))
         if self.puntos_actuales:
             pts = np.array(self.puntos_actuales)
             dib(self.ax.plot(pts[:, 0], pts[:, 1], "x", color=COLORES[self.par_actual], ms=8, mew=2)[0])
         if a.circulo:
             cx, cy, r = a.circulo
             estilo = "-" if a.circulo_manual else "--"
-            dib(self.ax.add_patch(plt.Circle((cx, cy), r, fill=False, color="cyan", lw=1.5, ls=estilo)))
+            dib(self.ax.add_patch(plt.Circle((cx, cy), r, fill=False, color="cyan", lw=LINE_SIZE, ls=estilo)))
             dib(self.ax.plot(cx, cy, "c+", ms=14, mew=2)[0])
         ocultas = [f"{p}-{l}" for (p, l), v in a.patas.items() if not v["visible"]]
         estado = "DESCARTADA: " + a.motivo if a.estado == "descartada" else ", ".join(a.faltantes()[:6]) or "completa"
@@ -373,7 +388,7 @@ class Anotador:
                   f" ({len(self.puntos_actuales)} pts)   |   círculo: {METODO_CIRCULO}"
                   f"{' (manual)' if a.circulo_manual else ''}")
         linea2 = f"Falta: {estado}" + (f"   |   no visibles: {', '.join(ocultas)}" if ocultas else "")
-        self.ax.set_title(f"{linea1}\n{linea2}\n{self.mensaje}", fontsize=9, loc="left")
+        self.ax.set_title(f"{linea1}\n{linea2}\n{self.mensaje}", fontsize=TEXT_SIZE, loc="left")
         self.fig.canvas.draw_idle()
 
     # ---- utilidades
