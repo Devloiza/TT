@@ -39,7 +39,7 @@ El TT es trabajo académico del autor. Claude y todos los agentes **corrigen, gu
   - **Antes de cada commit** que toque documentación o estado, Claude invoca al agente `verificador`.
   - Las correcciones mecánicas que reporte (sincronizar tablas, enlaces, estados ya decididos) Claude las aplica.
   - Las que sean "decisión del autor" (alcance, `CONTEXTO.md`, contenido de la tesina) se consultan antes.
-- **`REGISTRO_IA.md`** es el control interno de qué hizo el autor y en qué apoyó la IA, por si hay que declararlo; no se incluye en la tesina. Claude agrega una fila cada vez que contribuya a algo del repo y deja en blanco el aporte del autor para que el autor lo complete. Los commits en que Claude participa llevan `Co-Authored-By: Claude`.
+- **`REGISTRO_IA.md`** es el control interno de qué hizo el autor y en qué apoyó la IA, por si hay que declararlo; no se incluye en la tesina. Claude agrega una fila cada vez que contribuya a algo del repo y deja en blanco el aporte del autor para que el autor lo complete, salvo que el autor le pida llenarlo; entonces escribe solo lo que observó en la sesión, para que el autor lo revise. Los commits en que Claude participa llevan `Co-Authored-By: Claude`.
 
 Antecedente: en oct 2026 se eliminó `Exploration/beamforming_algorithms/`, una exploración de DAS/DOA que Claude hizo casi por completo (commit `610d0c6`).
 
@@ -128,11 +128,11 @@ Prototipos y herramientas de diagnóstico; no es código de producción del TT (
 
 - `reconstruccion_sept2026/` — reconstrucción incremental por etapas del sistema completo (transporte puro → 1 mic → 4 mics), referencia histórica y herramientas para depurar transporte serie.
 - `Primeros_intentos/` — prototipos históricos de 1–4 mics; usan baudios y pines viejos.
-- `Geometria_estadistica/` — trabajo del autor, en curso: recopilación de fuentes e imágenes de escorpiones del género *Heterometrus* para hacer estadística sobre imágenes, como apoyo al Obj. 1 (geometría bioinspirada). Los enlaces vacíos del índice de `Fuentes.md` son pendientes de la recopilación, no errores. `patainador.py` es una utilidad de anotación hecha por Claude con la especificación del autor (eje del cuerpo, patas P1–P4 con lado deducido, círculo por ajuste o mínimo, dos CSV en `datos/`); `estadistica_imagenes.py` y el análisis son del autor. Las fotos (`fotos/`) no se versionan.
+- `Geometria_estadistica/` — trabajo del autor, en curso: recopilación de fuentes e imágenes de escorpiones con *slit sensilla* de varios géneros, centradas en *Heterometrus*, para hacer estadística sobre imágenes, como apoyo al Obj. 1 (geometría bioinspirada). Los enlaces vacíos del índice de `Fuentes.md` son pendientes de la recopilación, no errores. `patainador.py` es una utilidad de anotación hecha por Claude con la especificación del autor (eje del cuerpo, patas P1–P4 con lado deducido, círculo por ajuste o mínimo, dos CSV en `datos/`); `estadistica_imagenes.py` y el análisis son del autor (Claude lo revisa y corrige a petición); `graficas_patas.py` es la parte visual hecha por Claude con la especificación del autor. Metodología completa en `Metodologia/obj1_geometria.md`. Las fotos (`fotos/`) no se versionan.
 
 ### Mapa de documentación
 
-`README.md` (portada: qué es, qué será, estado) → `CONTEXTO.md` (alcance, autoritativo; §3.4 es la tabla de estado y debe mantenerse sincronizada con `README.md` §3) → `Avances/Documentation.md` y READMEs de carpeta (implementación) → código.
+`README.md` (portada: qué es, qué será, estado) → `CONTEXTO.md` (alcance, autoritativo; §3.4 es la tabla de estado y debe mantenerse sincronizada con `README.md` §3) → `Avances/Documentation.md`, `Metodologia/` (metodología por objetivo: procedimiento, ecuaciones, decisiones y corridas; insumo para la tesina, no texto de ella) y READMEs de carpeta (implementación) → código.
 
 ## Notas operativas importantes
 
