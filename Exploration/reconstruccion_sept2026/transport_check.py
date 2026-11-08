@@ -6,7 +6,7 @@ de 1 en 1 (con wraparound en 65536) a ~32000 bytes/s. Este script verifica
 que no se pierda ni se duplique ni una muestra durante N segundos.
 
 Uso:
-    python transport_check.py COM8 [segundos]
+    python transport_check.py COM7 [segundos]   (puerto USB nativo, VID 303A; ver Documentation.md §2.1)
 """
 
 import sys

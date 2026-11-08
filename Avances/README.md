@@ -7,7 +7,7 @@ La documentación técnica completa (hardware, pines, protocolo serie, hilos, de
 | Archivo | Qué es | Detalle |
 |:--|:--|:--|
 | [`monitor_8LR.py`](monitor_8LR.py) | Programa principal: lee ambas ESP32-S3, sincroniza y produce frames `(512, 8)` a 16 kHz; reproduce un par de mics y graba a `SALIDAS/`. | [`Documentation.md` §4](Documentation.md#4-arquitectura-python-monitor_8lrpy) |
-| [`esp32_8micLR.txt`](esp32_8micLR.txt) | Firmware Arduino Master/Slave (renombrar a `.ino`): 4 mics I2S por placa, ID de canal en los bits [1:0], pulso SYNC, 3 000 000 baud. | [`Documentation.md` §1–3](Documentation.md#1-hardware) |
+| [`esp32_8micLR.txt`](esp32_8micLR.txt) | Firmware Arduino Master/Slave (renombrar a `.ino`): 4 mics I2S por placa, ID de canal en los bits [1:0], pulso SYNC. Audio por USB nativo (requiere `USB CDC On Boot = Enabled`) y depuración por la UART a 3 000 000 baud. | [`Documentation.md` §1–3](Documentation.md#1-hardware) |
 | [`geometria.json`](geometria.json) | Posiciones $(x, y, z)$ de los 8 mics. **Contiene placeholders**: faltan las medidas reales $d_1$–$d_4$ (Obj. 1). | [`Documentation.md` §5](Documentation.md#5-archivo-geometriajson) |
 | [`analisis.py`](analisis.py) | Análisis offline de una grabación `.npy` de `SALIDAS/` (ajustar `ARCHIVO` y `MIC_ACTIVO` en el script). | — |
 | [`listar_audio.py`](listar_audio.py) | Lista los dispositivos de salida de PyAudio con su índice, para `AUDIO_DEVICE_INDEX`. | [`Documentation.md` §12.7](Documentation.md#127-audio-de-salida-jack-35mm) |
