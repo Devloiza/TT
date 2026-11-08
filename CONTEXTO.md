@@ -179,7 +179,7 @@ Obj 3 (base de datos) ──► Obj 4 (clasificador habla/ruido) ─────
 
 | Obj. | Estado | Detalle |
 |:--:|:--|:--|
-| 1 | 🟡 **Parcial** | Estructura de 4 pares LR definida (pines, buses, nomenclatura PCB). `geometria.json` con **placeholders**; faltan las mediciones físicas reales $d_1$–$d_4$. **Verificar además que la geometría real sea no lineal (D1)**. Los mics están montados en **bases movibles**, así que la geometría se puede reconfigurar para cada prueba sin reimprimir nada. La **forma final (collar) sigue pendiente** |
+| 1 | 🟡 **Parcial** | Estructura de 4 pares LR definida (pines, buses, nomenclatura PCB). `geometria.json` con **placeholders**; faltan las mediciones físicas reales $d_1$–$d_4$. **Verificar además que la geometría real sea no lineal (D1)**. Los mics están montados en **bases movibles**, así que la geometría se puede reconfigurar para cada prueba sin reimprimir nada. La **forma final (collar) sigue pendiente**. Estadística de la posición de las patas en fotos dorsales en curso: ángulos medios por par con IC 95 %; el radio se escalará a la longitud de los cables ([`Metodologia/obj1_geometria.md`](Metodologia/obj1_geometria.md)) |
 | 2 | 🟢 **Cerrado** | Electrónica en **PCB definitiva** (meta 5 / D9 cumplida; sin cambios planeados por ahora): una PCB para los dos ESP32-S3 y una PCB acondicionada por micrófono, unidas por cables. La forma final del arreglo (collar) es parte del Obj. 1. Adquisición de 8 mics validada end-to-end en PC y Raspberry Pi 4/5, SYNC estable, 0 underruns |
 | 3 | 🔴 **No iniciado** | Meta más larga de TT1 (10 sem) + $2,000. Requiere sonómetro (D6) y las dos estrategias (D7) |
 | 4 | 🔴 **No iniciado** | Bloqueado por Obj. 3 |

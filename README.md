@@ -85,7 +85,7 @@ Además del sistema, el protocolo compromete:
 
 | Obj. | Qué | Estado | Dónde está el detalle |
 |:--:|:--|:--|:--|
-| 1 | Geometría bioinspirada no uniforme | 🟡 **Parcial**: 4 pares LR definidos; mics en **bases movibles** (la geometría se reconfigura por prueba sin reimprimir). Pendientes: la **forma final (collar)** y las medidas reales $d_1$–$d_4$ en `geometria.json` (hoy placeholders). | [`Documentation.md` §5](Avances/Documentation.md#5-archivo-geometriajson) |
+| 1 | Geometría bioinspirada no uniforme | 🟡 **Parcial**: 4 pares LR definidos; mics en **bases movibles** (la geometría se reconfigura por prueba sin reimprimir). Pendientes: la **forma final (collar)** y las medidas reales $d_1$–$d_4$ en `geometria.json` (hoy placeholders). En curso: estadística de la posición de las patas en fotos dorsales (ángulos medios por par; radio a escala de los cables). | [`Documentation.md` §5](Avances/Documentation.md#5-archivo-geometriajson), [`Metodologia/obj1_geometria.md`](Metodologia/obj1_geometria.md) |
 | 2 | Dispositivo de adquisición | 🟢 **Cerrado**: electrónica en **PCB definitiva** (meta 5; sin cambios planeados por ahora): PCB de los ESP32-S3 + PCB acondicionada por micrófono, unidas por cables. 8 mics + SYNC estables en PC y Raspberry Pi 4/5, 0 underruns. | [`Documentation.md` §1–4, §10, §12](Avances/Documentation.md) |
 | 3 | Base de datos habla / ruido | 🔴 No iniciado. Es la meta más larga de TT1 (10 semanas). | [`CONTEXTO.md` D6, D7](CONTEXTO.md#25-compromisos-de-diseño-fáciles-de-perder-de-vista) |
 | 4 | Clasificador habla / ruido | 🔴 No iniciado (depende del Obj. 3). | — |
@@ -120,6 +120,7 @@ Cada documento responde una pregunta distinta. Si dos se contradicen, gana el de
 | 1 | `PROTOCOLO_TT.pdf` *(no versionado)* | Lo comprometido ante la academia | Hay duda sobre el alcance oficial |
 | 2 | [`CONTEXTO.md`](CONTEXTO.md) | **Qué** hay que construir, con qué criterios y en qué orden; compromiso vs. extensión; riesgos | **Antes de cualquier decisión de alcance** |
 | 3 | [`Avances/Documentation.md`](Avances/Documentation.md) | **Cómo** está implementado el sistema oficial: hardware, protocolo serie, hilos, despliegue y bitácora | Se trabaja sobre el sistema de adquisición |
+| 3 | [`Metodologia/`](Metodologia/README.md) | **Cómo** se hizo cada objetivo: material, procedimiento, ecuaciones, decisiones y resultados de cada corrida (un archivo por objetivo) | Se redacta la tesina o se retoma un análisis |
 | 3 | READMEs de carpeta ([`Avances/`](Avances/README.md), [`Exploration/`](Exploration/README.md), [`Escrito/`](Escrito/README.md), [`SALIDAS/`](SALIDAS/README.md)) | Qué hay en cada carpeta y para qué sirve | Se busca un archivo |
 | — | [`CHANGELOG.md`](CHANGELOG.md) | Qué cambió entre versiones | Se corta una versión o se busca cuándo cambió algo |
 | — | [`CLAUDE.md`](CLAUDE.md) y [`.claude/agents/`](.claude/agents/) | Guía del repo para Claude Code y agentes del proyecto (`buscador`, `programador`, `redactor`, `verificador`) | Se trabaja con Claude Code |
@@ -143,10 +144,11 @@ Cada documento responde una pregunta distinta. Si dos se contradicen, gana el de
 │   ├── esp32_8micLR.txt      ← firmware Master/Slave (Arduino, renombrar a .ino)
 │   ├── geometria.json        ← posiciones de los 8 mics (placeholders por ahora)
 │   └── analisis.py, listar_audio.py, visualizar.py
+├── Metodologia/              ← registro de metodología por objetivo (insumo para la tesina)
 ├── Exploration/              ← PROTOTIPOS (no producción)
 │   ├── reconstruccion_sept2026/  ← reconstrucción por etapas + diagnóstico de transporte
 │   ├── Primeros_intentos/        ← primeros prototipos (1–4 mics), históricos
-│   └── Geometria_estadistica/    ← imágenes de Heterometrus para estadística (apoyo al Obj. 1, en curso)
+│   └── Geometria_estadistica/    ← fotos de escorpiones para estadística (apoyo al Obj. 1, en curso)
 ├── Escrito/                  ← TESINA (LaTeX)
 │   ├── tesina/                   ← el escrito real
 │   ├── pruebas/                  ← pruebas de LaTeX y del revisor (no es tesina)
