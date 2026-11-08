@@ -2,7 +2,7 @@
 
 > **Objetivo específico 1** ([`CONTEXTO.md` §2.3](../CONTEXTO.md#23-objetivos-específicos-textual-del-protocolo)): adaptar la distribución geométrica y el esquema de muestreo espacial inspirados en las *slit sensilla* del escorpión a un arreglo multimicrófono no uniforme.
 
-**Estado:** en curso. Este registro cubre la **estadística sobre imágenes**: dónde quedan, en promedio, las patas caminadoras respecto al cuerpo. Las medidas físicas del arreglo ($d_1$–$d_4$ en `Avances/geometria.json`) y la forma final (collar) siguen pendientes ([`CONTEXTO.md` §3.4](../CONTEXTO.md#34-dónde-estamos-actualizar-conforme-avance)).
+**Estado:** en curso. Este registro cubre la **estadística sobre imágenes**: dónde quedan, en promedio, las patas caminadoras respecto al cuerpo. Las medidas físicas del arreglo ($d_1$–$d_4$ en `Avances/geometria.json`) siguen pendientes. El collar no es compromiso del protocolo (2026-11-07) ([`CONTEXTO.md` §3.4](../CONTEXTO.md#34-dónde-estamos-actualizar-conforme-avance)).
 
 **Autoría** (detalle en [`REGISTRO_IA.md`](../REGISTRO_IA.md)):
 
@@ -249,16 +249,63 @@ $$
 - $R$ es el radio máximo que permiten los cables.
 - $\rho_{\text{ref}}$ es la referencia que cae justo en $R$. Si $\rho_{\text{ref}} = \max_i \rho_i$, cada par queda en el porcentaje $\rho_i/\rho_{\max}$ de $R$ y el más lejano usa todo el cable.
 - Escalar así conserva las proporciones entre pares, es decir, la forma.
+- **Radios distintos por par:** se conservan las diferencias de $\rho$ entre pares, en vez de un radio común, porque reflejan mejor la geometría que se busca biomimetizar.
+  - Con $\rho_{\text{ref}} = \rho_{\max}$, el par más cercano al centro queda alrededor del 75 % de $R$ ($0.54/0.72$ con los datos del 2026-11-07).
+- **Distancia de trabajo del hablante: de 1 a 2 m**, como en una charla normal entre pares. Es una condición de trabajo, no un compromiso del protocolo.
+- **El collar no es compromiso** del protocolo. Se quitó como pendiente.
 
 ### 8.2 Pendientes de esa decisión
 
 - **Citar las fuentes del criterio de especies** en `Fuentes.md`: la que reporta *slit sensilla* en otras especies y la del contraste. Ese archivo todavía dice que se usarán especies de *Heterometrus*.
-- **Elegir $R$ y $\rho_{\text{ref}}$**, y decidir si se conservan las diferencias de radio entre pares o se usa un radio común.
+- **$R$ y $\rho_{\text{ref}}$.** Ya se decidió conservar las diferencias de radio (§8.1) y usar $R = 17$ cm (ver abajo). Falta confirmar $\rho_{\text{ref}} = \rho_{\max}$.
+  - **Medición del autor (2026-11-07):** cada cable mide unos 14 cm, y hay unos 15 cm desde el inicio del cable hasta el micrófono.
+  - Ese alcance cuenta desde el punto donde nace el cable, no desde el centro del arreglo.
+  - **Desde el centro del arreglo** hay unos **20 cm** hasta el centro del micrófono (medición del autor, 2026-11-07). Es el radio máximo disponible: $R \le 20$ cm.
   - Hoy los $\rho$ van de 0.54 a 0.72 y varios IC se traslapan. Con 11 fotos no está claro que los pares difieran en radio; en ángulo sí.
 - **Considerar el aliasing espacial al fijar $R$.** Con $f_s = 16$ kHz, la frecuencia más alta es 8 kHz. La media longitud de onda es $\lambda/2 = c/(2f) \approx 2.1$ cm con $c = 343$ m/s.
   - Separaciones entre micrófonos vecinos mayores que eso producen lóbulos fantasma a esas frecuencias.
   - Una apertura mayor mejora la resolución angular a frecuencias bajas.
   - Por eso $R$ no solo depende del cable.
+- **Criterios para elegir $R$** (máximo 20 cm). Las cifras son órdenes de magnitud para comparar 20 cm contra 10 cm, con apertura $D \approx 2R$, $c = 343$ m/s y $f_s = 16$ kHz:
+
+  | Criterio | Favorece | Por qué | Orden de magnitud (20 cm / 10 cm) |
+  |:--|:--|:--|:--|
+  | Directividad a frecuencias bajas | $R$ grande | El ancho del haz es aproximadamente $\lambda/D$. Gran parte de la energía de la voz está por debajo de 1 kHz | A 1 kHz: unos 50° contra unos 100° |
+  | Resolución del retardo (DOA) | $R$ grande | El retardo máximo es $D/c$; más muestras de retardo dan más resolución angular | 1.17 ms (≈ 19 muestras) contra 0.58 ms (≈ 9 muestras) |
+  | Sensibilidad a errores de posición | $R$ grande | El mismo error en milímetros pesa menos frente a una apertura mayor | 2 mm son el 0.5 % contra el 1 % |
+  | Aliasing espacial | $R$ chico | $d_{ij} \approx 2r\sin(\Delta\theta/2)$ y $f \approx c/(2d)$. La no uniformidad reparte los lóbulos fantasma | Con $\Delta\theta \approx 40°$: unos 1.25 kHz contra unos 2.5 kHz |
+  | Campo lejano (onda plana) | $R$ chico | El modelo de onda plana vale a partir de $2D^2/\lambda$; más cerca, los retardos necesitan modelo esférico | A 3.4 kHz: unos 3.2 m contra unos 0.8 m |
+  | Mecánica | $R$ chico | Con todo el alcance, el cable queda tenso y sin holgura | — |
+  | Tamaño del arreglo (no es compromiso) | $R$ chico | El diámetro es $2R$ | 40 cm contra 20 cm |
+  | Comparación del Obj. 7 | Neutro | El arreglo lineal uniforme debe caber en el mismo alcance. Su separación es $L/7$ | En 40 cm: unos 5.7 cm (aliasing desde unos 3 kHz). En 20 cm: unos 2.9 cm (unos 6 kHz) |
+
+- **Evaluación de $R = 15$ cm**, la primera propuesta del autor. Mismas aproximaciones, con el hablante a 1–2 m:
+
+  | Criterio | Con 15 cm | Compromiso al que afecta |
+  |:--|:--|:--|
+  | Directividad a 1 kHz | Unos 65° de ancho de haz | C3 (+3 dB contra el lineal) y D8 (fuente de ruido simultánea) |
+  | Retardo máximo | 0.87 ms, unas 14 muestras | Obj. 5 (DOA) |
+  | Error por 2 mm de posición | Alrededor del 0.7 % | Obj. 5 |
+  | Aliasing con $\Delta\theta \approx 40°$ | Desde unos 1.7 kHz, repartido por la no uniformidad | C1 a C3 |
+  | Curvatura del frente de onda: $r_{\max}^2/(2\,r_{\text{fuente}})$ | 1.1 cm a 1 m (unas 0.5 muestras); 0.6 cm a 2 m (unas 0.26). Con 20 cm serían 2 cm a 1 m | Obj. 5: con onda plana, error menor a una muestra; el modelo esférico lo elimina |
+  | Holgura del cable | Unos 5 cm | Montaje |
+  | Arreglo lineal del Obj. 7 a igual apertura (30 cm) | Separación de unos 4.3 cm, sin aliasing hasta unos 4 kHz | C5 y C6. El lineal tiene ambigüedad adelante-atrás; el arreglo no lineal no (D1) |
+
+  **Lectura:** con 15 cm, la curvatura del frente de onda a 1–2 m queda por debajo de una muestra y hay holgura de cable. Se pierde algo de directividad en frecuencias bajas frente a 20 cm, que es lo que más influye en C3. El aliasing aparece en la banda de voz con cualquier $R$ de este rango.
+
+- **Decisión del autor (2026-11-07): $R = 17$ cm.** Conserva holgura de cable y queda más cerca de los 20 cm, que dan más directividad. Con las mismas aproximaciones:
+
+  | Criterio | Con 17 cm |
+  |:--|:--|
+  | Directividad a 1 kHz | Unos 58° de ancho de haz |
+  | Retardo máximo | 0.99 ms, unas 16 muestras |
+  | Error por 2 mm de posición | Alrededor del 0.6 % |
+  | Aliasing con $\Delta\theta \approx 40°$ | Desde unos 1.5 kHz |
+  | Curvatura del frente de onda | 1.4 cm a 1 m (unas 0.67 muestras); 0.7 cm a 2 m (unas 0.34) |
+  | Holgura del cable | Unos 3 cm |
+  | Arreglo lineal del Obj. 7 a igual apertura (34 cm) | Separación de unos 4.9 cm, sin aliasing hasta unos 3.5 kHz |
+  | Par más cercano al centro (con $\rho_{\text{ref}} = \rho_{\max}$) | Alrededor de 12.8 cm |
+
 - **D2 (pesos diferenciados):** no sale de esta estadística y queda por definir.
 - **Tamaño de muestra:** el IC se estrecha como $1/\sqrt{n}$. Si se analiza por especie, cada especie necesita sus propias fotos.
 
@@ -306,5 +353,5 @@ python Exploration/Geometria_estadistica/estadistica_imagenes.py    # estadísti
 |:--|:--|
 | 2026-11-03 | Herramienta de anotación y primeras anotaciones (`f4aca2d`) |
 | 2026-11-05 | `patainador.py`: tamaños configurables y fecha solo con cambios reales (`a5381f1`) |
-| 2026-11-07 | Criterio de especies (varios géneros con *slit sensilla*) y paso al arreglo (ángulos medios, radio a escala del cableado) |
+| 2026-11-07 | Criterio de especies (varios géneros con *slit sensilla*) y paso al arreglo (ángulos medios, radio a escala del cableado). Cables medidos: unos 14 cm, y unos 15 cm hasta el micrófono; radio máximo desde el centro del arreglo de unos 20 cm. Radios distintos por par. Hablante a 1–2 m. El collar deja de ser pendiente. Se elige $R = 17$ cm |
 | 2026-11-07 | Transformación al marco del cuerpo, centroides en dos niveles, IC con *t* de Student, modos pares y espejo, figuras por modo. "Atrás" definido como el final del mesosoma. Fotos en progreso completadas marcando las patas ocultas con `n` |

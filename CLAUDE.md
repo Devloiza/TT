@@ -72,7 +72,7 @@ Ejecutar el sistema completo de adquisición (requiere ambos ESP32-S3 conectados
 python Avances/monitor_8LR.py
 ```
 
-Puertos serie por variable de entorno (evita hardcodear por máquina; default Windows `COM8`/`COM6`):
+Puertos serie por variable de entorno (evita hardcodear por máquina; default Windows `COM7`/`COM5`, los **USB nativos**, VID `303A`; cada placa expone además un COM del CH343, VID `1A86`, que solo lleva la depuración):
 
 ```bash
 export ESP1_PORT=/dev/ttyACM1   # Linux/Raspberry Pi
@@ -91,7 +91,12 @@ Resultados generados (grabaciones `.npy`, gráficas) van siempre a `SALIDAS/` �
 
 ### Hardware → firmware → Python
 
-Dos ESP32-S3 (Arduino, `Avances/esp32_8micLR.txt`), Master y Slave, cada uno lee 4 micrófonos I2S ICS-43434 (2 buses × modo estéreo L/R) y transmite por USB CDC (`Serial`) a 3,000,000 baud — valor crítico, debe coincidir *exactamente* entre firmware y Python o hay corrupción de bits. `Serial0` (debug) comparte el mismo periférico UART físico que `Serial` (audio) en este hardware, así que ambos deben abrirse al mismo baud.
+Dos ESP32-S3 (Arduino, `Avances/esp32_8micLR.txt`), Master y Slave, cada uno lee 4 micrófonos I2S ICS-43434 (2 buses × modo estéreo L/R) y transmite el audio por el **USB nativo** (`Serial`, HW CDC). Por ahí el baud no importa.
+
+- La depuración sale aparte, por `Serial0` (UART0, puerto CH343, a 3,000,000 baud).
+- Esto requiere `USB CDC On Boot = Enabled` al flashear **cada** placa. La opción se reinicia, por ejemplo, al cambiar de Board.
+- Con la opción desactivada, `Serial` se vuelve la UART0: el audio sale por el CH343, el baud se vuelve crítico y la depuración se mezcla con el audio.
+- Esto se corrigió el 2026-11-07. La conclusión de sept 2026 de que comparten la UART era un síntoma. Detalle en `Avances/Documentation.md` §2.1.
 
 Formato del frame por placa: 512 muestras interleaved `[Mic1_s0, Mic2_s0, Mic3_s0, Mic4_s0, Mic1_s1, ...]`, int16, con el **ID de canal codificado en los bits [1:0]** de cada muestra (`0xFFFC` para extraer el audio puro). Esta codificación es lo que permite a Python detectar y corregir desalineamiento del stream.
 
@@ -120,7 +125,7 @@ Posiciones físicas (x, y, z en metros) de los 8 micrófonos, necesarias para ca
 
 ### Decisión de arquitectura: Python, no Rust
 
-Se evaluó y descartó (por ahora) reescribir partes en Rust. Decisión: quedarse en Python + NumPy/SciPy vectorizado; no optimizar anticipadamente. Razonamiento completo en `Avances/Documentation.md` sección 14.1 — en resumen: los problemas de rendimiento encontrados hasta ahora fueron bugs de loops no vectorizados (no un límite del lenguaje), el DAS y GCC-PHAT/TDOA son computacionalmente triviales para NumPy, hay ~32 ms de presupuesto por frame a `CHUNK=512`/16 kHz, y la evaluación de métricas (PESQ/STOI/SNR) es offline sin presión de tiempo real. No reabrir esta decisión sin evidencia de un cuello de botella medido.
+Se evaluó y descartó (por ahora) reescribir partes en Rust. Decisión: quedarse en Python + NumPy/SciPy vectorizado; no optimizar anticipadamente. Razonamiento completo en `Avances/Documentation.md` sección 14.1 — en resumen: los problemas de rendimiento encontrados hasta ahora fueron bugs de loops no vectorizados (no un límite del lenguaje), el DAS y GCC-PHAT/TDOA son computacionalmente triviales para NumPy, hay ~32 ms de presupuesto por frame a `CHUNK=512`/16 kHz (igual con `CHUNK=1024`/32 kHz, en prueba desde 2026-11-07), y la evaluación de métricas (PESQ/STOI/SNR) es offline sin presión de tiempo real. No reabrir esta decisión sin evidencia de un cuello de botella medido.
 
 ### `Exploration/`
 
@@ -137,6 +142,6 @@ Prototipos y herramientas de diagnóstico; no es código de producción del TT (
 ## Notas operativas importantes
 
 - Conectar siempre ambos ESP32 por USB *antes* de correr `monitor_8LR.py`.
-- Un desalineamiento ocasional autocorregido (~0.2% de frames, log `Realineado offset=...`) es esperado y no indica un bug — coincide con los prints periódicos de debug del firmware compartiendo el mismo UART que el audio.
-- Si aparecen muchos `WARN Desalineamiento`, sospechar primero de un baud desalineado entre firmware y Python antes que de pérdida de bytes por USB.
-- En Raspberry Pi: el usuario necesita los grupos `dialout` (puertos serie) y `audio`; cada ESP32-S3 en modo Hardware CDC and JTAG expone dos `/dev/ttyACM*` (usar el de grupo `dialout`, no `plugdev`).
+- Un desalineamiento periódico (~0.2 % de frames, `Realineado offset=...`, cada ~16 s) **no es esperado**. Indica que el audio está saliendo por la UART: una placa tiene `USB CDC On Boot` en *Disabled* o Python abre el COM del CH343. La línea de depuración, cada 500 frames, se mezcla con el audio. Por el USB nativo hay cero realineamientos aun con `DEBUG true`.
+- Si aparecen muchos `WARN Desalineamiento`, revisar primero que Python lea los COM nativos y que `USB CDC On Boot` esté en *Enabled*. Solo si se lee por la UART, revisar que el baud coincida. Al final, sospechar de pérdida de bytes por USB.
+- En Raspberry Pi: el usuario necesita los grupos `dialout` (puertos serie) y `audio`; cada ESP32-S3 en modo Hardware CDC and JTAG expone dos `/dev/ttyACM*` (usar el de grupo `dialout`, no `plugdev`). Con el hub interno de la placa aparece también el CH343. El de datos es el nativo, VID `303A`; verificar con `ls -l /dev/serial/by-id/`.

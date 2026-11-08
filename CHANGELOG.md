@@ -7,6 +7,22 @@ y este proyecto sigue [Versionamiento Semántico](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+### Fixed
+- **Desalineamiento periódico (~0.2 % de frames, cada ~16 s).** No era "esperado".
+  - Una placa estaba flasheada con `USB CDC On Boot = Disabled`, así que `Serial` (audio) salía por la UART (CH343) junto con la línea de depuración que el firmware imprime cada 500 frames.
+  - Ahora el audio se lee por el **USB nativo** (VID `303A`). Los puertos por defecto de `monitor_8LR.py` pasan a `COM7`/`COM5`.
+  - Cero realineamientos aun con `DEBUG true`.
+  - La conclusión de 0.1.0 de que "`Serial` y `Serial0` comparten la UART" queda corregida (`Documentation.md` §2.1).
+
+### Changed
+- **En prueba:** muestreo a 32 kHz con `CHUNK = 1024` (frames de 32 ms, igual que antes) en `esp32_8micLR.txt` y `monitor_8LR.py`. Sin errores en PC; falta la Raspberry Pi. `analisis.py` sigue asumiendo 16 kHz.
+
+### Added
+- Protección contra la configuración incorrecta:
+  - `esp32_8micLR.txt` no compila si `USB CDC On Boot`, `USB Mode` o la versión del core no son las correctas.
+  - `monitor_8LR.py` rechaza puertos cuyo VID no sea el USB nativo (`303A`).
+- Capacidad del transporte por USB nativo medida con `transport_check.py`: hasta 512 kB/s en una placa y 256 kB/s por placa con las dos en paralelo, sin pérdidas durante el stream.
+
 ## [0.2.0] - 2026-09-07
 
 Sistema base validado también en **Raspberry Pi 4/5**, no solo en PC/Windows — corriendo los 8 micrófonos + SYNC + audio en vivo de forma estable. En el camino se encontró y corrigió un bug de fondo en la sincronización que también podía afectar a Windows, solo que se manifestaba con más frecuencia en la Pi.

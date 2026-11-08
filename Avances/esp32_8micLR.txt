@@ -1,11 +1,17 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // esp32_8micLR.txt  (renombra a .ino antes de abrir en Arduino IDE)
 //
-// Sistema completo: dos ESP32-S3 + SYNC. Reconstruido en sept 2026 después de
-// encontrar la causa raíz de un mes de fallas de sincronización: Serial y
-// Serial0 comparten el mismo periférico UART físico en este hardware, así
-// que deben abrirse EXACTAMENTE al mismo baud que usa Python (3,000,000) —
-// antes se asumía (incorrectamente) que el baud no importaba para USB CDC.
+// Sistema completo: dos ESP32-S3 + SYNC. Reconstruido en sept 2026.
+//
+// Transporte (corregido 7 nov 2026):
+//   - El audio sale por Serial, que es el USB nativo (VID 303A). La
+//     depuración sale por Serial0 (UART0, puerto CH343). Son canales
+//     independientes SOLO si "USB CDC On Boot = Enabled" al flashear;
+//     revisarlo en CADA placa, porque se reinicia al cambiar de Board.
+//   - Con la opción en Disabled, Serial se vuelve la UART0: el audio sale
+//     por el CH343, el baud tiene que coincidir con Python y los prints de
+//     depuración se mezclan con el audio (el ~0.2 % de realineamientos de
+//     sept 2026). Python debe abrir el COM nativo; ahí el baud no importa.
 // Ver Documentation.md sección 10 para el detalle completo de la reconstrucción
 // por etapas (los archivos de prueba de cada etapa quedaron en
 // Exploration/reconstruccion_sept2026/).
@@ -40,8 +46,23 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 #include <Arduino.h>
+#include <esp_arduino_version.h>
 #include <driver/i2s.h>
 #include <Adafruit_NeoPixel.h>
+
+// ── VERIFICACIÓN DE LA CONFIGURACIÓN DE ARDUINO IDE (nov 2026) ───────────────
+// Si alguna opción de Tools está mal, la compilación se detiene con un mensaje
+// en vez de flashear un firmware que manda el audio por la UART. Ver
+// Documentation.md sección 2.1.
+#if !ARDUINO_USB_CDC_ON_BOOT
+  #error "Tools > USB CDC On Boot debe estar en Enabled (si no, el audio sale por la UART/CH343 y se mezcla con la depuracion)"
+#endif
+#if ARDUINO_USB_MODE != 1
+  #error "Tools > USB Mode debe estar en Hardware CDC and JTAG"
+#endif
+#if ESP_ARDUINO_VERSION < ESP_ARDUINO_VERSION_VAL(3, 3, 11)
+  #error "El core esp32 by Espressif debe ser 3.3.11 o superior (3.3.10 rompe el USB nativo del S3)"
+#endif
 
 // ── ROL DE ESTA PLACA ─────────────────────────────────────────────────────────
 #define IS_MASTER  0    // 1 = Master (azul) | 0 = Slave (rojo)
@@ -81,8 +102,8 @@ Adafruit_NeoPixel led(NUM_LEDS, LED_PIN, NEO_RGB + NEO_KHZ800);
 #define I2S1_SD   13
 
 // ── Config de audio ───────────────────────────────────────────────────────────
-#define SAMPLE_RATE   16000
-#define CHUNK_SAMPLES 512
+#define SAMPLE_RATE   32000   // en prueba desde 2026-11-07 (antes 16000); igual a ESP_RATE de monitor_8LR.py
+#define CHUNK_SAMPLES 1024    // igual a CHUNK de monitor_8LR.py (32 ms por frame)
 #define BUS_SAMPLES   (CHUNK_SAMPLES * 2)
 
 // ── IDs de canal en bits [1:0] ────────────────────────────────────────────────

@@ -1,11 +1,14 @@
 """
 monitor_8LR.py — Sistema completo, 2x ESP32-S3 + SYNC.
 
-Reconstruido en sept 2026: ESP_BAUD debe coincidir EXACTAMENTE con
-Serial.begin()/Serial0.begin() del firmware (esp32_8micLR.txt usa
-PROJECT_BAUD = 3,000,000) — ver Documentation.md sección 10 para el
-detalle de la causa raíz encontrada (Serial y Serial0 comparten el mismo
-periférico UART físico en este hardware).
+Reconstruido en sept 2026. Transporte corregido el 7 nov 2026
+(Documentation.md sección 2.1):
+  - Abrir los COM del USB NATIVO de cada placa (VID 303A), no los del
+    CH343 (VID 1A86). Se listan con: python -m serial.tools.list_ports -v
+  - Por el USB nativo el baud no importa. Solo importa si se lee por la
+    UART, lo que pasa cuando una placa se flasheó con
+    "USB CDC On Boot = Disabled". En ese caso aparecen realineamientos
+    periódicos por los prints de depuración del firmware.
 
 Arquitectura:
   Hilo lector ESP1  ──┐
@@ -73,8 +76,8 @@ PARA DEMOS SIN TECLADO (cambia de par solo, cada N segundos):
 
 '''
 
-ESP1_PORT = os.environ.get("ESP1_PORT", "COM8")    # Master — Mics 1-4
-ESP2_PORT = os.environ.get("ESP2_PORT", "COM6")    # Slave  — Mics 5-8
+ESP1_PORT = os.environ.get("ESP1_PORT", "COM7")    # Master — Mics 1-4
+ESP2_PORT = os.environ.get("ESP2_PORT", "COM5")    # Slave  — Mics 5-8
 
 # SKIP_AUDIO=1 desactiva PyAudio/reproducción por completo — útil para
 # diagnosticar si la reproducción de audio compite por CPU con los hilos
@@ -95,9 +98,9 @@ AUDIO_DEVICE_INDEX = int(_audio_device_index_env) if _audio_device_index_env els
 # demostrar que los 8 mics funcionan sin depender de input().
 AUTO_CYCLE_SECONDS = float(os.environ.get("AUTO_CYCLE_SECONDS", "0")) or None
 
-ESP_BAUD  = 3000000   # DEBE coincidir con PROJECT_BAUD en el firmware
-ESP_RATE  = 16000
-CHUNK     = 512
+ESP_BAUD  = 3000000   # Sin efecto por USB nativo; solo cuenta si se lee por la UART (CH343)
+ESP_RATE  = 32000
+CHUNK     = 1024
 
 GEOMETRIA_FILE = "geometria.json"
 SALIDAS_DIR    = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "SALIDAS")
@@ -219,7 +222,29 @@ def cargar_geometria() -> dict:
 
 ## ── CONEXIÓN ──────────────────────────────────────────────────────────────────
 
+VID_USB_NATIVO = 0x303A   # USB nativo del ESP32-S3 (Espressif): por aquí sale el audio
+VID_CH343      = 0x1A86   # puente USB-UART de la placa: solo lleva la depuración
+
+def puerto_es_nativo(port: str, label: str) -> bool:
+    """Verifica por VID que el puerto sea el USB nativo y no el CH343 (Documentation.md sección 2.1)."""
+    real = os.path.realpath(port)   # en Linux, resuelve symlinks de udev (p. ej. /dev/esp1)
+    info = next((p for p in serial.tools.list_ports.comports() if p.device in (port, real)), None)
+    if info is None or info.vid is None:
+        print(f"AVISO [{label}]: no se pudo leer el VID de {port}; no se verifica si es el USB nativo.")
+        return True
+    if info.vid == VID_USB_NATIVO:
+        return True
+    tipo = "el CH343 (UART, solo depuración)" if info.vid == VID_CH343 else f"un dispositivo con VID {info.vid:04X}"
+    print(f"ERROR [{label}]: {port} es {tipo}, no el USB nativo del ESP32-S3 (VID 303A).")
+    print("  Puertos nativos disponibles:")
+    for p in serial.tools.list_ports.comports():
+        if p.vid == VID_USB_NATIVO:
+            print(f"    {p.device}  —  SER={p.serial_number}")
+    return False
+
 def conectar(port: str, label: str) -> serial.Serial:
+    if not puerto_es_nativo(port, label):
+        return None
     dbg(f"[{label}] Conectando a {port} @ {ESP_BAUD} baud...")
     for intento in range(10):
         try:
