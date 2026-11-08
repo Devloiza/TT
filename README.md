@@ -54,7 +54,7 @@ Cadena de bloques del protocolo (Fig. 2), con el estado de cada bloque:
  Adquisición: 2× ESP32-S3 (I2S → USB CDC, SYNC por hardware)       🟢 funcionando (PCB)       
             │
             ▼
- Sincronización en Python → frame (512, 8) a 16 kHz                🟢 funcionando (PC y Raspberry Pi)
+ Sincronización en Python → frame (1024, 8) a 32 kHz (en prueba)                🟢 funcionando (PC y Raspberry Pi)
             │
             ├──────────────────────────────┐
             ▼                              ▼

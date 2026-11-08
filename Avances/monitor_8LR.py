@@ -99,8 +99,8 @@ AUDIO_DEVICE_INDEX = int(_audio_device_index_env) if _audio_device_index_env els
 AUTO_CYCLE_SECONDS = float(os.environ.get("AUTO_CYCLE_SECONDS", "0")) or None
 
 ESP_BAUD  = 3000000   # Sin efecto por USB nativo; solo cuenta si se lee por la UART (CH343)
-ESP_RATE  = 16000
-CHUNK     = 512
+ESP_RATE  = 32000
+CHUNK     = 1024
 
 GEOMETRIA_FILE = "geometria.json"
 SALIDAS_DIR    = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "SALIDAS")

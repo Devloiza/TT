@@ -197,8 +197,8 @@ Python alinea los frames de los dos ESP en el **hilo sincronizador** (`hilo_sinc
 | `ESP1_PORT`     | `"COM7"`          | Puerto del Master (Mics 1-4). Se puede sobreescribir con la variable de entorno `ESP1_PORT` (ej. `/dev/ttyACM1` en Linux/Raspberry Pi) sin tocar el código — ver sección 12. |
 | `ESP2_PORT`     | `"COM5"`          | Puerto del Slave (Mics 5-8). Igual, sobreescribible con `ESP2_PORT`. |
 | `ESP_BAUD`      | `3000000`         | Baud del puerto serial. Por el USB nativo no importa. Solo debe coincidir con el firmware si se lee por el CH343 (UART), ver sección 2.1 |
-| `ESP_RATE`      | `16000`           | Frecuencia de muestreo en Hz         |
-| `CHUNK`         | `512`             | Muestras por frame por canal         |
+| `ESP_RATE`      | `32000`           | Frecuencia de muestreo en Hz. En prueba desde 2026-11-07 (antes `16000`); debe coincidir con `SAMPLE_RATE` del firmware |
+| `CHUNK`         | `1024`            | Muestras por frame por canal. En prueba desde 2026-11-07 (antes `512`); debe coincidir con `CHUNK_SAMPLES` del firmware |
 | `ESP1_MICS`     | `[True]*4`        | Habilitar/deshabilitar Mics 1-4      |
 | `ESP2_MICS`     | `[True]*4`        | Habilitar/deshabilitar Mics 5-8      |
 | `PAR_ACTIVO`    | `0`               | Par estéreo a reproducir (0–3)       |
@@ -357,7 +357,7 @@ donde `d_n` es la distancia del micrófono al origen del arreglo proyectada en l
   - Por el USB nativo desaparece, aun con `DEBUG true`.
   - Si vuelve a aparecer, revisar primero `USB CDC On Boot` y qué COM está abriendo Python.
   - *Texto original de sept 2026:* con el baud corregido (3,000,000) puede aparecer un desalineamiento ocasional (~1 cada 400-500 frames) que se autocorrige (`Realineado offset=...`) sin underruns. Coincide en tiempo con los prints periódicos de debug (`DBG_FMT` cada 500 frames) que comparten el mismo UART que el audio — sospecha: el print introduce un pequeño estanco que desfasa una muestra. No se ha considerado necesario eliminarlo (tasa de error ~0.2%, sin pérdida de audio real), pero si se busca cero errores, bajar la frecuencia del debug o quitarlo en producción.
-- **Latencia:** Con `CHUNK=512` y `Fs=16000`, la latencia teórica por frame es `512/16000 ≈ 32 ms`. Con 8 frames en cola el buffer máximo es `~256 ms`.
+- **Latencia:** Con `CHUNK=1024` y `Fs=32000` (igual que con `CHUNK=512` y `Fs=16000`), la latencia teórica por frame es `1024/32000 = 32 ms`. Con 8 frames en cola el buffer máximo es `~256 ms`.
 - **Descarte de frames:** Cuando las colas se llenan se descarta el frame más antiguo. Underruns frecuentes (`stats_data["underruns"]`) indican que el procesamiento no lleva el ritmo del audio. Bajar `CHUNK` puede ayudar a latencia a costa de más overhead.
 - **Alineamiento de frames:** Si se ven muchos `WARN Desalineamiento` en consola, revisar en este orden:
   1. que Python abra el COM **nativo** (`303A`) y que `USB CDC On Boot` esté en `Enabled`;
@@ -453,7 +453,7 @@ Herramientas de diagnóstico creadas en el camino, en `Exploration/reconstruccio
 | _07/10/2026_ | _Reorganizada la documentación: README raíz como portada, README por carpeta, primeros prototipos movidos a `Exploration/Primeros_intentos/`._ | _README.md, CONTEXTO.md_ |
 | _21/10/2026_ | _Eliminada la exploración rápida de viabilidad de DAS/DOA en simulación (`Exploration/beamforming_algorithms/`, hecha por Claude) y sus menciones en la documentación. El desarrollo real del beamforming corresponde al autor._ | _CONTEXTO.md, README.md, CLAUDE.md_ |
 | _07/11/2026_ | _Encontrada la causa real del desalineamiento periódico (~0.2 %): una placa tenía `USB CDC On Boot` en Disabled, así que el audio salía por la UART (CH343) junto con la depuración que se imprime cada 500 frames. Con `DEBUG false` desaparecía. Leyendo los COM nativos (`303A`, COM7 y COM5) desaparece aun con `DEBUG true`. Transporte nativo verificado con `transport_check.py`: hasta 512 kB/s en una placa y 256 kB/s por placa con las dos en paralelo, sin pérdidas durante el stream. La conclusión de sept 2026 ("`Serial` y `Serial0` comparten la UART") queda corregida en la sección 2.1. Se agregaron verificaciones de la configuración de Arduino IDE (en el firmware) y del VID del puerto (en el monitor)._ | _monitor_8LR.py (puertos por defecto, `puerto_es_nativo`), esp32_8micLR.txt (`#error`), Documentation.md_ |
-| _07/11/2026_ | _Prueba a 32 kHz en PC (firmware y monitor a 32 kHz, `CHUNK = 1024`, `SKIP_AUDIO=1`) durante unos 13 min: 25 083 frames sincronizados, 0 descartados, 0 underruns, 0 errores y 0 realineamientos en las dos placas, a unos 256 kB/s por placa. Pendiente: la misma prueba en la Raspberry Pi, con y sin audio. Los archivos oficiales siguen a 16 kHz hasta decidir._ | _monitor_8LR.py y esp32_8micLR.txt (copias de prueba, sin versionar)_ |
+| _07/11/2026_ | _Prueba a 32 kHz en PC (firmware y monitor a 32 kHz, `CHUNK = 1024`, `SKIP_AUDIO=1`) durante unos 13 min: 25 083 frames sincronizados, 0 descartados, 0 underruns, 0 errores y 0 realineamientos en las dos placas, a unos 256 kB/s por placa. Pendiente: la misma prueba en la Raspberry Pi, con y sin audio. Se versiona 32 kHz / `CHUNK = 1024` en firmware y monitor para probarlo en la Raspberry Pi; si no funciona, se regresa a 16 kHz / 512._ | _monitor_8LR.py, esp32_8micLR.txt_ |
 <!-- | _dd/mm/aa_ | _descripción_         | _archivo_             | # FORMATO -->
 
 ---

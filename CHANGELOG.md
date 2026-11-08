@@ -14,6 +14,9 @@ y este proyecto sigue [Versionamiento Semántico](https://semver.org/lang/es/).
   - Cero realineamientos aun con `DEBUG true`.
   - La conclusión de 0.1.0 de que "`Serial` y `Serial0` comparten la UART" queda corregida (`Documentation.md` §2.1).
 
+### Changed
+- **En prueba:** muestreo a 32 kHz con `CHUNK = 1024` (frames de 32 ms, igual que antes) en `esp32_8micLR.txt` y `monitor_8LR.py`. Sin errores en PC; falta la Raspberry Pi. `analisis.py` sigue asumiendo 16 kHz.
+
 ### Added
 - Protección contra la configuración incorrecta:
   - `esp32_8micLR.txt` no compila si `USB CDC On Boot`, `USB Mode` o la versión del core no son las correctas.

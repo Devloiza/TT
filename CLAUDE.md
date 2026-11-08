@@ -125,7 +125,7 @@ Posiciones físicas (x, y, z en metros) de los 8 micrófonos, necesarias para ca
 
 ### Decisión de arquitectura: Python, no Rust
 
-Se evaluó y descartó (por ahora) reescribir partes en Rust. Decisión: quedarse en Python + NumPy/SciPy vectorizado; no optimizar anticipadamente. Razonamiento completo en `Avances/Documentation.md` sección 14.1 — en resumen: los problemas de rendimiento encontrados hasta ahora fueron bugs de loops no vectorizados (no un límite del lenguaje), el DAS y GCC-PHAT/TDOA son computacionalmente triviales para NumPy, hay ~32 ms de presupuesto por frame a `CHUNK=512`/16 kHz, y la evaluación de métricas (PESQ/STOI/SNR) es offline sin presión de tiempo real. No reabrir esta decisión sin evidencia de un cuello de botella medido.
+Se evaluó y descartó (por ahora) reescribir partes en Rust. Decisión: quedarse en Python + NumPy/SciPy vectorizado; no optimizar anticipadamente. Razonamiento completo en `Avances/Documentation.md` sección 14.1 — en resumen: los problemas de rendimiento encontrados hasta ahora fueron bugs de loops no vectorizados (no un límite del lenguaje), el DAS y GCC-PHAT/TDOA son computacionalmente triviales para NumPy, hay ~32 ms de presupuesto por frame a `CHUNK=512`/16 kHz (igual con `CHUNK=1024`/32 kHz, en prueba desde 2026-11-07), y la evaluación de métricas (PESQ/STOI/SNR) es offline sin presión de tiempo real. No reabrir esta decisión sin evidencia de un cuello de botella medido.
 
 ### `Exploration/`
 
