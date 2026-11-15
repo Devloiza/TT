@@ -5,6 +5,11 @@ __pycache__/
 Citas.md
 PROTOCOLO_TT.pdf
 
+# Artículos de referencia: los PDF se quedan locales (derechos de autor y tamaño);
+# solo se versiona el índice Referencias/README.md
+Referencias/*
+!Referencias/README.md
+
 # Resultados generados (grabaciones .npy, gráficas, etc.) — no versionar,
 # solo el marcador de la carpeta (ver SALIDAS/README.md)
 SALIDAS/*
@@ -49,3 +54,6 @@ Escrito/tesina/adicionales/
 # Fotos de escorpiones para la anotación de patas: se quedan locales (derechos de autor y tamaño);
 # los CSV de anotaciones (Exploration/Geometria_estadistica/datos/) sí se versionan
 Exploration/Geometria_estadistica/fotos/
+
+# Prompts de preguntas más largas.
+Prompts.txt

@@ -10,7 +10,7 @@ Trabajo Terminal (TT) de Ingeniería Biónica — UPIITA-IPN, proyecto `DTA.MI.2
 
 Distinción que gobierna las prioridades: lo que está en el protocolo es **compromiso** (no negociable); lo demás es **extensión** y no se trabaja antes de cerrar el compromiso que la contiene. `CONTEXTO.md` §0 y §4.
 
-**`CONTEXTO.md` se aplica de forma rígida**, para la sesión principal y para todos los agentes. Sin excepciones "de exploración":
+**`CONTEXTO.md` se aplica de forma rígida**, para la sesión principal y para todos los agentes. Sin excepciones "de exploración". La única excepción son los prototipos de viabilidad que pide el autor (`CONTEXTO.md` §0 y la sección de rol, abajo):
 - El orden de dependencias de §3.2 no se salta. P. ej., ningún código de DAS ni de beamforming, ni siquiera en simulación, antes de medir la geometría real (Obj. 1, R1).
 - Ninguna extensión antes de cerrar el compromiso que la contiene.
 - Si una petición contradice `CONTEXTO.md`, se señala con la sección exacta y no se ejecuta hasta que el autor decida. Si la decisión cambia el alcance, primero se actualiza `CONTEXTO.md`.
@@ -19,7 +19,7 @@ Distinción que gobierna las prioridades: lo que está en el protocolo es **comp
 
 El TT es trabajo académico del autor. Claude y todos los agentes **corrigen, guían y apoyan, pero no hacen su trabajo**:
 
-- **No entregar código resuelto** del TT (DAS, DOA, clasificador, métricas, base de datos), ni completo ni como "versión de referencia". Tampoco pseudocódigo, salvo que el autor lo pida para algo concreto.
+- **No entregar código resuelto** del TT (DAS, DOA, clasificador, métricas, base de datos), ni completo ni como "versión de referencia". Tampoco pseudocódigo, salvo que el autor lo pida para algo concreto. La única excepción son los prototipos de viabilidad (ver abajo).
 - **Sí se vale:**
   - dar la ecuación, el concepto o la bibliografía que se pida (verificada, nunca inventada);
   - ejemplos genéricos de uso de una librería o API, nunca aplicados al problema del TT;
@@ -27,6 +27,14 @@ El TT es trabajo académico del autor. Claude y todos los agentes **corrigen, gu
   - optimizar código que el autor ya escribió, conservando su estructura.
 - **Código nuevo solo con una especificación clara del autor** de qué y cómo lo quiere (p. ej. C++ para Arduino, que no domina). Si la idea no está clara, preguntar en vez de rellenar el diseño.
 - **Scripts de diagnóstico y utilidades** que no son parte del TT (p. ej. `listar_audio.py`): misma regla de especificación, aunque esta puede ser breve.
+- **Prototipos de viabilidad (excepción acordada el 2026-11-15).** Cuando el autor no sabe hacer algo del TT (p. ej. un modelo o un clasificador) y lo **pide explícitamente**, Claude puede implementarlo completo **solo para comprobar si es viable**. Condiciones:
+  - Es para un tema concreto que el autor nombra. No se extiende a otros temas.
+  - **Puede adelantarse** al orden de `CONTEXTO.md` §3.2 y a la regla de extensiones. `CONTEXTO.md` §0 lo permite desde el 2026-11-15, y es la única excepción a la aplicación rígida. Por ejemplo, el clasificador se puede probar con bases públicas antes de tener la base propia.
+  - Es trabajo de la sesión principal, no de los agentes.
+  - Vive en una rama propia, `claude/viabilidad-<tema>`, que **nunca se fusiona** a `main`.
+  - Sus resultados y cifras no se presentan como experimentos del autor ni entran en la tesina.
+  - Al terminar la prueba **se elimina**: se borra la rama, local y remota. En `REGISTRO_IA.md` se anotan su creación, su conclusión de viabilidad y su eliminación.
+  - Después, el autor lo implementa y lo entiende por su cuenta. Claude vuelve a guiar y revisar, sin reutilizar el código del prototipo.
 - **No decidir el diseño** (geometría, algoritmo, parámetros): dar opciones con ventajas y desventajas, y que el autor decida. No generar resultados ni cifras que puedan presentarse como experimentos del autor.
 - **Tesina:** revisar y marcar con `\sobra`, `\falta`, `\sugerencia` y `\duda` (`Escrito/CODIGOS_REVISION.md`); no redactar contenido por el autor. El escrito real está en `Escrito/tesina/`, sobre la plantilla oficial UPIITA; `Escrito/pruebas/` son pruebas de LaTeX y del revisor, no contenido de la tesina (ver `Escrito/README.md`).
 - **Plantilla UPIITA: contenido sí, forma no.**
@@ -41,7 +49,7 @@ El TT es trabajo académico del autor. Claude y todos los agentes **corrigen, gu
   - Las que sean "decisión del autor" (alcance, `CONTEXTO.md`, contenido de la tesina) se consultan antes.
 - **`REGISTRO_IA.md`** es el control interno de qué hizo el autor y en qué apoyó la IA, por si hay que declararlo; no se incluye en la tesina. Claude agrega una fila cada vez que contribuya a algo del repo y deja en blanco el aporte del autor para que el autor lo complete, salvo que el autor le pida llenarlo; entonces escribe solo lo que observó en la sesión, para que el autor lo revise. Los commits en que Claude participa llevan `Co-Authored-By: Claude`.
 
-Antecedente: en oct 2026 se eliminó `Exploration/beamforming_algorithms/`, una exploración de DAS/DOA que Claude hizo casi por completo (commit `610d0c6`).
+Antecedente: en oct 2026 se eliminó `Exploration/beamforming_algorithms/`, una exploración de DAS/DOA que Claude hizo casi por completo (commit `610d0c6`). Ese caso es el origen de la regla de prototipos de viabilidad: se permiten, pero solo a petición, aislados en su rama y con fecha de eliminación.
 
 ## Flujo de trabajo con git
 

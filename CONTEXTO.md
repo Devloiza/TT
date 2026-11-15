@@ -24,6 +24,14 @@ Todo lo que aparece en este repositorio cae en una de dos categorías, y **nunca
 
 **Ninguna extensión se trabaja antes de que el compromiso que la contiene esté cerrado.** Cuando haya que decidir en qué gastar tiempo, gana lo que cierra un objetivo del protocolo. Las extensiones existen para *reforzar* los compromisos (darles validación externa y robustez), no para competir con ellos.
 
+**Única excepción: prototipos de viabilidad** (acordada el 2026-11-15). Un prototipo que Claude implementa a petición del autor, solo para comprobar si algo es viable, puede adelantarse al orden de §3.2 y a la regla anterior. Por ejemplo, probar un clasificador con bases públicas antes de tener la base propia. Condiciones:
+
+- **No cuenta como avance** de ningún objetivo.
+- **Sus resultados no se reportan** como experimentos del equipo.
+- **Se elimina al terminar.**
+
+El trabajo real del equipo sí respeta el orden. Las reglas completas están en `CLAUDE.md`, sección "Rol de Claude y de los agentes".
+
 ---
 
 ## 1. Identidad del proyecto
@@ -100,6 +108,15 @@ Están en la prosa del protocolo (Solución Propuesta, pp. 6-8) y obligan igual 
 | D9 | **Implementación del sistema de adquisición a PCB** es una meta del Gantt (meta 5, $1,000, 3 semanas) | Tabla 2, p. 16 | **No es opcional: está calendarizada y presupuestada.** ✅ **Cumplida:** el prototipo de adquisición ya está en PCB definitiva, sin cambios planeados por ahora (registrado 2026-10-07) |
 | D10 | STOI y PESQ **requieren señal de referencia limpia**; SNR puede estimarse sin ella | p. 11 | Condiciona el diseño experimental: para C1/C2 hace falta grabar/sintetizar con referencia limpia disponible |
 
+> **Lo que el protocolo NO compromete** (verificado contra las pp. 1–18 el 2026-11-15):
+>
+> - **Tiempo real.** Solo aparece en el Estado del Arte (p. 4, al describir la ref. [9]). No está en el resumen, la hipótesis, los objetivos, la solución propuesta, el resultado esperado (p. 15) ni el Gantt (p. 16). El procesamiento puede tener retardo o hacerse fuera de línea. Medir el tiempo de cómputo es útil, pero no es criterio de cumplimiento.
+> - **Un post-filtro o mejora neuronal de un canal.** No está nombrado en el protocolo. El procesamiento que sí describe es "procesamiento espacial mediante beamforming" (resumen, p. 2) con "pesos diferenciados" (p. 7).
+>   - Hay bloques donde podría argumentarse: "Generación de señal de salida mejorada" (Fig. 2, p. 8, y meta 13 del Gantt, p. 16) y "Preprocesamiento de señales de audio" (meta 7, p. 16).
+>   - **Decisión del equipo (2026-11-15):** tratarlo como extensión (§4.2), para que la evaluación aísle lo que aporta la geometría.
+>
+> **Ojo con la evaluación:** el resultado esperado (p. 15) dice que los resultados "permitirán evaluar si la **geometría no uniforme** [...] ofrece ventajas prácticas". Por eso cualquier procesamiento extra debe poder separarse de lo que aporta la geometría.
+
 ### 2.6 Presupuesto comprometido
 
 $6,500 MXN: hardware ($2,000), ajustes ($500), PCB ($1,000), base de datos ($2,000), evaluación en entornos reales ($1,000).
@@ -133,7 +150,7 @@ Recopilación de la base de datos (habla, ruido, habla+ruido)
 
 ### 3.2 Dependencias duras
 
-Lo que **bloquea** a qué. Violar este orden produce trabajo que hay que rehacer:
+Lo que **bloquea** a qué. Violar este orden produce trabajo que hay que rehacer. La única excepción son los prototipos de viabilidad (§0):
 
 ```
 Obj 1 (geometría real medida) ──┐
@@ -182,7 +199,7 @@ Obj 3 (base de datos) ──► Obj 4 (clasificador habla/ruido) ─────
 | 1 | 🟡 **Parcial** | Estructura de 4 pares LR definida (pines, buses, nomenclatura PCB). `geometria.json` con **placeholders**; faltan las mediciones físicas reales $d_1$–$d_4$. **Verificar además que la geometría real sea no lineal (D1)**. Los mics están montados en **bases movibles**, así que la geometría se puede reconfigurar para cada prueba sin reimprimir nada. El collar **no es compromiso** del protocolo (descartado como pendiente, 2026-11-07). Estadística de la posición de las patas en fotos dorsales en curso: ángulos medios por par con IC 95 %; radio a escala con $R = 17$ cm desde el centro (máximo de 20 cm por los cables; decisión del 2026-11-07) ([`Metodologia/obj1_geometria.md`](Metodologia/obj1_geometria.md)) |
 | 2 | 🟢 **Cerrado** | Electrónica en **PCB definitiva** (meta 5 / D9 cumplida; sin cambios planeados por ahora): una PCB para los dos ESP32-S3 y una PCB acondicionada por micrófono, unidas por cables. Adquisición de 8 mics validada end-to-end en PC y Raspberry Pi 4/5, SYNC estable, 0 underruns |
 | 3 | 🔴 **No iniciado** | Meta más larga de TT1 (10 sem) + $2,000. Requiere sonómetro (D6) y las dos estrategias (D7) |
-| 4 | 🔴 **No iniciado** | Bloqueado por Obj. 3 |
+| 4 | 🔴 **No iniciado** | Bloqueado por Obj. 3. **Comprometido:** un modelo de clasificación habla/ruido entrenado con la base del Obj. 3 (Obj. 4, p. 6; "esta base se usará para entrenar un modelo de clasificación entre habla y ruido", p. 8). **Propuesta del equipo (2026-11-15), no exigida por el protocolo:** explorar una arquitectura tipo GTCRN (Rong et al., 2024; §4.2), implementada y entrenada por el equipo. GTCRN es una red de mejora de voz, así que derivar la decisión habla/ruido de su máscara es una hipótesis por validar, que se evaluaría como clasificador. Volumen de entrenamiento: R11 |
 | 5 | 🔴 **No iniciado** | Punto de inserción ya identificado: `hilo_sincronizador` en `Avances/monitor_8LR.py`, sobre el frame `(512, 8)`. Bloqueado por Obj. 1 |
 | 6 | 🔴 **No iniciado** | Bloqueado por 4 y 5 |
 | 7 | 🔴 **No iniciado** | Requiere una segunda variante de `geometria.json` (lineal uniforme) y reconfiguración física del arreglo (D3), que las bases movibles de los mics facilitan |
@@ -256,6 +273,29 @@ Obj 3 (base de datos) ──► Obj 4 (clasificador habla/ruido) ─────
 - [ ] Diseñar P3 replicando el escenario de pausas de Beck (Fig. 11).
 - [ ] Asegurar que P2 use el **mismo** procesamiento en ambas geometrías.
 
+### 4.2 Post-filtro neuronal de un canal (tipo GTCRN) después del beamforming
+
+**Referencia:** X. Rong, T. Sun, X. Zhang, Y. Hu, C. Zhu y J. Lu, "GTCRN: A Speech Enhancement Model Requiring Ultralow Computational Resources", en *ICASSP 2024*, pp. 971–975, doi: 10.1109/ICASSP48485.2024.10448310. Revisado el 2026-11-15.
+
+**Qué es:** una red de mejora de voz de un canal, causal, de unos 23.7 mil parámetros y unos 39.6 millones de MACs (multiplicaciones-acumulaciones) por segundo, a 16 kHz.
+
+**Relación con el compromiso:**
+
+- **Como base del clasificador (Obj. 4) cae dentro del compromiso de tener un clasificador.** La arquitectura es elección del equipo, no del protocolo, y derivar la decisión habla/ruido de la máscara está por validar (§3.4).
+- **Como post-filtro a la salida del beamforming es extensión.** El procesamiento comprometido es el beamforming ponderado (§2.5). Se trabaja solo después de cerrar los Obj. 5 a 7, encima del beamforming y nunca en su lugar.
+
+**Condiciones si se usa como post-filtro:**
+
+- Va **después** del DAS, sobre la señal de un canal. Aplicarlo canal por canal **antes** del DAS altera la fase de cada micrófono y, con ella, los retardos.
+- Se reportan los resultados **con y sin** post-filtro. Por sí sola, la red mejora PESQ en cerca de 50 % en sus pruebas, y eso taparía lo que aporta la geometría (ver la nota "Ojo con la evaluación" de §2.5).
+- Si se usa la red entrenada por terceros, se declara como tal. Lo preferido es la implementación propia (§3.4, Obj. 4).
+
+**Lo que aporta además a la metodología:**
+
+- Mezcla voz y ruido a SNR aleatorio entre −5 y 15 dB, un rango que contiene el de C4.
+- Usa como referencia la voz limpia conservando los primeros 100 ms de reflexiones. Sirve para definir la referencia de D10 cuando la voz se reproduce por monitor en una sala.
+- Trabaja a 16 kHz.
+
 ---
 
 ## 5. Riesgos conocidos
@@ -270,6 +310,9 @@ Obj 3 (base de datos) ──► Obj 4 (clasificador habla/ruido) ─────
 | R6 | Beck et al. contradice una frase del Estado del Arte | Reformular antes de entregar (§4.1) |
 | R7 | Reportar mejora de PESQ/STOI sin la señal de referencia limpia | Diseñar el experimento con referencia disponible desde el inicio (D10) |
 | R8 | Pregunta abierta: ¿se mantiene la alineación temporal entre las dos ESP32-S3 a lo largo de una grabación larga? (sin verificar) | Investigarlo antes de integrar el DAS |
+| R9 | **C1 (STOI ≥ 10 %) tiene techo.** Si la señal degradada ya tiene un STOI alto, la mejora relativa posible es pequeña. Incluso un modelo del estado del arte (GTCRN, §4.2) mejora STOI 0.789 → 0.844 (+7.0 %) en DNS3 y 0.921 → 0.940 (+2.1 %) en VCTK-DEMAND. PESQ sí sube cerca de 50 % | Reportar C1 y C2 **por cada nivel de SNR de entrada**, además del promedio. Hipótesis por comprobar: el +10 % es más alcanzable a −5 y 0 dB, donde el STOI base es menor. Dar siempre el valor base y el procesado (§2.4) |
+| R10 | **Las diferencias de amplitud entre micrófonos son pequeñas en el aire.** Con $R = 17$ cm, la diferencia máxima por distancia es de ~3 dB a 1 m, ~1.5 dB a 2 m y ~1 dB a 3 m, del orden de la tolerancia de sensibilidad entre MEMS, y la reverberación la reduce más. El Obj. 1 pide diferencias "de amplitud **y** tiempo de llegada" | Calibrar la ganancia de cada micrófono antes de usar amplitudes. Apoyarse principalmente en las diferencias de tiempo (TDOA ponderado, p. 7) |
+| R11 | Entrenar el clasificador (Obj. 4) solo con grabaciones propias puede no bastar: para GTCRN se generó un conjunto de ~2 000 h (720 000 pares de 10 s de DNS3), del que se muestrearon 40 000 pares de 8 s por época (~89 h), y su ablación usó ~100 h | Usar las dos estrategias de la p. 7: las mezclas sintéticas de bases públicas dan el volumen y las grabaciones propias ajustan al dominio del dispositivo (D7) |
 
 ---
 
