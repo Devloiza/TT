@@ -8,8 +8,12 @@ Apoyo al Obj. 1 (geometría del arreglo inspirada en las slit sensilla). Por cad
   3. Un círculo que se ajusta a los centroides (por mínimos cuadrados o el mínimo que los encierra).
 
 Los datos van a dos CSV versionados en datos/: imagenes.csv (una fila por foto) y puntos.csv (una fila
-por clic). Las coordenadas están en píxeles de la imagen original (rotación EXIF corregida), con origen
-arriba a la izquierda y el eje y hacia abajo. Las fotos se quedan locales en fotos/<orientación>/.
+por clic). imagenes.csv incluye la proyección del centro del círculo sobre la recta del eje (proyeccion_x,
+proyeccion_y): se calcula sola a partir del eje y del círculo y, con MOSTRAR_PROYECCION, se dibuja como un
+rombo sobre el eje unido al centro por una línea punteada.
+
+Las coordenadas están en píxeles de la imagen original (rotación EXIF corregida), con origen arriba a la
+izquierda y el eje y hacia abajo. Las fotos se quedan locales en fotos/<orientación>/.
 
 Se supone vista dorsal (desde arriba): con la cabeza hacia arriba en la foto, la izquierda del animal
 queda a la izquierda de la imagen.
@@ -56,6 +60,7 @@ CARPETA_DATOS = CARPETA_BASE / "datos"
 METODO_CIRCULO = "ajuste"  # "ajuste" (mínimos cuadrados) o "minimo" (el menor que encierra los centroides)
 MIN_PUNTOS_PATA = 5
 MOSTRAR_ANGULOS = True  # ángulo de cada pata respecto al frente, solo en pantalla (no se guarda)
+MOSTRAR_PROYECCION = True  # marcador en el eje donde se proyecta el centro del círculo (el dato se guarda siempre)
 
 # Tamaños del dibujo (solo en pantalla; útiles para capturas en presentaciones)
 TEXT_SIZE = 15  # todos los textos: encabezado, etiquetas de patas y de la cruz de referencia
@@ -70,7 +75,7 @@ TOLERANCIA_PX = 10  # distancia en pantalla para tomar un punto existente
 
 COLUMNAS_IMAGENES = ["imagen", "ancho_px", "alto_px", "eje_frente_x", "eje_frente_y", "eje_atras_x",
                      "eje_atras_y", "circulo_metodo", "circulo_x", "circulo_y", "circulo_r",
-                     "circulo_manual", "estado", "motivo_descarte", "fecha"]
+                     "proyeccion_x", "proyeccion_y", "circulo_manual", "estado", "motivo_descarte", "fecha"]
 COLUMNAS_PUNTOS = ["imagen", "par", "lado", "punto", "x", "y", "centroide_x", "centroide_y", "visible"]
 
 
@@ -88,6 +93,13 @@ def direccion_del_eje(frente, atras):
     norma = math.hypot(ux, uy) or 1.0
     ux, uy = ux / norma, uy / norma
     return (ux, uy), (-uy, ux)
+
+
+def proyeccion_en_eje(frente, atras, p):
+    """Pie de la perpendicular desde p a la recta del eje (puede caer fuera del segmento frente-atrás)."""
+    (ux, uy), _ = direccion_del_eje(frente, atras)
+    a = (p[0] - atras[0]) * ux + (p[1] - atras[1]) * uy  # distancia desde "atrás" a lo largo del eje
+    return atras[0] + a * ux, atras[1] + a * uy
 
 
 def angulo_respecto_al_frente(origen, frente, atras, p):
@@ -173,6 +185,12 @@ class Anotacion:
             self.circulo = calcular_circulo(self.centroides())
             self.circulo_metodo = METODO_CIRCULO
 
+    def proyeccion_centro(self):
+        """Proyección del centro del círculo sobre el eje del cuerpo, o None si falta el eje o el círculo."""
+        if self.circulo is None or self.eje_frente is None or self.eje_atras is None:
+            return None
+        return proyeccion_en_eje(self.eje_frente, self.eje_atras, self.circulo[:2])
+
     def faltantes(self):
         """Lista de lo que falta para que la foto quede completa (vacía si está completa)."""
         faltan = []
@@ -193,7 +211,10 @@ class Anotacion:
             self.estado = "completa" if not self.faltantes() else "en_progreso"
 
     def firma(self):
-        """Todo lo que se guarda en los CSV salvo la fecha, redondeado como en el CSV (para detectar cambios reales)."""
+        """Todo lo que se guarda en los CSV salvo la fecha, redondeado como en el CSV (para detectar cambios reales).
+
+        La proyección no entra: se deriva del eje y del círculo, que ya están aquí.
+        """
         redondear = lambda p: None if p is None else tuple(_num(v) for v in p)
         patas = tuple(sorted((k, v["visible"], tuple(redondear(p) for p in v["puntos"])) for k, v in self.patas.items()))
         return (redondear(self.eje_frente), redondear(self.eje_atras), redondear(self.circulo),
@@ -212,6 +233,7 @@ def guardar_csv(anotaciones, carpeta_datos):
         w.writeheader()
         for a in sorted(anotaciones.values(), key=lambda a: a.imagen):
             c = a.circulo or (None, None, None)
+            pr = a.proyeccion_centro() or (None, None)
             w.writerow({"imagen": a.imagen, "ancho_px": a.ancho, "alto_px": a.alto,
                         "eje_frente_x": _num(a.eje_frente and a.eje_frente[0]),
                         "eje_frente_y": _num(a.eje_frente and a.eje_frente[1]),
@@ -219,6 +241,7 @@ def guardar_csv(anotaciones, carpeta_datos):
                         "eje_atras_y": _num(a.eje_atras and a.eje_atras[1]),
                         "circulo_metodo": a.circulo_metodo if a.circulo else "",
                         "circulo_x": _num(c[0]), "circulo_y": _num(c[1]), "circulo_r": _num(c[2]),
+                        "proyeccion_x": _num(pr[0]), "proyeccion_y": _num(pr[1]),
                         "circulo_manual": int(a.circulo_manual), "estado": a.estado,
                         "motivo_descarte": a.motivo, "fecha": a.fecha})
     with open(carpeta_datos / "puntos.csv", "w", newline="", encoding="utf-8") as f:
@@ -382,6 +405,12 @@ class Anotador:
             estilo = "-" if a.circulo_manual else "--"
             dib(self.ax.add_patch(plt.Circle((cx, cy), r, fill=False, color="cyan", lw=LINE_SIZE, ls=estilo)))
             dib(self.ax.plot(cx, cy, "c+", ms=14, mew=2)[0])
+            proyeccion = a.proyeccion_centro()
+            if MOSTRAR_PROYECCION and proyeccion is not None:
+                # Dónde cae el centro del círculo sobre el eje: lo lejos que queda del punto medio y del propio
+                # centro sirve para estimar el error de la orientación y del círculo
+                dib(self.ax.plot([cx, proyeccion[0]], [cy, proyeccion[1]], color="cyan", lw=LINE_SIZE / 2, ls=":")[0])
+                dib(self.ax.plot(*proyeccion, "D", color="cyan", ms=CENTROID_SIZE / 2, mec="k")[0])
         ocultas = [f"{p}-{l}" for (p, l), v in a.patas.items() if not v["visible"]]
         estado = "DESCARTADA: " + a.motivo if a.estado == "descartada" else ", ".join(a.faltantes()[:6]) or "completa"
         linea1 = (f"[{self.indice + 1}/{len(self.fotos)}] {a.imagen}   |   par: {self.par_actual or '-'}"

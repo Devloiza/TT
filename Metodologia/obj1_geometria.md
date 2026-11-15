@@ -39,29 +39,42 @@ Las coordenadas están en píxeles de la imagen original:
 - el origen está arriba a la izquierda;
 - $y$ crece hacia abajo.
 
-**Estado de los datos al 2026-11-07:**
+**Estado de los datos al 2026-11-15:**
 
-13 fotos anotadas, todas en `Escorpiones_V_Superior/`:
+36 fotos anotadas, todas en `Escorpiones_V_Superior/`. La corrida de §7 es del 2026-11-07, con las 11 fotos completas que había entonces.
 
 | Especie (según el nombre del archivo) | Completas | Descartadas |
 |:--|:--:|:--:|
-| *Smeringurus mesaensis* | 5 | 0 |
+| *Smeringurus mesaensis* | 6 | 0 |
+| *Hadogenes troglodytes* | 6 | 1 |
 | *Heterometrus spinifer* | 4 | 0 |
+| *Heterometrus indus* | 2 | 0 |
 | *Heterometrus longimanus* | 1 | 0 |
+| *Heterometrus bengalensis* (el archivo dice "bengalesis") | 1 | 0 |
+| *Brachistosternus cepedai* | 3 | 0 |
+| *Brachistosternus ehrenbergii* | 3 | 0 |
+| *Brachistosternus* sp. (archivo "genus") | 1 | 0 |
+| *Bothriurus asper* | 1 | 0 |
+| *Bothriurus ehrenbergii* | 1 | 0 |
+| *Bothriurus patagonicus* | 1 | 0 |
+| *Bothriurus* sp. | 1 | 0 |
 | *Diplocentrus* sp. | 1 | 1 |
-| *Heterometrus indus* | 0 | 1 |
-| **Total** | **11** | **2** |
+| *Pandinus imperator* | 0 | 2 |
+| **Total** | **32** | **4** |
 
 **Clics:**
-- 2169 clics en total: 2160 sobre patas visibles y 9 marcas de patas no visibles.
-- Una pata visible tiene en promedio 25 clics y como mínimo 9. Todas superan el mínimo de 5 que exige la herramienta.
+- 4389 filas en `puntos.csv`: 4377 clics sobre patas visibles y 12 marcas de patas no visibles.
+- 4018 de esos clics son de fotos completas.
+- Una pata visible tiene en promedio 16.9 clics y como mínimo 6. Todas superan el mínimo de 5 que exige la herramienta.
 
 **Descartes:**
 
 | Motivo | Fotos |
 |:--|:--:|
 | Patas sobrepuestas | 1 |
-| Doble imagen | 1 |
+| Repetida | 1 |
+| Mala calidad | 1 |
+| Taxidermia | 1 |
 
 ## 3. Anotación (`patainador.py`)
 
@@ -80,7 +93,17 @@ Uso y teclas: encabezado de [`patainador.py`](../Exploration/Geometria_estadisti
    - Se calcula sobre los centroides de las patas.
    - Por defecto es un ajuste por mínimos cuadrados (`METODO_CIRCULO = "ajuste"`); la alternativa es el círculo mínimo que los encierra.
    - El centro y el radio se pueden corregir a mano; queda registrado en `circulo_manual`.
-   - Las 11 fotos actuales usan el **ajuste**.
+   - Al 2026-11-15, las 34 fotos con círculo usan el **ajuste**; en una el círculo se corrigió a mano.
+4. **Proyección del centro sobre el eje** (agregada el 2026-11-15 a petición de un asesor).
+   - Es el pie de la perpendicular desde el centro del círculo hasta la recta del eje: $\mathbf{p} = \mathbf{t} + \big((\mathbf{o}-\mathbf{t})\cdot\mathbf{u}\big)\,\mathbf{u}$, con la notación de §4.
+   - Se guarda en `imagenes.csv` (`proyeccion_x`, `proyeccion_y`, en píxeles) y se dibuja sobre el eje.
+   - **Para qué sirve (hipótesis por comprobar):** estimar el error de la anotación. Si el eje y el círculo son coherentes, el centro debería quedar cerca del eje y de su punto medio. Un desplazamiento grande indicaría un eje mal orientado o patas asimétricas.
+   - `exportar_error_proyeccion.py` genera `SALIDAS/Escorpiones_estadistica/` (no versionada). Contiene `error_proyeccion.csv`, en píxeles y sin normalizar, con estas columnas:
+     - $D$ (`D_px`): largo del eje; es el mismo $s$ de §4.
+     - $l_f$ (`l_px`): de la proyección al frente, a lo largo del eje: $l_f = s - (\mathbf{o}-\mathbf{t})\cdot\mathbf{u}$. Es positiva si la proyección queda detrás del frente. No es la componente lateral $\ell$ de §4.
+     - $r$ (`r_px`): radio del círculo.
+     - Los puntos de frente, atrás y centro. Incluye una figura por foto procesable: a la izquierda la foto sola y a la derecha con la anotación del patainador, con la especie como título y una leyenda.
+   - La estadística de ese desplazamiento está pendiente.
 
 **Supuesto de vista dorsal:** con la cabeza hacia arriba en la foto, la izquierda del animal queda a la izquierda de la imagen.
 

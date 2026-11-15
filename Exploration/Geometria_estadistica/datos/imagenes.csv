@@ -1,18 +1,37 @@
-imagen,ancho_px,alto_px,eje_frente_x,eje_frente_y,eje_atras_x,eje_atras_y,circulo_metodo,circulo_x,circulo_y,circulo_r,circulo_manual,estado,motivo_descarte,fecha
-Escorpiones_V_Superior/Smeringurus_mesaensis_1.jpg,720,457,494.88,189.37,153.17,224.25,ajuste,330.68,190.12,187.37,0,completa,,2026-11-07
-Escorpiones_V_Superior/Smeringurus_mesaensis_2.jpg,560,342,398.01,209.93,197.98,138.35,ajuste,278.05,157.95,149.23,0,completa,,2026-11-07
-Escorpiones_V_Superior/Smeringurus_mesaensis_3.jpg,560,414,414.19,237.66,170.85,229.24,ajuste,242.42,215.41,187.08,0,completa,,2026-11-07
-Escorpiones_V_Superior/Smeringurus_mesaensis_4.jpg,560,454,112.08,241.28,369.56,203.45,ajuste,264.31,224.54,205.67,0,completa,,2026-11-07
-Escorpiones_V_Superior/Smeringurus_mesaensis_5.jpg,401,302,139.95,170.04,252.67,117.02,ajuste,209.73,151.49,104.14,0,completa,,2026-11-07
-Escorpiones_V_Superior/bothriurus_asper_1.jpeg,500,465,337.63,238.84,185.16,230.19,ajuste,259.29,245.19,86.62,0,completa,,2026-11-07
-Escorpiones_V_Superior/bothriurus_ehrenbergii_2.jpeg,1912,1427,1229.29,611.21,896.59,751.42,ajuste,1002.19,702.63,237.88,0,completa,,2026-11-07
-Escorpiones_V_Superior/bothriurus_patagonicus_1.jpeg,707,550,443.81,259.57,297.36,253.49,ajuste,358.73,251.86,100.67,0,completa,,2026-11-07
-Escorpiones_V_Superior/bothriurus_sp_1.jpg,1200,871,,,,,,,,,0,en_progreso,,
-Escorpiones_V_Superior/diplocentrus_1.jpg,500,286,162.2,155.52,353.43,187.78,ajuste,237.35,183.15,82.36,1,descartada,Patas sobrepuestas,2026-11-07
-Escorpiones_V_Superior/diplocentrus_5.jpg,655,434,420.87,225.91,250.04,218.6,ajuste,342.0,223.77,102.14,0,completa,,2026-11-07
-Escorpiones_V_Superior/heterometrus_indus_1.jpg,640,826,480.86,179.73,,,,,,,0,descartada,Doble imagen,2026-11-07
-Escorpiones_V_Superior/heterometrus_longimanus_1.jpg,1000,667,728.69,361.81,383.94,368.41,ajuste,594.32,372.8,191.84,0,completa,,2026-11-07
-Escorpiones_V_Superior/heterometrus_spinifer_1.jpg,1024,727,331.86,356.37,754.54,311.99,ajuste,544.42,361.11,233.58,0,completa,,2026-11-07
-Escorpiones_V_Superior/heterometrus_spinifer_2.jpg,3929,2947,1453.41,1571.19,2671.63,1218.23,ajuste,2145.04,1440.81,611.62,0,completa,,2026-11-07
-Escorpiones_V_Superior/heterometrus_spinifer_3.jpg,500,333,338.17,180.0,149.21,196.65,ajuste,241.88,177.34,106.28,0,completa,,2026-11-07
-Escorpiones_V_Superior/heterometrus_spinifer_4.jpg,820,820,586.37,449.22,298.89,369.12,ajuste,439.78,448.62,216.75,0,completa,,2026-11-07
+imagen,ancho_px,alto_px,eje_frente_x,eje_frente_y,eje_atras_x,eje_atras_y,circulo_metodo,circulo_x,circulo_y,circulo_r,proyeccion_x,proyeccion_y,circulo_manual,estado,motivo_descarte,fecha
+Escorpiones_V_Superior/Smeringurus_mesaensis_1.jpg,720,457,504.77,186.89,153.17,224.25,ajuste,330.68,190.12,187.37,332.29,205.22,0,completa,,2026-11-15
+Escorpiones_V_Superior/Smeringurus_mesaensis_2.jpg,560,342,398.01,209.93,197.98,138.35,ajuste,278.05,157.95,149.23,275.17,165.97,0,completa,,2026-11-07
+Escorpiones_V_Superior/Smeringurus_mesaensis_3.jpg,560,414,414.19,237.66,170.85,229.24,ajuste,242.42,215.41,187.08,241.85,231.7,0,completa,,2026-11-07
+Escorpiones_V_Superior/Smeringurus_mesaensis_4.jpg,560,454,111.18,238.71,369.56,203.45,ajuste,264.31,224.54,205.67,263.41,217.94,0,completa,,2026-11-15
+Escorpiones_V_Superior/Smeringurus_mesaensis_5.jpg,401,302,139.25,169.17,252.67,117.02,ajuste,209.73,151.49,104.14,204.14,139.33,0,completa,,2026-11-15
+Escorpiones_V_Superior/Smeringurus_mesaensis_6.jpg,447,447,86.82,241.53,276.28,240.49,ajuste,205.91,242.35,150.23,205.91,240.88,0,completa,,2026-11-15
+Escorpiones_V_Superior/bothriurus_asper_1.jpeg,500,465,337.63,238.84,185.16,230.19,ajuste,259.29,245.19,86.62,259.9,234.43,0,completa,,2026-11-07
+Escorpiones_V_Superior/bothriurus_ehrenbergii_2.jpeg,1912,1427,1229.29,611.21,896.59,751.42,ajuste,1002.19,702.64,237.88,1003.72,706.27,0,completa,,2026-11-07
+Escorpiones_V_Superior/bothriurus_patagonicus_1.jpeg,707,550,443.81,259.57,297.36,253.49,ajuste,358.73,251.86,100.67,358.55,256.03,0,completa,,2026-11-07
+Escorpiones_V_Superior/bothriurus_sp_1.jpg,1200,871,708.88,381.98,313.38,463.01,ajuste,500.95,426.84,270.08,500.51,424.67,0,completa,,2026-11-07
+Escorpiones_V_Superior/brachistosternus_cepedai_1.jpg,516,387,346.83,80.57,275.73,228.84,ajuste,297.5,184.43,102.42,297.11,184.25,0,completa,,2026-11-07
+Escorpiones_V_Superior/brachistosternus_cepedai_2.jpg,596,515,186.71,264.28,309.18,280.75,ajuste,263.97,279.55,98.31,264.62,274.76,0,completa,,2026-11-07
+Escorpiones_V_Superior/brachistosternus_cepedai_3.jpg,554,554,418.54,300.11,186.31,283.68,ajuste,222.96,280.2,203.97,222.53,286.24,0,completa,,2026-11-07
+Escorpiones_V_Superior/brachistosternus_ehrenbergii_1.jpg,640,475,219.8,196.21,421.4,279.61,ajuste,341.99,247.86,140.44,342.37,246.92,0,completa,,2026-11-07
+Escorpiones_V_Superior/brachistosternus_ehrenbergii_3.jpg,2048,1155,1204.81,524.83,665.58,639.66,ajuste,942.36,573.08,319.27,943.91,580.39,0,completa,,2026-11-07
+Escorpiones_V_Superior/brachistosternus_ehrenbergii_4.jpg,447,447,192.59,173.96,259.64,267.0,ajuste,233.79,224.62,73.79,230.7,226.85,0,completa,,2026-11-07
+Escorpiones_V_Superior/brachistosternus_genus_1.jpg,500,375,363.09,252.47,218.98,143.24,ajuste,270.3,181.94,130.99,270.2,182.07,0,completa,,2026-11-07
+Escorpiones_V_Superior/diplocentrus_1.jpg,500,286,162.2,155.52,353.43,187.78,ajuste,237.35,183.15,82.36,239.8,168.61,1,descartada,Patas sobrepuestas,2026-11-07
+Escorpiones_V_Superior/diplocentrus_5.jpg,655,434,420.87,225.91,250.04,218.6,ajuste,342.0,223.77,102.14,342.06,222.54,0,completa,,2026-11-07
+Escorpiones_V_Superior/hadogenes_troglodytes_1.jpg,736,486,478.26,227.33,244.59,252.48,ajuste,388.02,247.26,110.62,386.93,237.16,0,completa,,2026-11-07
+Escorpiones_V_Superior/hadogenes_troglodytes_2.jpg,2135,1200,1413.05,507.62,730.72,624.83,ajuste,1126.35,572.17,363.21,1123.8,557.31,0,completa,,2026-11-07
+Escorpiones_V_Superior/hadogenes_troglodytes_3.jpg,3534,2650,1275.01,1204.79,2837.29,1343.46,ajuste,1846.09,1276.59,688.68,1847.95,1255.64,0,completa,,2026-11-07
+Escorpiones_V_Superior/hadogenes_troglodytes_4.jpg,538,371,383.47,177.73,119.24,153.57,ajuste,281.01,169.79,135.66,281.14,168.37,0,completa,,2026-11-07
+Escorpiones_V_Superior/hadogenes_troglodytes_5.jpg,597,335,395.77,140.38,210.35,175.63,,,,,,,0,descartada,Repetida,2026-11-07
+Escorpiones_V_Superior/hadogenes_troglodytes_6.jpg,2048,1536,1356.6,643.64,947.59,1029.43,ajuste,1173.85,823.04,312.85,1170.34,819.33,0,completa,,2026-11-07
+Escorpiones_V_Superior/hadogenes_troglodytes_7.jpg,750,441,612.44,232.9,254.76,193.93,ajuste,471.74,240.06,158.42,474.16,217.83,0,completa,,2026-11-07
+Escorpiones_V_Superior/heterometrus_bengalesis_1.jpg,960,720,689.64,390.6,224.15,408.6,ajuste,539.65,428.49,285.72,538.42,396.45,0,completa,,2026-11-07
+Escorpiones_V_Superior/heterometrus_indus_1.jpg,640,826,193.35,202.13,421.29,181.36,ajuste,290.3,203.25,136.55,289.41,193.38,0,completa,,2026-11-07
+Escorpiones_V_Superior/heterometrus_indus_2.jpg,640,385,450.67,178.64,191.02,234.6,ajuste,331.35,195.84,136.53,333.11,203.98,0,completa,,2026-11-07
+Escorpiones_V_Superior/heterometrus_longimanus_1.jpg,1000,667,728.69,361.81,383.94,368.41,ajuste,594.32,372.8,191.84,594.16,364.39,0,completa,,2026-11-07
+Escorpiones_V_Superior/heterometrus_spinifer_1.jpg,1024,727,331.86,356.37,754.54,311.99,ajuste,544.42,361.11,233.58,541.61,334.35,0,completa,,2026-11-07
+Escorpiones_V_Superior/heterometrus_spinifer_2.jpg,3929,2947,1453.41,1571.19,2671.63,1218.23,ajuste,2145.04,1440.81,611.62,2126.32,1376.22,0,completa,,2026-11-07
+Escorpiones_V_Superior/heterometrus_spinifer_3.jpg,500,333,338.17,180.0,149.21,196.65,ajuste,241.88,177.34,106.28,242.86,188.4,0,completa,,2026-11-07
+Escorpiones_V_Superior/heterometrus_spinifer_4.jpg,820,820,585.42,444.92,304.62,367.69,ajuste,439.78,448.62,216.75,450.97,407.94,0,completa,,2026-11-07
+Escorpiones_V_Superior/pandinus_imperator_1.jpg,597,335,213.67,193.94,394.8,200.56,ajuste,285.79,201.86,82.91,285.99,196.58,0,descartada,Mala calidad,2026-11-07
+Escorpiones_V_Superior/pandinus_imperator_3.jpg,2016,1512,,,,,,,,,,,0,descartada,Taxidermia,2026-11-07
