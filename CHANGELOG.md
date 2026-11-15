@@ -15,7 +15,7 @@ y este proyecto sigue [Versionamiento Semántico](https://semver.org/lang/es/).
   - La conclusión de 0.1.0 de que "`Serial` y `Serial0` comparten la UART" queda corregida (`Documentation.md` §2.1).
 
 ### Changed
-- **En prueba:** muestreo a 32 kHz con `CHUNK = 1024` (frames de 32 ms, igual que antes) en `esp32_8micLR.txt` y `monitor_8LR.py`. Sin errores en PC; falta la Raspberry Pi. `analisis.py` sigue asumiendo 16 kHz.
+- Se probó muestreo a 32 kHz con `CHUNK = 1024` (sin errores en PC durante ~13 min) y se decidió **quedarse en 16 kHz con `CHUNK = 512`** (2026-11-15). PESQ en banda ancha, GTCRN y los modelos previstos trabajan a 16 kHz.
 
 ### Added
 - Protección contra la configuración incorrecta:
