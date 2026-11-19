@@ -7,7 +7,7 @@ import scipy.stats
 import graficas_patas  # parte visual (opción B): mapa de calor, sectores del IC y esquema del escorpión
 
 os.system('cls')
-DEBUG = True
+DEBUG = False
 imagenes = pd.read_csv(r"Exploration\Geometria_estadistica\datos\imagenes.csv")
 puntos = pd.read_csv(r"Exploration\Geometria_estadistica\datos\puntos.csv")
 
@@ -104,7 +104,7 @@ def analizar(ESPEJO:bool):
             xy = np.array([rho*np.sin(theta), rho*np.cos(theta)])
             xy_completo = np.hstack((xy_completo, xy))
 
-            # Centroides, paso 1: promedio de los clics de cada pata en ESTA foto (un voto por foto)
+            # Centroides, paso 1: promedio de los clics de cada pata en ESTA foto
             centroides_foto = {}
             pesos = np.zeros(len(lado))  # peso de cada clic en el mapa de calor
             for nombre_lado in ('izq', 'der'):
@@ -133,7 +133,7 @@ def analizar(ESPEJO:bool):
         xy_por_par[par], pesos_por_par[par] = xy_completo, pesos_completo
 
     ## Estadística
-    # Paso 0: radio y ángulo de cada centroide (un valor por foto), vectorizado sobre todas las fotos a la vez
+    # Radio y ángulo de cada centroide (un valor por foto), vectorizado sobre todas las fotos a la vez
     for clave in estadistica:
         e = estadistica[clave]
         C = e["centroides"]  # columna 0: lateral (x), columna 1: hacia el frente (y)
@@ -161,4 +161,4 @@ if DEBUG:
 figuras = graficas_patas.figuras(resultados, graficas_patas.posicion_frente(imagenes, nombres_imagenes), COLORES)
 for modo, fig in figuras.items():
     fig.savefig(SALIDA.format(modo.lower()), dpi=200)
-plt.show()
+plt.close()

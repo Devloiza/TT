@@ -12,6 +12,8 @@
 | Transformación al marco del cuerpo y estadística (`estadistica_imagenes.py`) | El autor, con revisión y correcciones de Claude a petición |
 | Herramienta de anotación (`patainador.py`) | Claude, con la especificación del autor |
 | Gráficas (`graficas_patas.py`) | Claude, con la especificación del autor |
+| Exportación para el asesor (`exportar_error_proyeccion.py`) | Claude, con la especificación del autor |
+| Histogramas del error de proyección (`estadistica_error.py`) | El autor; Claude lo reordenó a petición |
 
 ---
 
@@ -31,7 +33,7 @@ La adaptación es funcional, no una réplica ([D5](../CONTEXTO.md#25-compromisos
 - Se guardan solo en local, en `Exploration/Geometria_estadistica/fotos/<orientación>/`; no se versionan.
 
 **Datos versionados:**
-- [`datos/imagenes.csv`](../Exploration/Geometria_estadistica/datos/imagenes.csv): una fila por foto, con el eje, el círculo, el estado, el motivo de descarte y la fecha.
+- [`datos/imagenes.csv`](../Exploration/Geometria_estadistica/datos/imagenes.csv): una fila por foto, con la resolución, el eje, el círculo, la proyección del centro sobre el eje, el estado, el motivo de descarte y la fecha.
 - [`datos/puntos.csv`](../Exploration/Geometria_estadistica/datos/puntos.csv): una fila por clic, con par, lado, coordenadas, centroide de la pata y visibilidad.
 
 Las coordenadas están en píxeles de la imagen original:
@@ -102,7 +104,10 @@ Uso y teclas: encabezado de [`patainador.py`](../Exploration/Geometria_estadisti
      - $D$ (`D_px`): largo del eje; es el mismo $s$ de §4.
      - $l_f$ (`l_px`): de la proyección al frente, a lo largo del eje: $l_f = s - (\mathbf{o}-\mathbf{t})\cdot\mathbf{u}$. Es positiva si la proyección queda detrás del frente. No es la componente lateral $\ell$ de §4.
      - $r$ (`r_px`): radio del círculo.
-     - Los puntos de frente, atrás y centro. Incluye una figura por foto procesable: a la izquierda la foto sola y a la derecha con la anotación del patainador, con la especie como título y una leyenda.
+     - Los puntos de frente, atrás y centro.
+     - `ancho_px` y `alto_px`: la resolución de la foto. Van al final para no recorrer las columnas anteriores. Sirven para ver cuánto de la variación de $D$ y $r$ viene de la escala de cada foto.
+
+     Incluye una figura por foto procesable: a la izquierda la foto sola y a la derecha con la anotación del patainador, con la especie como título y una leyenda.
    - La estadística de ese desplazamiento está pendiente.
 
 **Supuesto de vista dorsal:** con la cabeza hacia arriba en la foto, la izquierda del animal queda a la izquierda de la imagen.
@@ -349,6 +354,8 @@ Desde la raíz del repositorio:
 ```bash
 python Exploration/Geometria_estadistica/patainador.py              # anotar o corregir fotos
 python Exploration/Geometria_estadistica/estadistica_imagenes.py    # estadística y figuras → SALIDAS/
+python Exploration/Geometria_estadistica/exportar_error_proyeccion.py  # CSV y figuras para el asesor → SALIDAS/Escorpiones_estadistica/
+python Exploration/Geometria_estadistica/estadistica_error.py       # histogramas del error de proyección (usa el CSV anterior)
 ```
 
 **Ajustes:**

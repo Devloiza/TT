@@ -11,6 +11,8 @@ SALIDAS/Escorpiones_estadistica/:
                          l = D - (o - t)·u. Positivo si la proyección queda detrás del frente
       r_px               radio del círculo
       frente_x/_y, atras_x/_y, centro_x/_y   puntos marcados y centro del círculo
+      ancho_px, alto_px  resolución de la foto (con la rotación EXIF corregida, como la ve el patainador).
+                         Van al final para no recorrer las columnas anteriores
   <foto>.png             una figura por foto procesable, con el mismo nombre que la columna "imagen" pero
                          en .png. A la izquierda la foto sola y a la derecha con lo que dibuja el
                          patainador (eje, clics, centroides, círculo, centro y proyección). Título con la
@@ -37,7 +39,8 @@ TAMANO_TEXTO = 12
 GROSOR_LINEA = 2
 TAMANO_CENTROIDE = 14
 CARPETA_SALIDA = Path(__file__).resolve().parents[2] / "SALIDAS" / "Escorpiones_estadistica"
-COLUMNAS = ["imagen", "D_px", "l_px", "r_px", "frente_x", "frente_y", "atras_x", "atras_y", "centro_x", "centro_y"]
+COLUMNAS = ["imagen", "D_px", "l_px", "r_px", "frente_x", "frente_y", "atras_x", "atras_y", "centro_x", "centro_y",
+            "ancho_px", "alto_px"]
 
 
 def fila_de(a):
@@ -49,7 +52,7 @@ def fila_de(a):
     n = patainador._num
     return {"imagen": Path(a.imagen).name, "D_px": n(largo), "l_px": n(largo - a_lo_largo), "r_px": n(r),
             "frente_x": n(f[0]), "frente_y": n(f[1]), "atras_x": n(t[0]), "atras_y": n(t[1]),
-            "centro_x": n(cx), "centro_y": n(cy)}
+            "centro_x": n(cx), "centro_y": n(cy), "ancho_px": a.ancho, "alto_px": a.alto}
 
 
 def especie(nombre_archivo):

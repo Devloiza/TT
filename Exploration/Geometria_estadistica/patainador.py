@@ -233,7 +233,11 @@ def guardar_csv(anotaciones, carpeta_datos):
         w.writeheader()
         for a in sorted(anotaciones.values(), key=lambda a: a.imagen):
             c = a.circulo or (None, None, None)
-            pr = a.proyeccion_centro() or (None, None)
+            pr = (None, None)
+            if a.proyeccion_centro() is not None:
+                # Con los valores redondeados que van al CSV: así sale igual al guardar desde la ventana o al recargar
+                redondo = lambda q: tuple(_num(v) for v in q)
+                pr = proyeccion_en_eje(redondo(a.eje_frente), redondo(a.eje_atras), redondo(a.circulo[:2]))
             w.writerow({"imagen": a.imagen, "ancho_px": a.ancho, "alto_px": a.alto,
                         "eje_frente_x": _num(a.eje_frente and a.eje_frente[0]),
                         "eje_frente_y": _num(a.eje_frente and a.eje_frente[1]),
@@ -335,6 +339,12 @@ class Anotador:
         with Image.open(ruta) as im:
             imagen = np.asarray(ImageOps.exif_transpose(im).convert("RGB"))
         self.a = self._anotacion_de(ruta, tamano=(imagen.shape[1], imagen.shape[0]))
+        # La resolución se toma siempre de la foto actual: si la foto se recortó o se reemplazó después de anotarla,
+        # el CSV conservaba la vieja (pasó con heterometrus_indus_1, recortada al quitar la doble imagen)
+        if (self.a.ancho, self.a.alto) != (imagen.shape[1], imagen.shape[0]):
+            print(f"Aviso: {self.a.imagen} cambió de {self.a.ancho}x{self.a.alto} a {imagen.shape[1]}x{imagen.shape[0]};"
+                  " revisa que las anotaciones sigan sobre el escorpión")
+            self.a.ancho, self.a.alto = imagen.shape[1], imagen.shape[0]
         self.firma_guardada = self.a.firma()  # antes de recalcular: un cambio de METODO_CIRCULO sí cuenta como cambio
         self.a.recalcular_circulo()  # con el METODO_CIRCULO vigente, salvo que se haya ajustado a mano
         self.par_actual, self.puntos_actuales, self.esperando_lado_oculto = None, [], False
