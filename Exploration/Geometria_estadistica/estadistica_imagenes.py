@@ -7,7 +7,7 @@ import scipy.stats
 import graficas_patas  # parte visual (opción B): mapa de calor, sectores del IC y esquema del escorpión
 
 os.system('cls')
-DEBUG = True
+DEBUG = False
 imagenes = pd.read_csv(r"Exploration\Geometria_estadistica\datos\imagenes.csv")
 puntos = pd.read_csv(r"Exploration\Geometria_estadistica\datos\puntos.csv")
 
@@ -20,13 +20,30 @@ if DEBUG:
 
 ## Mapa de saturación generado por los puntos de cada pata
 pares = puntos['par'].unique()
-# Sin descartadas. Las en_progreso sí entran: les falta una pata oculta bajo la pinza, pero el eje y el círculo existen
-nombres_imagenes = imagenes[imagenes['estado'] != 'descartada']['imagen'].unique()
-
 # Ajustes
+ESPECIE = "Smeringurus mesaensis"  # especie a analizar (espacios o guiones bajos, sin importar mayúsculas); None = todas
 COLORES = {"P1": "tab:red", "P2": "tab:orange", "P3": "tab:green", "P4": "tab:blue"}
 MODOS = {"Espejo": True, "Pares": False}  # True: junta izq y der en espejo (un centroide por par); False: los separa
-SALIDA = os.path.join("SALIDAS", "geometria_patas_{}.png")  # una figura por modo
+
+def especie_de(ruta_imagen:str) -> str:
+    '''"Escorpiones_V_Superior/Smeringurus_mesaensis_1.jpg" -> "smeringurus_mesaensis" (sin el número de la foto)'''
+    nombre = os.path.splitext(os.path.basename(ruta_imagen))[0].lower()
+    partes = nombre.split('_')
+    return '_'.join(partes[:-1] if partes[-1].isdigit() else partes)
+
+# Sin descartadas. Las en_progreso sí entran: les falta una pata oculta bajo la pinza, pero el eje y el círculo existen
+validas = imagenes[imagenes['estado'] != 'descartada']
+if ESPECIE is not None:
+    buscada = ESPECIE.strip().lower().replace(' ', '_')
+    especies = validas['imagen'].map(especie_de)
+    if not (especies == buscada).any():
+        raise ValueError(f"No hay fotos válidas de '{ESPECIE}'. Especies disponibles: {sorted(especies.unique())}")
+    validas = validas[especies == buscada]
+nombres_imagenes = validas['imagen'].unique()
+print(f"Especie: {ESPECIE or 'todas'} ({len(nombres_imagenes)} fotos)")
+
+sufijo = f"_{ESPECIE.strip().lower().replace(' ', '_')}" if ESPECIE else ""
+SALIDA = os.path.join("SALIDAS", "geometria_patas_{}" + sufijo + ".png")  # una figura por modo (y por especie)
 
 def orientainador(ORIGEN:np.ndarray, FRENTE:np.ndarray, ATRAS:np.ndarray, X:np.ndarray, Y:np.ndarray, ABS:bool = False, DBG:bool = False) -> np.ndarray:
     '''
@@ -104,7 +121,7 @@ def analizar(ESPEJO:bool):
             xy = np.array([rho*np.sin(theta), rho*np.cos(theta)])
             xy_completo = np.hstack((xy_completo, xy))
 
-            # Centroides, paso 1: promedio de los clics de cada pata en ESTA foto (un voto por foto)
+            # Centroides, paso 1: promedio de los clics de cada pata en ESTA foto
             centroides_foto = {}
             pesos = np.zeros(len(lado))  # peso de cada clic en el mapa de calor
             for nombre_lado in ('izq', 'der'):
@@ -133,7 +150,7 @@ def analizar(ESPEJO:bool):
         xy_por_par[par], pesos_por_par[par] = xy_completo, pesos_completo
 
     ## Estadística
-    # Paso 0: radio y ángulo de cada centroide (un valor por foto), vectorizado sobre todas las fotos a la vez
+    # Radio y ángulo de cada centroide (un valor por foto), vectorizado sobre todas las fotos a la vez
     for clave in estadistica:
         e = estadistica[clave]
         C = e["centroides"]  # columna 0: lateral (x), columna 1: hacia el frente (y)
@@ -161,4 +178,4 @@ if DEBUG:
 figuras = graficas_patas.figuras(resultados, graficas_patas.posicion_frente(imagenes, nombres_imagenes), COLORES)
 for modo, fig in figuras.items():
     fig.savefig(SALIDA.format(modo.lower()), dpi=200)
-plt.show()
+plt.close()
