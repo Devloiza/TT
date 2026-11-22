@@ -1,0 +1,52 @@
+lista,frase,original,adaptada,motivo
+1,9,No lleves jersey en un día como éste.,No lleves suéter en un día como éste.,jersey -> suéter
+2,2,Faltan muchas latas en las dos baldas.,Faltan muchas latas en las dos repisas.,balda -> repisa
+3,1,Llene el frasco de cristal con cola densa.,Llene el frasco de cristal con crema densa.,cola (pegamento) -> crema
+4,3,Cogió una rosa blanca sin hojas ni olor.,Tomó una rosa blanca sin hojas ni olor.,coger -> tomar
+4,7,Las botas de ante y piel tienen tacón.,Las botas de gamuza y piel tienen tacón.,ante -> gamuza
+4,9,Quiso poner grifos de plata en los baños.,Quiso poner llaves de plata en los baños.,grifo -> llave
+4,10,Lleva el cubo a la pared para regar las flores.,Lleva la cubeta a la pared para regar las flores.,cubo -> cubeta
+5,10,El hielo del cubo se puso verde por el licor.,El hielo de la cubeta se puso verde por el licor.,cubo -> cubeta
+6,10,La chica del cine vendió cinco bonos.,La chica del cine vendió cinco boletos.,bono -> boleto
+8,7,Hay pinzas dentro del cubo de hielo.,Hay pinzas dentro de la cubeta de hielo.,cubo -> cubeta
+10,7,Cogió el hacha nueva y marchó al bosque.,Tomó el hacha nueva y marchó al bosque.,coger -> tomar
+11,4,El coche gris va marcha atrás.,El coche gris va en reversa.,marcha atrás -> en reversa
+13,8,Pudo leer la letra con las gafas gruesas.,Pudo leer la letra con los lentes gruesos.,gafas -> lentes
+15,4,Este zumo sabe mejor que otros.,Este jugo sabe mejor que otros.,zumo -> jugo
+20,4,Las cartas grandes se guardan en dos baldas.,Las cartas grandes se guardan en dos repisas.,balda -> repisa
+24,2,Coja la carta con el fondo azul claro.,Tome la carta con el fondo azul claro.,coger -> tomar
+24,3,Ponga el cubo lleno dentro de la ducha.,Ponga la cubeta llena dentro de la ducha.,cubo -> cubeta
+31,8,Trate de poner otro euro en la hucha.,Trate de poner otro peso en la alcancía.,euro -> peso; hucha -> alcancía
+32,5,El zumo de uva y el agua se mezclan bien.,El jugo de uva y el agua se mezclan bien.,zumo -> jugo
+33,4,Compró unas botas por cinco euros menos.,Compró unas botas por cinco pesos menos.,euro -> peso
+33,8,La luz del porche se fundió ayer noche.,La luz del porche se fundió anoche.,ayer noche -> anoche
+34,2,El chico sacó la punta al lápiz gris.,El chico sacó punta al lápiz gris.,sacar la punta -> sacar punta
+34,3,Cogió dos dados para un primer tiro.,Tomó dos dados para un primer tiro.,coger -> tomar
+35,9,Los zumos de frutas son muy buenos para los bebés.,Los jugos de frutas son muy buenos para los bebés.,zumo -> jugo
+36,1,Coge una carta y ponla detrás de las demás.,Toma una carta y ponla detrás de las demás.,coger -> tomar
+37,6,El ciervo se pilló una pata en una vieja trampa.,Al ciervo se le atoró una pata en una vieja trampa.,pillarse -> atorarse
+40,9,Los tacos se hunden fácil en el césped blando.,Los tacones se hunden fácil en el césped blando.,taco (de calzado) -> tacón
+41,4,Haga el favor de coger ese móvil.,Haga el favor de tomar ese celular.,coger -> tomar; móvil -> celular
+43,3,El pastor daba pienso a sus cerdos para la cría.,El pastor daba alimento a sus cerdos para la cría.,pienso -> alimento
+43,4,Coge la sierra por el mango para hacer fuerza.,Toma la sierra por el mango para hacer fuerza.,coger -> tomar
+43,5,El chico le dio cinco euros a un pobre.,El chico le dio cinco pesos a un pobre.,euro -> peso
+44,2,Detrás de la tapia baja se ve el lago.,Detrás de la barda baja se ve el lago.,tapia -> barda
+44,9,Los peces cogen la lombriz muy pronto.,Los peces comen la lombriz muy pronto.,coger -> comer
+45,2,"Al hacer la compra, no te dejes la sal.","Al hacer la compra, no olvides la sal.",no te dejes -> no olvides
+47,10,El jersey nuevo cuelga de la percha marrón.,El suéter nuevo cuelga de la percha marrón.,jersey -> suéter
+48,7,Una berza siempre crece mejor en la huerta.,Una fresa siempre crece mejor en la huerta.,berza -> fresa
+52,5,La chica nueva vino ayer a la tarde.,La chica nueva vino ayer en la tarde.,a la tarde -> en la tarde
+52,10,El móvil sonó pronto y muy alto.,El celular sonó pronto y muy alto.,móvil -> celular
+54,3,La hierba creció por detrás de nuestra verja.,La hierba creció por detrás de nuestra reja.,verja -> reja
+55,6,Coge las hojas y las quemas todas en el fuego.,Toma las hojas y las quemas todas en el fuego.,coger -> tomar
+62,7,"A la tarde, el cielo era de color azul.","En la tarde, el cielo era de color azul.",a la tarde -> en la tarde
+63,1,El bote grande cayó de la balda alta.,El bote grande cayó de la repisa alta.,balda -> repisa
+63,2,Coge el hilo y cose el botón del jersey.,Toma el hilo y cose el botón del suéter.,coger -> tomar; jersey -> suéter
+63,4,Un bollo entra muy bien con café.,Un bolillo entra muy bien con café.,bollo -> bolillo
+64,5,El niño debe a su madre cuatro euros.,El niño debe a su madre cuatro pesos.,euro -> peso
+65,1,Prestó su jersey a la mujer flaca y alta.,Prestó su suéter a la mujer flaca y alta.,jersey -> suéter
+65,4,Con este talón puede pagar su deuda.,Con este cheque puede pagar su deuda.,talón -> cheque
+65,6,El señor sordo sintió el móvil vibrar.,El señor sordo sintió el celular vibrar.,móvil -> celular
+67,7,Un bono cuesta cinco euros los lunes.,Un boleto cuesta cinco pesos los lunes.,bono -> boleto; euro -> peso
+68,6,La balda está llena de pasta y arroz.,La repisa está llena de pasta y arroz.,balda -> repisa
+69,8,Un potro joven bebe agua de un cubo.,Un potro joven bebe agua de una cubeta.,cubo -> cubeta
