@@ -41,33 +41,46 @@ Las coordenadas están en píxeles de la imagen original:
 - el origen está arriba a la izquierda;
 - $y$ crece hacia abajo.
 
-**Estado de los datos al 2026-11-15:**
+**Estado de los datos al 2026-11-22:**
 
-36 fotos anotadas, todas en `Escorpiones_V_Superior/`. La corrida de §7 es del 2026-11-07, con las 11 fotos completas que había entonces.
+62 fotos anotadas: 36 en `Escorpiones_V_Superior/` y 26 en `Escorpiones_V_Superior_v2/`. La corrida de §7 es del 2026-11-07, con las 11 fotos completas que había entonces, todas de `Escorpiones_V_Superior/`.
 
-| Especie (según el nombre del archivo) | Completas | Descartadas |
-|:--|:--:|:--:|
-| *Smeringurus mesaensis* | 6 | 0 |
-| *Hadogenes troglodytes* | 6 | 1 |
-| *Heterometrus spinifer* | 4 | 0 |
-| *Heterometrus indus* | 2 | 0 |
-| *Heterometrus longimanus* | 1 | 0 |
-| *Heterometrus bengalensis* (el archivo dice "bengalesis") | 1 | 0 |
-| *Brachistosternus cepedai* | 3 | 0 |
-| *Brachistosternus ehrenbergii* | 3 | 0 |
-| *Brachistosternus* sp. (archivo "genus") | 1 | 0 |
-| *Bothriurus asper* | 1 | 0 |
-| *Bothriurus ehrenbergii* | 1 | 0 |
-| *Bothriurus patagonicus* | 1 | 0 |
-| *Bothriurus* sp. | 1 | 0 |
-| *Diplocentrus* sp. | 1 | 1 |
-| *Pandinus imperator* | 0 | 2 |
-| **Total** | **32** | **4** |
+| Especie (según el nombre del archivo) | Completas | Descartadas | En progreso |
+|:--|:--:|:--:|:--:|
+| *Smeringurus mesaensis* | 16 | 0 | 1 |
+| *Hadogenes troglodytes* | 6 | 1 | 0 |
+| *Heterometrus spinifer* | 4 | 0 | 0 |
+| *Brachistosternus cepedai* | 3 | 0 | 0 |
+| *Brachistosternus ehrenbergii* | 3 | 0 | 0 |
+| *Heterometrus indus* | 2 | 0 | 0 |
+| *Langxie feti* | 2 | 0 | 0 |
+| *Paruroctonus xanthus* | 2 | 0 | 0 |
+| *Diplocentrus* sp. | 1 | 1 | 0 |
+| *Androctonus crassicauda* | 1 | 0 | 0 |
+| *Apistobuthus pterygocercus* | 1 | 0 | 0 |
+| *Apistobuthus susanae* | 1 | 0 | 0 |
+| *Bothriurus asper* | 1 | 0 | 0 |
+| *Bothriurus ehrenbergii* | 1 | 0 | 0 |
+| *Bothriurus patagonicus* | 1 | 0 | 0 |
+| *Bothriurus* sp. | 1 | 0 | 0 |
+| *Brachistosternus* sp. (archivo "genus") | 1 | 0 | 0 |
+| *Buthacus nigroaculeatus* | 1 | 0 | 0 |
+| *Centruroides gracilis* | 1 | 0 | 0 |
+| *Compsobuthus carmelitis* | 1 | 0 | 0 |
+| *Diplocentrus longimanus* | 1 | 0 | 0 |
+| *Heterometrus bengalensis* (el archivo dice "bengalesis") | 1 | 0 | 0 |
+| *Heterometrus longimanus* | 1 | 0 | 0 |
+| *Isometrus maculatus* | 1 | 0 | 0 |
+| *Parabuthus namibensis* | 1 | 0 | 0 |
+| *Paravaejovis waeringi* | 1 | 0 | 0 |
+| *Paruroctonus hirsutipes* | 1 | 0 | 0 |
+| *Pandinus imperator* | 0 | 2 | 0 |
+| **Total** | **57** | **4** | **1** |
 
 **Clics:**
-- 4389 filas en `puntos.csv`: 4377 clics sobre patas visibles y 12 marcas de patas no visibles.
-- 4018 de esos clics son de fotos completas.
-- Una pata visible tiene en promedio 16.9 clics y como mínimo 6. Todas superan el mínimo de 5 que exige la herramienta.
+- 6659 filas en `puntos.csv`: 6644 clics sobre patas visibles y 15 marcas de patas no visibles.
+- 6214 de esos clics son de fotos completas.
+- Una pata visible tiene en promedio 14.3 clics y como mínimo 6. Todas superan el mínimo de 5 que exige la herramienta.
 
 **Descartes:**
 
@@ -362,6 +375,7 @@ python Exploration/Geometria_estadistica/estadistica_error.py       # histograma
 
 - En `estadistica_imagenes.py`:
   - `DEBUG`: imprime los datos y los diccionarios de estadística;
+  - `ESPECIE`: analiza solo una especie (según el nombre del archivo, p. ej. `"Smeringurus mesaensis"`); con `None` usa todas. Las figuras llevan la especie en el nombre;
   - `MODOS`: qué modos se calculan.
 - En `graficas_patas.py`, al inicio del archivo:
   - tamaños de texto y línea;
