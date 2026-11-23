@@ -206,7 +206,7 @@ Se muestrean todas las categorías:
   - ~~elegir las 3 listas fijas~~: 15, 33 y 3, las de mayor densidad de /s/, /f/, /x/ y /tʃ/, con al menos 3 de cada uno de los últimos tres;
   - ~~especificar el programa de presentación~~: hecho (§4.5);
   - redactar las frases propias y comprobar el balance contando fonemas.
-- [ ] **Imágenes para describir:** ~~elegirlas~~: conjunto de Pexels en `Exploration/Prueba_BD/image/` (2026-11-22). Falta llenar la URL y el fotógrafo en `fuentes_imagenes.csv` y quedarse con escenas parejas (con personas y objetos).
+- [ ] **Imágenes para describir:** ~~elegirlas~~: conjunto de Pexels en `Exploration/Prueba_BD/image/` (2026-11-22). ~~Llenar la URL y el fotógrafo en `fuentes_imagenes.csv`~~ (hecho por el autor, 2026-11-22). Falta quedarse con escenas parejas (con personas y objetos).
 - [ ] **Preguntas:** ~~completar el banco~~: 30 en `preguntas.txt` (2026-11-22), por revisar por el autor. Falta grabar sus audios y los de las indicaciones en `audios_preguntas/`.
 - [ ] **Audífonos cerrados** para el participante, y comprobar que no se filtren al AT2020 al volumen de la sesión.
 - [ ] **Lectura continua y secuencias** (bloques d y e de §4.1): todavía no están en el programa.
