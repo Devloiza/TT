@@ -8,9 +8,17 @@ Diseño completo en [`Metodologia/obj3_base_de_datos.md`](../../Metodologia/obj3
 | `Lists_SHARVARD_MX.txt` | Versión adaptada al español de México: una frase final por número. Es la que usa el programa |
 | `adaptaciones_SHARVARD_MX.csv` | Registro de las 51 frases adaptadas: original, adaptada y motivo |
 | `calibracion.txt` | 10 frases propias para medir el ritmo de lectura. No son de *Sharvard* |
+| `preguntas.txt` | Indicaciones y banco de 30 preguntas del habla libre (§4.3), con el id de su audio |
+| `fuentes_imagenes.csv` | Fuente de cada imagen para describir: archivo, URL de Pexels, fotógrafo y licencia |
+| `configurar_audio.py` | Prueba de habla (micrófono) y de escucha (audífonos) una vez por máquina; guarda la elección en `config_audio.json`. Hecho por Claude con la especificación del autor |
 | `presentador_frases.py` | Programa de sesión: hecho por Claude con la especificación del autor. Uso y teclas en su encabezado |
 
-Las grabaciones van a `SALIDAS/BD_voz/`, que no se versiona.
+No se versionan:
+
+- `image/`: las imágenes para describir (Pexels, unos 66 MB). Se reconstruyen con `fuentes_imagenes.csv`. La licencia de Pexels permite usarlas sin dar crédito, pero no redistribuirlas en otras plataformas de fotos;
+- `audios_preguntas/`: las indicaciones pregrabadas, un `<id>.wav` por línea de `preguntas.txt`;
+- `config_audio.json`: los dispositivos de cada máquina;
+- las grabaciones, que van a `SALIDAS/BD_voz/`.
 
 ## Atribución y licencia de *Sharvard*
 

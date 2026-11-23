@@ -70,28 +70,29 @@
 | c. Frases *Sharvard* adaptadas a México | 6–8 min | **6 listas de 10 frases** (decisión del 2026-11-22). **3 fijas para todos**: las de mayor densidad de sonidos que se confunden con ruido (/s/, /f/, /x/ y /tʃ/). **3 al azar**, asignadas de forma balanceada entre participantes. Antes va **1 lista de calibración** que mide el ritmo de lectura de la persona. Después, un programa en Python avanza solo las frases con ese ritmo más un margen, y estandariza los silencios entre frases y entre listas. Texto adaptado: `Exploration/Prueba_BD/Lists_SHARVARD_MX.txt`. Cambios documentados en `adaptaciones_SHARVARD_MX.csv` |
 | d. Lectura continua | 1 min | "El viento norte y el sol" |
 | e. Secuencias | 1 min | Contar del 1 al 20 y decir los días de la semana |
-| f. Habla libre guiada | 10–12 min | Tabla de §4.3, con cada estilo indicado explícitamente antes de empezar |
+| f. Habla libre guiada | 12–13 min | §4.3: imágenes (3 min), estilos guiados (unos 4 min) y plática (5 min), con cada estilo indicado explícitamente |
 
 ### 4.2 Sesión corta: niños y no lectores (unos 10 min)
 
 - **Inicio:** bloques a y b de §4.1.
 - **Repetición:** 15–20 frases cortas que el conductor dice en voz alta.
 - **Secuencias:** contar del 1 al 10.
-- **Habla libre:** describir la misma imagen que los adultos y una pregunta sencilla ("¿Qué te gusta jugar?").
+- **Habla libre:** describir una imagen del mismo conjunto que los adultos y una pregunta sencilla ("¿Qué te gusta jugar?").
 - **Criterio:** si la repetición sale mal, se descarta y se conserva la descripción de la imagen.
 
 ### 4.3 Habla libre guiada
 
 Las preguntas son accesibles para todos los grupos y no piden datos personales sensibles.
 
-| Estilo (se indica antes) | Indicación | Duración |
-|:--|:--|:--|
-| Normal | "Describe esta imagen" (la misma para todos: una escena con varias personas y objetos) | 2 min |
-| Normal | "Cuéntame qué hiciste el fin de semana" o "¿Cuál es tu comida favorita y cómo se prepara?" | 3 min |
-| Normal | "Explícame cómo llegar de aquí a la entrada de la escuela" o "¿Cómo se juega tu juego favorito?" | 2 min |
-| Fuerte ("como hablando con alguien al otro lado del salón") | 5 frases comunes y algo breve | 1–2 min |
-| Baja ("como en una biblioteca") | Ídem | 1–2 min |
-| Susurro | Ídem | 1 min |
+Decisión del 2026-11-22: el bloque tiene tres partes, cada una con tiempo fijo y una barra que lo muestra. El conductor decide cuándo pasar a la siguiente imagen o pregunta.
+
+| Parte | Estilo | Contenido | Duración |
+|:--|:--|:--|:--|
+| Imágenes | Normal | "Describe esta imagen". Escenas con varias personas y objetos, de un conjunto de Pexels (`Exploration/Prueba_BD/image/`, no versionado; fuentes en `fuentes_imagenes.csv`). Salen en **orden balanceado** entre participantes: primero las menos mostradas. Si la persona termina rápido, el conductor pasa a otra; si describe despacio, se queda en una | 3 min |
+| Estilos guiados | Fuerte ("como si hablaras con alguien al otro lado del salón"), baja ("como en una biblioteca") y susurro | Las 3 primeras preguntas de `preguntas.txt`, **fijas** (una por estilo), para que todos hagan lo mismo. Si el conductor pasa a otra pregunta, la nueva sale del banco balanceado | 1 min 15 s cada uno |
+| Plática | Normal, y el conductor pide otros estilos en medio | Banco de **30 preguntas** de `preguntas.txt` (2026-11-22), de temas variados para que cada persona encuentre alguna que le guste: vida diaria, entretenimiento, viajes y cultura, naturaleza y ciencia, ingeniería y tecnología, y gustos. Salen en **orden balanceado** entre participantes, igual que las imágenes (decisión del 2026-11-22), para que se use todo el banco. El conductor se salta con Espacio la que no funcione. Por ejemplo "Cuéntame qué hiciste el fin de semana", "¿Cuál es tu comida favorita y cómo se prepara?", "Explícame cómo llegar de aquí a la entrada de la escuela" o "¿Cómo se juega tu juego favorito?" | 5 min |
+
+**Sin la voz del conductor en la grabación:** las indicaciones y las preguntas se muestran en pantalla y además suenan **pregrabadas por audífonos cerrados** (decisión del 2026-11-22). El programa anota cuándo suena cada audio, para excluir lo que se filtre al micrófono.
 
 ### 4.4 Procesamiento y etiquetas
 
@@ -105,7 +106,7 @@ Las preguntas son accesibles para todos los grupos y no piden datos personales s
   - **silencio largo**.
 
   Así, después se puede decidir si el clasificador trabaja por ventanas cortas o por segmentos de 1–2 s sin volver a etiquetar.
-- **Etiquetas adicionales por segmento:** tarea (frases, lectura continua, secuencias o libre) y estilo (normal, fuerte, baja o susurro).
+- **Etiquetas adicionales por segmento:** tarea (frases, lectura continua, secuencias, imagen, estilos guiados o plática) y estilo (normal, fuerte, baja o susurro). El programa ya las escribe en `frases.csv` para la parte que presenta.
 - **Volumen esperado:** 50 personas × unos 15 min útiles ≈ 12 h de voz limpia.
 
 ### 4.5 Programa de presentación (`Exploration/Prueba_BD/presentador_frases.py`)
@@ -113,11 +114,14 @@ Las preguntas son accesibles para todos los grupos y no piden datos personales s
 Hecho por Claude con la especificación del autor (2026-11-22).
 
 - **Flujo:**
-  1. **Entrada de audio** en la consola. Se elige el dispositivo (solo aparecen los que aceptan 48 kHz y 24 bits) y se hace una prueba de nivel de 3 s por canal. Luego se elige el canal: la UMC202HD es un par estéreo (IN 1-2) y hay que usar la entrada donde está el AT2020. Dispositivo, canal y niveles quedan en `sesion.json`.
+  1. **Audio:** se configura una vez por máquina con `configurar_audio.py` (prueba de habla y de escucha) y queda en `config_audio.json`, que no se versiona. El presentador lo lee y no pregunta nada; busca cada dispositivo por nombre y API porque los índices cambian al conectar aparatos, y si alguno no aparece avisa. Sin configuración, la elección se hace en la consola como sigue. **Entrada:** Se elige el dispositivo (solo aparecen los que aceptan 48 kHz y 24 bits) y se hace una prueba de nivel de 3 s por canal. Luego se elige el canal: la UMC202HD es un par estéreo (IN 1-2) y hay que usar la entrada donde está el AT2020. Dispositivo, canal y niveles quedan en `sesion.json`.
   2. Datos de la sesión en la consola.
   3. 30 s de silencio de referencia, con una barra «Silencio» que muestra cuánto falta.
   4. **Calibración** con `calibracion.txt`: 10 frases cotidianas propias, que no son de *Sharvard* y no requieren balance. El conductor presiona Espacio al terminar cada frase y se mide el ritmo en segundos por sílaba.
   5. **6 listas** en orden mezclado por persona: las fijas **15, 33 y 3** más 3 aleatorias balanceadas, elegidas entre las menos usadas en `asignaciones.csv`, con semilla según el código.
+  6. **Habla libre guiada** (§4.3): imágenes, estilos guiados y plática, cada parte con su barra de «Tiempo». La consigna va arriba en azul y la imagen o la pregunta abajo. Con Espacio el conductor pasa a la siguiente imagen o pregunta, y en la plática pide otro estilo con **F** (fuerte), **B** (baja), **S** (susurro) o **N** (normal). Una pausa a mitad de una parte la retoma con el tiempo que le quedaba.
+- **Audífonos:** en la misma configuración se elige la salida (solo aparecen las que aceptan 48 kHz en estéreo) y se oye un tono de prueba. Con Enter se sigue sin audio y las indicaciones solo se muestran. Cada indicación o pregunta suena si existe `audios_preguntas/<id>.wav` (los ids están en `preguntas.txt`; el audio se remuestrea a 48 kHz si hace falta). Al iniciar, el programa avisa qué audios faltan.
+- **Imágenes y preguntas balanceadas:** las mostradas se suman en las columnas `imagenes` y `preguntas` de `asignaciones.csv`, salvo en P00. El orden de cada participante pone primero las menos usadas, con desempate al azar según el código.
 - **Avance automático:** cada frase dura sílabas × ritmo × **1.25**, seguida de **2 s** en blanco. Entre listas hay **5 s** de descanso, con una **barra arriba** que dice «Descanso» y se vacía con el tiempo. Su funcionamiento se muestra antes de la calibración, después del silencio y con la misma duración que un descanso real (5 s), para que no se confunda con algo que hay que leer.
 - **Datos de la sesión:**
   - **El código se asigna solo** (P01, P02…), para evitar errores.
@@ -132,9 +136,9 @@ Hecho por Claude con la especificación del autor (2026-11-22).
   - **Esc:** termina la sesión antes.
 - **Salida** en `SALIDAS/BD_voz/<código>_<fecha>/` (no se versiona):
   - `audio.wav` a 48 kHz y 24 bits, en una sola toma;
-  - `frases.csv` con el inicio y el fin de cada frase en el reloj del audio. Es la segmentación automática por frase para el etiquetado;
-  - `sesion.json` con datos, ritmo, listas y eventos.
-- **Uso:** `python Exploration/Prueba_BD/presentador_frases.py`. Opciones: `--listar` (dispositivos), `--dispositivo N` y `--prueba` (recorrido corto automático). La UMC202HD aparece varias veces. La que reporta 48 kHz (WASAPI) funcionó en la prueba del 2026-11-22.
+  - `frases.csv` con el inicio y el fin de cada frase, imagen o pregunta en el reloj del audio, con su tarea (`tipo`) y su `estilo`. Las filas `indicacion` son los audios que sonaron por los audífonos. Es la segmentación automática para el etiquetado;
+  - `sesion.json` con datos, ritmo, listas, imágenes y preguntas mostradas, entrada y salida de audio (`entrada`, `salida_audifonos`, `audios_faltantes`) y eventos (pausas y cambios de estilo).
+- **Uso:** `python Exploration/Prueba_BD/presentador_frases.py`. Opciones: `--listar` (entradas y salidas), `--dispositivo N`, `--salida N`, `--prueba` (recorrido corto automático) y `--sin-audio` (no graba ni reproduce; para probar la pantalla). La UMC202HD aparece varias veces. La que reporta 48 kHz (WASAPI) funcionó en la prueba del 2026-11-22.
 
 ## 5. Ruido
 
@@ -191,7 +195,7 @@ Se muestrean todas las categorías:
 | 2026-11-08 | Grabar la fuente con un micrófono de mejor calidad y re-grabar con monitores para controlar distancias y señal. El arreglo lineal se graba solo para la evaluación |
 | 2026-11-15 | Partición híbrida. Procesamiento mínimo de la voz. Trabajo a 16 kHz |
 | 2026-11-21 | Solo español de México. Cubículo como lugar principal y auto con motor apagado como alterno, sin limpiador de ruido. Equipo de §2. Sesión de 15–30 min con lectura y habla libre en estilos indicados explícitamente. Niños con sesión corta (trabajo a futuro si no se consiguen). Mismas frases para todos (publicadas y propias). Pausas etiquetadas en tres clases. Todas las categorías de ruido, grabadas en el lugar con el AT2020 y con el arreglo, y complementadas con bases públicas. Niveles medidos y documentados. Rejilla cada 22.5° con base giratoria y 5 distancias. Ruido en posiciones fijas y relativas. SNR intermedios para entrenar. Mezcla digital más un subconjunto simultáneo |
-| 2026-11-22 | 6 listas *Sharvard* adaptadas por sesión: 15, 33 y 3 fijas, más 3 aleatorias balanceadas, en orden mezclado. Adaptaciones mínimas con sonidos parecidos. Calibración con una lista propia y avance automático a ritmo × 1.25, con 2 s entre frases y 5 s entre listas. Sin repetir frases (los errores se conservan). Pausa y marca controladas solo por el conductor |
+| 2026-11-22 | 6 listas *Sharvard* adaptadas por sesión: 15, 33 y 3 fijas, más 3 aleatorias balanceadas, en orden mezclado. Adaptaciones mínimas con sonidos parecidos. Calibración con una lista propia y avance automático a ritmo × 1.25, con 2 s entre frases y 5 s entre listas. Sin repetir frases (los errores se conservan). Pausa y marca controladas solo por el conductor. Habla libre: imágenes de Pexels al azar balanceado durante 3 min (el conductor pasa a la siguiente), estilos guiados y dentro de la plática, plática de 5 min al final, e indicaciones en pantalla y pregrabadas por audífonos para no grabar la voz del conductor |
 
 ## 8. Pendientes antes de grabar
 
@@ -202,7 +206,10 @@ Se muestrean todas las categorías:
   - ~~elegir las 3 listas fijas~~: 15, 33 y 3, las de mayor densidad de /s/, /f/, /x/ y /tʃ/, con al menos 3 de cada uno de los últimos tres;
   - ~~especificar el programa de presentación~~: hecho (§4.5);
   - redactar las frases propias y comprobar el balance contando fonemas.
-- [ ] **Imagen para describir:** elegirla, la misma para todos.
+- [ ] **Imágenes para describir:** ~~elegirlas~~: conjunto de Pexels en `Exploration/Prueba_BD/image/` (2026-11-22). Falta llenar la URL y el fotógrafo en `fuentes_imagenes.csv` y quedarse con escenas parejas (con personas y objetos).
+- [ ] **Preguntas:** ~~completar el banco~~: 30 en `preguntas.txt` (2026-11-22), por revisar por el autor. Falta grabar sus audios y los de las indicaciones en `audios_preguntas/`.
+- [ ] **Audífonos cerrados** para el participante, y comprobar que no se filtren al AT2020 al volumen de la sesión.
+- [ ] **Lectura continua y secuencias** (bloques d y e de §4.1): todavía no están en el programa.
 - [ ] **Consentimiento:** redactar el formato (adultos y menores).
 - [ ] **Guion de sesión** escrito, idéntico para los dos conductores.
 - [ ] **Metadatos:** definir el formato y la convención de nombres de archivo.

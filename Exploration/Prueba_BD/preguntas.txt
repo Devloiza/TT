@@ -1,0 +1,61 @@
+# Indicaciones y preguntas del habla libre guiada (Metodologia/obj3_base_de_datos.md §4.3).
+# Formato: «id | texto». El texto se muestra en pantalla. Si existe audios_preguntas/<id>.wav, también suena por
+# los audífonos (grabarlo a 48 kHz; mono o estéreo). Las líneas con # se ignoran.
+# [indicaciones] necesita estos ids: imagen, platica, normal, fuerte, baja, susurro.
+# [preguntas]: las primeras tres van fijas a los estilos guiados (fuerte, baja, susurro). El resto sale en la plática
+# en orden balanceado entre participantes (primero las menos usadas). Si se acaban, vuelven a empezar.
+
+[indicaciones]
+imagen | Describe esta imagen con todo el detalle que puedas.
+platica | Platiquemos un rato. Contesta con calma.
+normal | Ahora sigue hablando con tu voz normal.
+fuerte | Ahora habla fuerte, como si hablaras con alguien al otro lado del salón.
+baja | Ahora habla en voz baja, como en una biblioteca.
+susurro | Ahora habla en susurro.
+
+[preguntas]
+# Banco de 30 preguntas abiertas, de temas variados, para que cada persona encuentre alguna que le guste. El conductor
+# se salta con Espacio la que no funcione. Sin datos personales sensibles (salud, dinero, política, religión).
+# Las primeras tres van a los estilos guiados, por eso son las más universales. p01-p04 son las de §4.3.
+
+# Vida diaria
+p01 | Cuéntame qué hiciste el fin de semana.
+p02 | ¿Cuál es tu comida favorita y cómo se prepara?
+p03 | Explícame cómo llegar de aquí a la entrada de la escuela.
+p04 | ¿Cómo se juega tu juego favorito?
+p05 | Si tuvieras un día completo sin obligaciones, ¿qué harías desde que te levantas?
+p06 | Explícame paso a paso cómo se hace algo que sepas hacer muy bien.
+p07 | ¿Qué es algo que aprendiste hace poco y cómo lo aprendiste?
+
+# Entretenimiento
+p08 | Cuéntame de una película o serie que te haya gustado mucho, sin decirme el final.
+p09 | ¿Qué música escuchas y qué es lo que te gusta de ella?
+p10 | Cuéntame de un partido, un concierto o un evento al que hayas ido o que te hubiera gustado ver.
+p11 | Si escribieras un libro o una película, ¿de qué trataría?
+p12 | Si organizaras la fiesta perfecta, ¿cómo sería?
+
+# Viajes y cultura
+p13 | Si pudieras viajar a cualquier lugar del mundo, ¿a dónde irías y qué harías ahí?
+p14 | Cuéntame del lugar más bonito que hayas visitado.
+p15 | Cuéntame de una tradición o una fiesta mexicana que te guste y cómo se celebra.
+p16 | Si pudieras viajar en el tiempo, ¿a qué época irías y por qué?
+p17 | ¿Qué personaje de la historia o de la ciencia te parece interesante y por qué?
+
+# Naturaleza y ciencia
+p18 | ¿Por qué crees que el cielo es azul de día y se pone rojo al atardecer?
+p19 | Si pudieras tener cualquier animal como mascota, aunque fuera imposible, ¿cuál sería y cómo lo cuidarías?
+p20 | ¿Cómo te imaginas la vida en otro planeta?
+p21 | ¿Qué se podría hacer para cuidar el agua en tu casa o en tu ciudad?
+p22 | Si pudieras hacerle cualquier pregunta a un científico, ¿qué le preguntarías y por qué?
+
+# Ingeniería y tecnología
+p23 | ¿Cómo crees que funciona un celular por dentro?
+p24 | Si pudieras inventar un aparato que te facilitara la vida, ¿qué haría y cómo funcionaría?
+p25 | ¿Cómo crees que se construye un puente o un edificio muy alto?
+p26 | Cuéntame de algo que se haya descompuesto y cómo lo arreglaste o cómo lo arreglarías.
+p27 | ¿Para qué usarías la inteligencia artificial y para qué no?
+p28 | ¿Cómo te imaginas las ciudades dentro de cincuenta años?
+
+# Gustos
+p29 | ¿Qué te gusta hacer en tu tiempo libre y cómo empezaste a hacerlo?
+p30 | Si pudieras dominar cualquier habilidad de un día para otro, ¿cuál escogerías y qué harías con ella?
