@@ -50,7 +50,7 @@
   - una **casilla aparte** para autorizar la publicación en un artículo.
 - **Menores:** firma del padre, madre o tutor, más el asentimiento del menor.
 - **Identificación:** cada persona tiene un código (P01, P02…). Su nombre no aparece en los archivos.
-- **Almacenamiento:** las grabaciones se quedan fuera de git, como las fotos de escorpiones.
+- **Almacenamiento** (decisión del 2026-11-22): las grabaciones se guardan solo en la computadora de la sesión, en `Descargas/BD_VOZ/`, fuera del repo y de OneDrive (sin nube), y se copian a un disco duro externo.
 
 ### 3.3 Partición (híbrida)
 
@@ -68,8 +68,8 @@
 | a. Bienvenida y prueba de nivel | 1–2 min | Consentimiento firmado. Decir el código y una frase para ajustar la ganancia (no se usa) |
 | b. Silencio de referencia | 30 s | Ruido de fondo de la sesión. También se anota la lectura del sonómetro |
 | c. Frases *Sharvard* adaptadas a México | 6–8 min | **6 listas de 10 frases** (decisión del 2026-11-22). **3 fijas para todos**: las de mayor densidad de sonidos que se confunden con ruido (/s/, /f/, /x/ y /tʃ/). **3 al azar**, asignadas de forma balanceada entre participantes. Antes va **1 lista de calibración** que mide el ritmo de lectura de la persona. Después, un programa en Python avanza solo las frases con ese ritmo más un margen, y estandariza los silencios entre frases y entre listas. Texto adaptado: `Exploration/Prueba_BD/Lists_SHARVARD_MX.txt`. Cambios documentados en `adaptaciones_SHARVARD_MX.csv` |
-| d. Lectura continua | 1 min | "El viento norte y el sol" |
-| e. Secuencias | 1 min | Contar del 1 al 20 y decir los días de la semana |
+| d. Lectura continua | 1 min | "El viento norte y el sol", en la versión de Coloma, por su mejor distribución fonética (`Exploration/Prueba_BD/textos_prueba/El_viento_norte_y_el_sol.txt`). Se lee a su ritmo y el conductor presiona Espacio al terminar |
+| e. Secuencias | 1 min | Contar del 1 al 20 y decir los días de la semana, sin texto en pantalla (solo la consigna). Cubren los números, sin un bloque aparte |
 | f. Habla libre guiada | 12–13 min | §4.3: imágenes (3 min), estilos guiados (unos 4 min) y plática (5 min), con cada estilo indicado explícitamente |
 
 ### 4.2 Sesión corta: niños y no lectores (unos 10 min)
@@ -92,7 +92,7 @@ Decisión del 2026-11-22: el bloque tiene tres partes, cada una con tiempo fijo 
 | Estilos guiados | Fuerte ("como si hablaras con alguien al otro lado del salón"), baja ("como en una biblioteca") y susurro | Las 3 primeras preguntas de `preguntas.txt`, **fijas** (una por estilo), para que todos hagan lo mismo. Si el conductor pasa a otra pregunta, la nueva sale del banco balanceado | 1 min 15 s cada uno |
 | Plática | Normal, y el conductor pide otros estilos en medio | Banco de **30 preguntas** de `preguntas.txt` (2026-11-22), de temas variados para que cada persona encuentre alguna que le guste: vida diaria, entretenimiento, viajes y cultura, naturaleza y ciencia, ingeniería y tecnología, y gustos. Salen en **orden balanceado** entre participantes, igual que las imágenes (decisión del 2026-11-22), para que se use todo el banco. El conductor se salta con Espacio la que no funcione. Por ejemplo "Cuéntame qué hiciste el fin de semana", "¿Cuál es tu comida favorita y cómo se prepara?", "Explícame cómo llegar de aquí a la entrada de la escuela" o "¿Cómo se juega tu juego favorito?" | 5 min |
 
-**Sin la voz del conductor en la grabación:** las indicaciones y las preguntas se muestran en pantalla y además suenan **pregrabadas por audífonos cerrados** (decisión del 2026-11-22). El programa anota cuándo suena cada audio, para excluir lo que se filtre al micrófono.
+**Sin la voz del conductor en la grabación:** las indicaciones y las preguntas **solo se muestran en pantalla**, sin audio ni audífonos (decisión del 2026-11-22, que reemplaza la de las indicaciones pregrabadas). En la plática, la consigna pide imaginar que se platica con el responsable de la prueba.
 
 ### 4.4 Procesamiento y etiquetas
 
@@ -114,13 +114,13 @@ Decisión del 2026-11-22: el bloque tiene tres partes, cada una con tiempo fijo 
 Hecho por Claude con la especificación del autor (2026-11-22).
 
 - **Flujo:**
-  1. **Audio:** se configura una vez por máquina con `configurar_audio.py` (prueba de habla y de escucha) y queda en `config_audio.json`, que no se versiona. El presentador lo lee y no pregunta nada; busca cada dispositivo por nombre y API porque los índices cambian al conectar aparatos, y si alguno no aparece avisa. Sin configuración, la elección se hace en la consola como sigue. **Entrada:** Se elige el dispositivo (solo aparecen los que aceptan 48 kHz y 24 bits) y se hace una prueba de nivel de 3 s por canal. Luego se elige el canal: la UMC202HD es un par estéreo (IN 1-2) y hay que usar la entrada donde está el AT2020. Dispositivo, canal y niveles quedan en `sesion.json`.
+  1. **Micrófono:** se configura una vez por máquina con `configurar_audio.py` (prueba de habla) y queda en `config_audio.json`, que no se versiona. El presentador lo lee y no pregunta nada; busca el dispositivo por nombre y API porque los índices cambian al conectar aparatos, y si no aparece avisa. Sin configuración, la elección se hace en la consola: se elige el dispositivo (solo aparecen los que aceptan 48 kHz y 24 bits) y se hace una prueba de nivel de 3 s por canal. Luego se elige el canal: la UMC202HD es un par estéreo (IN 1-2) y hay que usar la entrada donde está el AT2020. Dispositivo, canal y niveles quedan en `sesion.json`.
   2. Datos de la sesión en la consola.
   3. 30 s de silencio de referencia, con una barra «Silencio» que muestra cuánto falta.
   4. **Calibración** con `calibracion.txt`: 10 frases cotidianas propias, que no son de *Sharvard* y no requieren balance. El conductor presiona Espacio al terminar cada frase y se mide el ritmo en segundos por sílaba.
   5. **6 listas** en orden mezclado por persona: las fijas **15, 33 y 3** más 3 aleatorias balanceadas, elegidas entre las menos usadas en `asignaciones.csv`, con semilla según el código.
-  6. **Habla libre guiada** (§4.3): imágenes, estilos guiados y plática, cada parte con su barra de «Tiempo». La consigna va arriba en azul y la imagen o la pregunta abajo. Con Espacio el conductor pasa a la siguiente imagen o pregunta, y en la plática pide otro estilo con **F** (fuerte), **B** (baja), **S** (susurro) o **N** (normal). Una pausa a mitad de una parte la retoma con el tiempo que le quedaba.
-- **Audífonos:** en la misma configuración se elige la salida (solo aparecen las que aceptan 48 kHz en estéreo) y se oye un tono de prueba. Con Enter se sigue sin audio y las indicaciones solo se muestran. Cada indicación o pregunta suena si existe `audios_preguntas/<id>.wav` (los ids están en `preguntas.txt`; el audio se remuestrea a 48 kHz si hace falta). Al iniciar, el programa avisa qué audios faltan.
+  6. **Lectura continua y secuencias** (§4.1, bloques d y e): el texto de `textos_prueba/El_viento_norte_y_el_sol.txt`, con la letra ajustada para que quepa completo en pantalla, y luego contar del 1 al 20 y los días de la semana. Cada uno a su ritmo: el conductor presiona Espacio al terminar.
+  7. **Habla libre guiada** (§4.3): imágenes, estilos guiados y plática, cada parte con su barra de «Tiempo». La consigna va arriba en azul y la imagen o la pregunta abajo. Con Espacio el conductor pasa a la siguiente imagen o pregunta, y en la plática pide otro estilo con **F** (fuerte), **B** (baja), **S** (susurro) o **N** (normal). Una pausa a mitad de una parte la retoma con el tiempo que le quedaba.
 - **Imágenes y preguntas balanceadas:** las mostradas se suman en las columnas `imagenes` y `preguntas` de `asignaciones.csv`, salvo en P00. El orden de cada participante pone primero las menos usadas, con desempate al azar según el código.
 - **Avance automático:** cada frase dura sílabas × ritmo × **1.25**, seguida de **2 s** en blanco. Entre listas hay **5 s** de descanso, con una **barra arriba** que dice «Descanso» y se vacía con el tiempo. Su funcionamiento se muestra antes de la calibración, después del silencio y con la misma duración que un descanso real (5 s), para que no se confunda con algo que hay que leer.
 - **Datos de la sesión:**
@@ -131,14 +131,14 @@ Hecho por Claude con la especificación del autor (2026-11-22).
 - **Los errores de lectura se conservan,** porque también ocurren en la realidad. Solo se repite una frase en casos extremos, como un ruido externo fuerte e inesperado.
 - **Teclas, solo para el conductor:**
   - **P:** pausa de emergencia. La frase interrumpida se repite completa y el evento queda registrado.
-  - **R:** repite la frase actual o la que acaba de terminar. La toma anterior queda en `frases.csv` con `repetida = 1`, para descartarla al etiquetar.
+  - **R:** repite la frase, el texto o la secuencia actual, o la frase que acaba de terminar. La toma anterior queda en `frases.csv` con `repetida = 1`, para descartarla al etiquetar.
   - **M:** marca una frase dudosa.
   - **Esc:** termina la sesión antes.
-- **Salida** en `SALIDAS/BD_voz/<código>_<fecha>/` (no se versiona):
+- **Salida** en `Descargas/BD_VOZ/<código>_<fecha>/` (`Path.home()/Downloads/BD_VOZ`, fuera del repo y de OneDrive; §3.2):
   - `audio.wav` a 48 kHz y 24 bits, en una sola toma;
-  - `frases.csv` con el inicio y el fin de cada frase, imagen o pregunta en el reloj del audio, con su tarea (`tipo`) y su `estilo`. Las filas `indicacion` son los audios que sonaron por los audífonos. Es la segmentación automática para el etiquetado;
-  - `sesion.json` con datos, ritmo, listas, imágenes y preguntas mostradas, entrada y salida de audio (`entrada`, `salida_audifonos`, `audios_faltantes`) y eventos (pausas y cambios de estilo).
-- **Uso:** `python Exploration/Prueba_BD/presentador_frases.py`. Opciones: `--listar` (entradas y salidas), `--dispositivo N`, `--salida N`, `--prueba` (recorrido corto automático) y `--sin-audio` (no graba ni reproduce; para probar la pantalla). La UMC202HD aparece varias veces. La que reporta 48 kHz (WASAPI) funcionó en la prueba del 2026-11-22.
+  - `frases.csv` con el inicio y el fin de cada frase, texto, secuencia, imagen o pregunta en el reloj del audio, con su tarea (`tipo`: `silencio_referencia`, `calibracion`, `frase`, `lectura`, `secuencia`, `imagen`, `estilos` o `platica`) y su `estilo`. Es la segmentación automática para el etiquetado;
+  - `sesion.json` con datos, ritmo, listas, imágenes y preguntas mostradas, entrada de audio (`entrada`), texto de lectura y secuencias, y eventos (pausas, repeticiones y cambios de estilo).
+- **Uso:** `python Exploration/Prueba_BD/presentador_frases.py`. Opciones: `--listar` (entradas), `--dispositivo N`, `--prueba` (recorrido corto automático) y `--sin-audio` (no graba; para probar la pantalla). La UMC202HD aparece varias veces. La que reporta 48 kHz (WASAPI) funcionó en la prueba del 2026-11-22.
 
 ## 5. Ruido
 
@@ -196,6 +196,7 @@ Se muestrean todas las categorías:
 | 2026-11-15 | Partición híbrida. Procesamiento mínimo de la voz. Trabajo a 16 kHz |
 | 2026-11-21 | Solo español de México. Cubículo como lugar principal y auto con motor apagado como alterno, sin limpiador de ruido. Equipo de §2. Sesión de 15–30 min con lectura y habla libre en estilos indicados explícitamente. Niños con sesión corta (trabajo a futuro si no se consiguen). Mismas frases para todos (publicadas y propias). Pausas etiquetadas en tres clases. Todas las categorías de ruido, grabadas en el lugar con el AT2020 y con el arreglo, y complementadas con bases públicas. Niveles medidos y documentados. Rejilla cada 22.5° con base giratoria y 5 distancias. Ruido en posiciones fijas y relativas. SNR intermedios para entrenar. Mezcla digital más un subconjunto simultáneo |
 | 2026-11-22 | 6 listas *Sharvard* adaptadas por sesión: 15, 33 y 3 fijas, más 3 aleatorias balanceadas, en orden mezclado. Adaptaciones mínimas con sonidos parecidos. Calibración con una lista propia y avance automático a ritmo × 1.25, con 2 s entre frases y 5 s entre listas. Sin repetir frases (los errores se conservan). Pausa y marca controladas solo por el conductor. Habla libre: imágenes de Pexels al azar balanceado durante 3 min (el conductor pasa a la siguiente), estilos guiados y dentro de la plática, plática de 5 min al final, e indicaciones en pantalla y pregrabadas por audífonos para no grabar la voz del conductor |
+| 2026-11-22 | Indicaciones y preguntas solo en pantalla, sin audios ni audífonos; en la plática la consigna pide imaginar que se platica con el responsable. Lectura continua con la versión de Coloma de «El viento norte y el sol»; las secuencias cubren los números. Sin frases propias: con *Sharvard* basta. Grabaciones solo locales (`Descargas/BD_VOZ/`, fuera de OneDrive) con copia en un disco duro externo |
 
 ## 8. Pendientes antes de grabar
 
@@ -205,16 +206,17 @@ Se muestrean todas las categorías:
   - ~~adaptar el vocabulario~~: hecho el 2026-11-22. Son 51 frases en 37 listas, con cambios mínimos y sonidos parecidos (por ejemplo coger → tomar, euro → peso, jersey → suéter, cubo → cubeta). `Lists_SHARVARD.txt` (con las propuestas del autor) se conserva sin cambios;
   - ~~elegir las 3 listas fijas~~: 15, 33 y 3, las de mayor densidad de /s/, /f/, /x/ y /tʃ/, con al menos 3 de cada uno de los últimos tres;
   - ~~especificar el programa de presentación~~: hecho (§4.5);
-  - redactar las frases propias y comprobar el balance contando fonemas.
-- [ ] **Imágenes para describir:** ~~elegirlas~~: conjunto de Pexels en `Exploration/Prueba_BD/image/` (2026-11-22). ~~Llenar la URL y el fotógrafo en `fuentes_imagenes.csv`~~ (hecho por el autor, 2026-11-22). Falta quedarse con escenas parejas (con personas y objetos).
-- [ ] **Preguntas:** ~~completar el banco~~: 30 en `preguntas.txt` (2026-11-22), por revisar por el autor. Falta grabar sus audios y los de las indicaciones en `audios_preguntas/`.
-- [ ] **Audífonos cerrados** para el participante, y comprobar que no se filtren al AT2020 al volumen de la sesión.
-- [ ] **Lectura continua y secuencias** (bloques d y e de §4.1): todavía no están en el programa.
-- [ ] **Consentimiento:** redactar el formato (adultos y menores).
-- [ ] **Guion de sesión** escrito, idéntico para los dos conductores.
+  - ~~redactar las frases propias~~: descartado (2026-11-22); con *Sharvard* basta.
+- [x] **Imágenes para describir:** ~~elegirlas~~: conjunto de Pexels en `Exploration/Prueba_BD/image/` (2026-11-22). ~~Llenar la URL y el fotógrafo en `fuentes_imagenes.csv`~~ (hecho por el autor, 2026-11-22). ~~Quedarse con escenas parejas~~: el autor aprobó el conjunto (2026-11-22).
+- [x] **Preguntas:** ~~completar el banco~~: 30 en `preguntas.txt` (2026-11-22), aprobadas por el autor. ~~Grabar sus audios~~: descartado (2026-11-22), solo se muestran en pantalla.
+- [x] ~~**Audífonos cerrados**~~: innecesarios sin audios (2026-11-22).
+- [x] **Lectura continua y secuencias** (bloques d y e de §4.1): en el programa (2026-11-22).
+- [ ] **Consentimiento:** formato (adultos y menores) hecho por el autor (2026-11-22), en `Referencias/` (local, no versionado). En revisión.
+- [ ] **Guion de sesión** escrito, idéntico para los dos conductores: boceto en `Exploration/Prueba_BD/guion_sesion.md` (2026-11-22), por revisar y completar por el autor (puntos **[DECIDIR]**).
+- [ ] **Prueba piloto completa** con P00 en el cubículo, con el equipo y la duración reales, antes del primer participante.
 - [ ] **Metadatos:** definir el formato y la convención de nombres de archivo.
 - [ ] **Etiquetado:** elegir la herramienta (habla activa, pausa y silencio largo).
-- [ ] **Cubículo:** medirlo y estimar su reverberación. Fijar el umbral de ruido de fondo para aceptar una grabación.
+- [ ] **Cubículo:** medirlo y estimar su reverberación. Fijar el umbral de ruido de fondo para aceptar una grabación: el autor propone **≤ 35 dB(A)** (2026-11-22), por confirmar en la prueba piloto.
 - [ ] **Base giratoria:** construirla con marcas cada 22.5°.
 - [ ] **Reproducción en el cubículo:** fijar los niveles de calibración (voz a 1 m y ruidos).
 - [ ] **Evaluación:** definir el subconjunto de frases y de ruidos.
@@ -223,5 +225,5 @@ Se muestrean todas las categorías:
 ## 9. Referencias por verificar
 
 - V. Aubanel, M. L. García Lecumberri y M. Cooke, "The Sharvard Corpus: A phonemically-balanced Spanish sentence resource for audiology", *International Journal of Audiology*, vol. 53, núm. 9, pp. 633–638, 2014. Licencia del dataset: CC BY 4.0 (verificada por el autor). **Falta verificar la cita contra el artículo y agregar la cita del dataset (Edinburgh DataShare).** Las grabaciones también pueden entrar al bloque de bases públicas (D7)
-- "El viento norte y el sol": texto de ejemplo de la Asociación Fonética Internacional para el español. **Ubicar la fuente exacta.**
+- "El viento norte y el sol": texto de ejemplo de la Asociación Fonética Internacional. Se usa la versión de Coloma, con mejor distribución fonética (elección del autor, 2026-11-22). **Falta la referencia completa de la versión de Coloma.**
 - Bases de ruido: MUSAN, DEMAND, ESC-50, WHAM! **Verificar las licencias.**

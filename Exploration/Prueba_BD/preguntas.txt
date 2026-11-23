@@ -1,13 +1,13 @@
 # Indicaciones y preguntas del habla libre guiada (Metodologia/obj3_base_de_datos.md §4.3).
-# Formato: «id | texto». El texto se muestra en pantalla. Si existe audios_preguntas/<id>.wav, también suena por
-# los audífonos (grabarlo a 48 kHz; mono o estéreo). Las líneas con # se ignoran.
+# Formato: «id | texto». El texto solo se muestra en pantalla (sin audio, decisión del 2026-11-22).
+# Las líneas con # se ignoran.
 # [indicaciones] necesita estos ids: imagen, platica, normal, fuerte, baja, susurro.
 # [preguntas]: las primeras tres van fijas a los estilos guiados (fuerte, baja, susurro). El resto sale en la plática
 # en orden balanceado entre participantes (primero las menos usadas). Si se acaban, vuelven a empezar.
 
 [indicaciones]
 imagen | Describe esta imagen con todo el detalle que puedas.
-platica | Platiquemos un rato. Contesta con calma.
+platica | Imagina que estás platicando con el responsable de la prueba. Háblale con tu voz normal y con calma.
 normal | Ahora sigue hablando con tu voz normal.
 fuerte | Ahora habla fuerte, como si hablaras con alguien al otro lado del salón.
 baja | Ahora habla en voz baja, como en una biblioteca.

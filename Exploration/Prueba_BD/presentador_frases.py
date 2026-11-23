@@ -1,12 +1,12 @@
 """Presentador de frases para la adquisición de voz de la base de datos (Obj. 3).
 
 Hecho por Claude con la especificación del autor (2026-11-22). Es una utilidad de adquisición, no análisis del TT.
-Diseño de la sesión: Metodologia/obj3_base_de_datos.md §4.1 (bloques b, c y f), §4.3 y §4.5.
+Diseño de la sesión: Metodologia/obj3_base_de_datos.md §4.1 (bloques b a f), §4.3 y §4.5.
 
 Flujo:
-  0. Audio: se toma de config_audio.json, que escribe configurar_audio.py una vez por máquina (micrófono con prueba
-     de nivel y audífonos con tono de prueba). Si no existe o un dispositivo ya no aparece, se elige aquí en la
-     consola: dispositivo, prueba de nivel de 3 s por canal, canal del micrófono y salida de los audífonos.
+  0. Micrófono: se toma de config_audio.json, que escribe configurar_audio.py una vez por máquina (con prueba de
+     nivel). Si no existe o el dispositivo ya no aparece, se elige aquí en la consola: dispositivo, prueba de nivel
+     de 3 s por canal y canal del micrófono.
      La UMC202HD aparece como un par estéreo (IN 1-2): hay que elegir la entrada donde está el AT2020.
   1. Datos de la sesión (en la consola). El código se asigna solo (P01, P02…). Una sesión de prueba se guarda
      como P00, igual que las demás, pero no cuenta para el balance de listas. Se pide la edad exacta y el grupo se
@@ -21,7 +21,9 @@ Flujo:
      Cada frase se muestra sílabas × ritmo × MARGEN segundos, seguida de SILENCIO_FRASES s en blanco.
      Entre listas hay SILENCIO_LISTAS s de descanso, con una barra arriba que dice «Descanso» y se vacía con el tiempo.
      Mientras se lee, una barra delgada indica cuántas frases faltan para el siguiente descanso.
-  5. Habla libre guiada (§4.3), cada bloque con una barra de tiempo:
+  5. Lectura continua (ARCHIVO_LECTURA, «El viento norte y el sol») y secuencias (SECUENCIAS: contar del 1 al 20 y
+     los días de la semana). Cada una a su ritmo: el conductor presiona Espacio cuando la persona termina.
+  6. Habla libre guiada (§4.3), cada bloque con una barra de tiempo:
        - imágenes (DURACION_IMAGENES s): de la carpeta CARPETA_IMAGENES, en orden balanceado entre participantes
          (las menos usadas primero, con semilla según el código). Con Espacio se pasa a la siguiente;
        - estilos guiados (DURACION_ESTILO s cada uno): fuerte, baja y susurro, con las primeras preguntas de
@@ -29,22 +31,22 @@ Flujo:
        - plática (DURACION_PLATICA s): el resto de preguntas.txt en orden balanceado entre participantes (las menos
          usadas primero, con semilla según el código), con Espacio la siguiente. Con F, B, S y N el conductor pide
          otro estilo en medio de la plática.
-     Las indicaciones y preguntas se muestran en pantalla y, si existe CARPETA_AUDIOS/<id>.wav, también suenan por
-     la salida elegida (audífonos cerrados), para no grabar la voz del conductor. Cada reproducción queda en
-     frases.csv como tipo «indicacion», para excluir lo que se filtre al micrófono.
-  6. Guarda en SALIDAS/BD_voz/<código>_<fecha>/:
+     Las indicaciones y preguntas solo se muestran en pantalla (sin audio, decisión del 2026-11-22).
+  7. Guarda en CARPETA_SALIDA/<código>_<fecha>/ (Descargas/BD_VOZ, fuera de OneDrive; la copia al disco externo
+     se hace aparte):
        audio.wav    48 kHz, 24 bits, una sola toma continua
-       frases.csv   inicio y fin (s, en el reloj del audio) de cada frase, imagen o pregunta, con su estilo,
-                    marca e interrupción
-       sesion.json  datos de la sesión, entrada y salida de audio, ritmo medido, listas, imágenes y preguntas
-                    mostradas, duraciones y eventos (pausas y cambios de estilo)
+       frases.csv   inicio y fin (s, en el reloj del audio) de cada frase, texto, secuencia, imagen o pregunta,
+                    con su estilo, marca e interrupción
+       sesion.json  datos de la sesión, entrada de audio, ritmo medido, listas, imágenes y preguntas mostradas,
+                    duraciones y eventos (pausas y cambios de estilo)
 
 Teclas (solo el conductor; la persona no debe tener el teclado):
-  Espacio  calibración: la persona terminó la frase. Imágenes y preguntas: la siguiente. Espera: continuar
+  Espacio  calibración, lectura y secuencias: la persona terminó. Imágenes y preguntas: la siguiente.
+           Espera: continuar
   P        pausa de emergencia. Otra vez para reanudar; la frase interrumpida se muestra de nuevo completa.
            En habla libre, el bloque sigue con el tiempo que le quedaba
-  R        repite la frase actual (o la que acaba de terminar) por un ruido externo fuerte; la toma anterior
-           queda en frases.csv con repetida = 1
+  R        repite la frase, el texto o la secuencia actual (o la frase que acaba de terminar) por un ruido externo
+           fuerte; la toma anterior queda en frases.csv con repetida = 1
   M        marca la frase, imagen o pregunta actual como dudosa (ruido externo, palabra omitida…)
   F B S N  solo en la plática: pide voz fuerte, baja, susurro o normal
   Esc      termina la sesión antes y guarda lo grabado
@@ -52,10 +54,9 @@ Teclas (solo el conductor; la persona no debe tener el teclado):
 
 Uso:
   python Exploration/Prueba_BD/presentador_frases.py              sesión normal
-  python Exploration/Prueba_BD/presentador_frases.py --listar     lista los dispositivos de entrada y de salida
+  python Exploration/Prueba_BD/presentador_frases.py --listar     lista los dispositivos de entrada
   python Exploration/Prueba_BD/presentador_frases.py --prueba     recorrido corto y automático, sin participante
-  Opciones: --dispositivo N y --salida N (índices de --listar), --sin-audio (no graba ni reproduce; para probar
-  la pantalla)
+  Opciones: --dispositivo N (índice de --listar), --sin-audio (no graba; para probar la pantalla)
 """
 import argparse
 import csv
@@ -76,11 +77,13 @@ import numpy as np
 CARPETA = Path(__file__).resolve().parent
 ARCHIVO_LISTAS = CARPETA / "Lists_SHARVARD_MX.txt"
 ARCHIVO_CALIBRACION = CARPETA / "calibracion.txt"
-CARPETA_SALIDA = CARPETA.parents[1] / "SALIDAS" / "BD_voz"   # no se versiona (voces de personas)
+# Voces de personas: solo locales, fuera del repo y de OneDrive (decisión del 2026-11-22). En esta máquina es
+# C:\Users\monit\Downloads\BD_VOZ; con Path.home() funciona igual en otra computadora.
+CARPETA_SALIDA = Path.home() / "Downloads" / "BD_VOZ"
 ARCHIVO_ASIGNACIONES = CARPETA_SALIDA / "asignaciones.csv"
 ARCHIVO_PREGUNTAS = CARPETA / "preguntas.txt"
+ARCHIVO_LECTURA = CARPETA / "textos_prueba" / "El_viento_norte_y_el_sol.txt"   # versión de Coloma
 CARPETA_IMAGENES = CARPETA / "image"             # no se versiona (Pexels); fuentes en fuentes_imagenes.csv
-CARPETA_AUDIOS = CARPETA / "audios_preguntas"    # <id>.wav por indicación o pregunta; no se versiona
 ARCHIVO_CONFIG = CARPETA / "config_audio.json"   # lo escribe configurar_audio.py; es de cada máquina, no se versiona
 
 LISTAS_FIJAS = (15, 33, 3)
@@ -92,12 +95,15 @@ SILENCIO_REFERENCIA = 30.0    # s de silencio grabado al inicio (ruido de fondo 
 DURACION_IMAGENES = 180.0     # s del bloque de imágenes (las que alcancen)
 DURACION_ESTILO = 75.0        # s de cada estilo guiado (fuerte, baja, susurro)
 DURACION_PLATICA = 300.0      # s de plática al final
+SECUENCIAS = (("numeros", "Cuenta en voz alta del 1 al 20."),
+              ("dias", "Di en voz alta los días de la semana, empezando por el lunes."))
 ESTILOS_GUIADOS = ("fuerte", "baja", "susurro")
 TECLAS_ESTILO = {"f": "fuerte", "b": "baja", "s": "susurro", "n": "normal"}
 
 FS = 48000                    # Hz
 BLOQUE = 1024                 # muestras por bloque de grabación
 TAM_TEXTO = 40                # tamaño de las frases en pantalla
+TAM_LECTURA = 36              # lectura continua: tamaño máximo; se reduce solo hasta que el texto quepa completo
 TAM_AYUDA = 11                # línea de estado para el conductor
 TAM_CONSIGNA = 22             # indicación arriba de la imagen o la pregunta
 COLOR_CONSIGNA = "#1f5f8b"
@@ -128,6 +134,13 @@ def leer_listas(ruta=ARCHIVO_LISTAS):
 
 def leer_calibracion(ruta=ARCHIVO_CALIBRACION):
     return [l.strip() for l in ruta.read_text(encoding="utf-8").splitlines() if l.strip()]
+
+
+def leer_lectura(ruta=ARCHIVO_LECTURA):
+    """Texto de la lectura continua en un solo párrafo; None si falta el archivo."""
+    if not ruta.exists():
+        return None
+    return " ".join(ruta.read_text(encoding="utf-8").split())
 
 
 def leer_preguntas(ruta=ARCHIVO_PREGUNTAS):
@@ -255,7 +268,7 @@ def localizar(pa, guardado, validos):
 
 
 def cargar_config(ruta=ARCHIVO_CONFIG):
-    """(entrada, salida, fecha) desde configurar_audio.py, con los índices actualizados; None si falta o no sirve."""
+    """(entrada, fecha) desde configurar_audio.py, con el índice actualizado; None si falta o no sirve."""
     if not ruta.exists():
         print(f"No hay configuración de audio guardada. Para no repetir este paso: "
               f"python Exploration/Prueba_BD/{ruta.with_name('configurar_audio.py').name}")
@@ -271,17 +284,9 @@ def cargar_config(ruta=ARCHIVO_CONFIG):
                   "acepta el formato. Conéctala o corre de nuevo configurar_audio.py.")
             return None
         entrada["dispositivo"] = i
-        salida = dict(config["salida"]) if config.get("salida") else None
-        if salida is not None:
-            j = localizar(pa, salida, dict(salidas_validas(pa)))
-            if j is None:
-                print(f"La salida guardada («{salida['nombre']}», {salida.get('api')}) no está conectada. "
-                      "Conéctala o corre de nuevo configurar_audio.py.")
-                return None
-            salida["dispositivo"] = j
     finally:
         pa.terminate()
-    return entrada, salida, config.get("fecha", "")
+    return entrada, config.get("fecha", "")
 
 
 def dispositivos_validos(pa):
@@ -399,132 +404,12 @@ class SinAudio:
         return None
 
 
-# ----------------------------------------------------------------- reproducción (audífonos)
-def salidas_validas(pa):
-    """Salidas que aceptan FS en estéreo: [(índice, nombre)]."""
-    import pyaudio
-    validas = []
-    for i in range(pa.get_device_count()):
-        info = pa.get_device_info_by_index(i)
-        if info["maxOutputChannels"] < 2:
-            continue
-        try:
-            pa.is_format_supported(FS, output_device=i, output_channels=2, output_format=pyaudio.paFloat32)
-        except ValueError:
-            continue
-        validas.append((i, nombre_dispositivo(info)))
-    return validas
-
-
-def elegir_salida(salida=None):
-    """En la consola: la salida de los audífonos (o ninguna) y un tono de prueba. Devuelve un dict o None."""
-    import pyaudio
-    pa = pyaudio.PyAudio()
-    validas = salidas_validas(pa)
-    nombres = dict(validas)
-    while True:
-        if salida is None:
-            print(f"\nSalidas para los audífonos (aceptan {FS} Hz en estéreo):")
-            for i, nombre in validas:
-                print(f"  {i:>3}  {nombre}")
-            r = input("Índice de la salida (Enter = sin audio: las indicaciones solo se muestran): ").strip()
-            if not r:
-                pa.terminate()
-                return None
-            salida = int(r) if r.isdigit() and int(r) in nombres else None
-            if salida is None:
-                continue
-        input(f"Tono de prueba en «{nombres[salida]}»: ponte los audífonos y presiona Enter...")
-        t = np.arange(int(FS * 1.0)) / FS
-        tono = (0.1 * np.sin(2 * np.pi * 440 * t)).astype(np.float32)
-        try:
-            stream = pa.open(format=pyaudio.paFloat32, channels=2, rate=FS, output=True,
-                             output_device_index=salida)
-            stream.write(np.repeat(tono[:, None], 2, axis=1).tobytes())
-            stream.stop_stream()
-            stream.close()
-        except OSError as e:
-            print(f"No se pudo abrir: {e}")
-            salida = None
-            continue
-        r = input("¿Se escuchó bien en los audífonos? [s = sí / n = otra salida / p = repetir]: ").strip().lower()
-        if r == "s":
-            api = api_de(pa, salida)
-            pa.terminate()
-            return {"dispositivo": salida, "nombre": nombres[salida], "api": api}
-        if r == "n":
-            salida = None
-
-
-class Reproductor:
-    """Reproduce indicaciones pregrabadas por la salida elegida sin detener la pantalla (stream con callback)."""
-
-    PAUSA_ENTRE = 0.4  # s de silencio entre dos audios seguidos (indicación y pregunta)
-
-    def __init__(self, salida):
-        import pyaudio
-        self.pa = pyaudio.PyAudio()
-        self.salida = salida["dispositivo"]
-        self.stream = None
-
-    @staticmethod
-    def cargar(ruta):
-        """Audio en estéreo a FS (float32). Si el archivo viene a otra frecuencia, se remuestrea."""
-        import soundfile
-        from math import gcd
-        from scipy.signal import resample_poly
-        datos, fs = soundfile.read(ruta, dtype="float32", always_2d=True)
-        datos = datos[:, :2] if datos.shape[1] >= 2 else np.repeat(datos, 2, axis=1)
-        if fs != FS:
-            g = gcd(FS, fs)
-            datos = resample_poly(datos, FS // g, fs // g, axis=0).astype(np.float32)
-        return datos
-
-    def reproducir(self, rutas):
-        """Reproduce los audios uno tras otro. Devuelve la duración total en s (0 si no hay ninguno)."""
-        import pyaudio
-        self.parar()
-        partes = []
-        for ruta in rutas:
-            if partes:
-                partes.append(np.zeros((int(self.PAUSA_ENTRE * FS), 2), np.float32))
-            partes.append(self.cargar(ruta))
-        if not partes:
-            return 0.0
-        datos = np.ascontiguousarray(np.concatenate(partes))
-        pos = 0
-
-        def entregar(_entrada, n, _info, _estado):
-            nonlocal pos
-            trozo = datos[pos:pos + n]
-            pos += n
-            if len(trozo) < n:
-                trozo = np.vstack([trozo, np.zeros((n - len(trozo), 2), np.float32)])
-                return trozo.tobytes(), pyaudio.paComplete
-            return trozo.tobytes(), pyaudio.paContinue
-
-        self.stream = self.pa.open(format=pyaudio.paFloat32, channels=2, rate=FS, output=True,
-                                   output_device_index=self.salida, frames_per_buffer=BLOQUE,
-                                   stream_callback=entregar)
-        return len(datos) / FS
-
-    def parar(self):
-        if self.stream is not None:
-            self.stream.stop_stream()
-            self.stream.close()
-            self.stream = None
-
-    def cerrar(self):
-        self.parar()
-        self.pa.terminate()
-
-
 # ----------------------------------------------------------------- sesión
 class Sesion:
-    def __init__(self, datos, listas, calibracion, grabador, indicaciones, preguntas, imagenes, reproductor=None,
+    def __init__(self, datos, listas, calibracion, grabador, indicaciones, preguntas, imagenes, lectura=None,
                  prueba=False):
         self.datos, self.listas, self.calibracion, self.grab = datos, listas, calibracion, grabador
-        self.indicaciones, self.preguntas, self.repro = indicaciones, preguntas, reproductor
+        self.indicaciones, self.preguntas, self.lectura = indicaciones, preguntas, lectura
         self.prueba = prueba
         escala = 0.15 if prueba else 1.0
         self.sil_ref, self.sil_frases, self.sil_listas = (SILENCIO_REFERENCIA * escala, SILENCIO_FRASES * escala,
@@ -539,7 +424,7 @@ class Sesion:
         if prueba:  # recorrido corto: 2 listas de 3 frases
             self.orden = self.orden[:2]
             self.calibracion = self.calibracion[:3]
-        self.registro = []           # una fila por frase, imagen, pregunta o indicación
+        self.registro = []           # una fila por frase, texto, secuencia, imagen o pregunta
         self.eventos = []            # pausas, reanudaciones, cambios de estilo y fin anticipado
         self.duraciones_calib = []   # (segundos, sílabas)
         self.ritmo = None            # s por sílaba
@@ -651,11 +536,9 @@ class Sesion:
         return f"Falta 1 frase para {destino}" if faltan == 1 else f"Faltan {faltan} frases para {destino}"
 
     def limpiar_pantalla(self):
-        """Quita la imagen, la consigna y el audio del habla libre (la frase se vuelve a escribir después)."""
-        if self.repro is not None:
-            self.repro.parar()
+        """Quita la imagen y la consigna (la frase se vuelve a escribir después)."""
         self.foto = None
-        self.texto.config(image="", text="", font=("Arial", TAM_TEXTO))
+        self.texto.config(image="", text="", font=("Arial", TAM_TEXTO), wraplength=1100)
         self.consigna.pack_forget()
 
     def mostrar_consigna(self, texto):
@@ -706,6 +589,12 @@ class Sesion:
             if k:
                 nuevos.append(("pausa_listas", None))
             nuevos += [("frase", (lista, num, frase)) for num, frase in enumerate(self.listas[lista], start=1)]
+        # Lectura continua y secuencias (§4.1, bloques d y e): a su ritmo, Espacio al terminar
+        if self.lectura:
+            nuevos += [("espera", "Muy bien. Ahora vas a leer un texto corto en voz alta,\na tu ritmo normal."),
+                       ("lectura", self.lectura)]
+        nuevos.append(("espera", "Ahora, sin leer, vas a decir unas secuencias en voz alta."))
+        nuevos += [("secuencia", s) for s in SECUENCIAS]
         # Habla libre guiada (§4.3): imágenes, estilos guiados y plática, cada bloque con su barra de tiempo
         if self.orden_imagenes:
             nuevos += [("espera", "Muy bien. Ahora vas a describir unas imágenes.\n"
@@ -739,6 +628,34 @@ class Sesion:
         self.texto.config(text="")
         self.programar(self.sil_frases, self.siguiente)
 
+    def _lectura(self, texto):
+        self.mostrar_consigna("Lee el texto en voz alta, a tu ritmo normal.")
+        self.texto.config(text=texto, fg="black")
+        self._ajustar_letra(TAM_LECTURA)
+        self.estado("Lectura continua: Espacio cuando termine de leer")
+        self.fila_actual = self._fila("lectura", "", ARCHIVO_LECTURA.stem, texto)
+        if self.prueba:
+            self.programar(1.5, lambda: self.espacio(None))
+
+    def _ajustar_letra(self, tam_max, tam_min=12):
+        """Reduce la letra hasta que el texto completo quepa en la pantalla (depende de la escala de Windows)."""
+        self.raiz.update_idletasks()
+        disponible = self.texto.winfo_height()
+        self.texto.config(wraplength=max(int(self.texto.winfo_width() * 0.8), 600))  # renglones legibles
+        for tam in range(tam_max, tam_min - 1, -1):
+            self.texto.config(font=("Arial", tam))
+            self.raiz.update_idletasks()
+            if self.texto.winfo_reqheight() <= disponible:
+                break
+
+    def _secuencia(self, dato):
+        clave, consigna = dato
+        self.texto.config(text=consigna, fg="black")
+        self.estado(f"Secuencia «{clave}»: Espacio cuando termine")
+        self.fila_actual = self._fila("secuencia", "", clave, consigna)
+        if self.prueba:
+            self.programar(1.0, lambda: self.espacio(None))
+
     def _pausa_listas(self, _):
         self.texto.config(text="")
         self.estado(f"Descanso entre listas ({self.sil_listas:.0f} s)")
@@ -752,20 +669,20 @@ class Sesion:
     # ---- habla libre guiada: un bloque con tiempo fijo; Espacio cambia de imagen o de pregunta
     def _imagenes(self, _):
         self.bloque = {"tipo": "imagen", "estilo": "normal", "restante": self.dur_imagenes,
-                       "total": self.dur_imagenes, "indicacion": "imagen"}
-        self._correr_bloque(con_indicacion=True)
+                       "total": self.dur_imagenes}
+        self._correr_bloque()
 
     def _estilo(self, estilo):
         # Cada estilo empieza con su pregunta fija (la primera para fuerte, la segunda para baja…)
         k = ESTILOS_GUIADOS.index(estilo) % len(self.preguntas)
         self.bloque = {"tipo": "estilos", "estilo": estilo, "restante": self.dur_estilo, "total": self.dur_estilo,
-                       "indicacion": estilo, "k": k}
-        self._correr_bloque(con_indicacion=True)
+                       "k": k}
+        self._correr_bloque()
 
     def _platica(self, _):
         self.bloque = {"tipo": "platica", "estilo": "normal", "restante": self.dur_platica,
-                       "total": self.dur_platica, "indicacion": "platica", "k": self._tomar_libre()}
-        self._correr_bloque(con_indicacion=True)
+                       "total": self.dur_platica, "k": self._tomar_libre()}
+        self._correr_bloque()
 
     def _tomar_libre(self):
         """Índice de la siguiente pregunta balanceada (las que no son de los estilos guiados). Si se acaban,
@@ -775,9 +692,9 @@ class Sesion:
         self.k_libre += 1
         return k
 
-    def _correr_bloque(self, con_indicacion):
+    def _correr_bloque(self):
         """Muestra el elemento actual y arranca (o retoma) la barra con el tiempo que le queda al bloque."""
-        b = self._mostrar_elemento(con_indicacion)
+        b = self._mostrar_elemento()
         self.mostrar_barra(b["restante"], self._fin_bloque, etiqueta="Tiempo", total=b["total"])
         if self.prueba:
             self._auto_espacio(self.i)
@@ -794,11 +711,10 @@ class Sesion:
             self.raiz.after(2500, paso)
         self.raiz.after(2500, paso)
 
-    def _mostrar_elemento(self, con_indicacion):
-        """Imagen o pregunta actual en pantalla, fila nueva en el registro y su audio por los audífonos."""
+    def _mostrar_elemento(self):
+        """Imagen o pregunta actual en pantalla y fila nueva en el registro."""
         b = self.bloque
         self.limpiar_pantalla()
-        audios = [b["indicacion"]] if con_indicacion else []
         if b["tipo"] == "imagen":
             nombre = self.orden_imagenes[self.k_imagen % len(self.orden_imagenes)]
             self.mostrar_consigna(self.indicaciones["imagen"])
@@ -812,10 +728,8 @@ class Sesion:
             self.mostrar_consigna(consigna)
             self.texto.config(text=pregunta, fg="black")
             self.fila_actual = self._fila(b["tipo"], "", clave, pregunta, estilo=b["estilo"])
-            audios.append(clave)
             extra = " · F B S N = estilo" if b["tipo"] == "platica" else ""
             self.estado(f"{b['tipo'].capitalize()} ({b['estilo']}), pregunta {clave}. Espacio = siguiente{extra}")
-        self._reproducir(audios)
         return b
 
     def _dibujar_imagen(self, nombre):
@@ -830,30 +744,13 @@ class Sesion:
         self.foto = ImageTk.PhotoImage(im)
         self.texto.config(image=self.foto, text="")
 
-    def _reproducir(self, claves):
-        """Reproduce los audios que existan y los anota como «indicacion» (para excluir lo que se filtre al mic)."""
-        if self.repro is None:
-            return
-        rutas = [CARPETA_AUDIOS / f"{c}.wav" for c in claves if (CARPETA_AUDIOS / f"{c}.wav").exists()]
-        if not rutas:
-            return
-        inicio = self.grab.tiempo()
-        try:
-            duracion = self.repro.reproducir(rutas)
-        except Exception as e:  # un audio dañado no debe tirar la sesión: queda solo el texto
-            print(f"No se pudo reproducir {[r.name for r in rutas]}: {e}")
-            return
-        fila = self._fila("indicacion", "", "", " ".join(r.stem for r in rutas), estilo="")
-        fila["inicio_s"], fila["fin_s"] = round(inicio, 3), round(inicio + duracion, 3)
-        self.registro.append(fila)
-
     def _siguiente_elemento(self):
         self._cerrar_fila()
         if self.bloque["tipo"] == "imagen":
             self.k_imagen += 1
         else:  # en los estilos guiados, la pregunta extra también sale de las balanceadas
             self.bloque["k"] = self._tomar_libre()
-        self._mostrar_elemento(con_indicacion=False)
+        self._mostrar_elemento()
 
     def cambiar_estilo(self, estilo):
         """Solo en la plática: el conductor pide otro estilo; la pregunta sigue en pantalla y la barra no se detiene."""
@@ -861,7 +758,7 @@ class Sesion:
         if self.en_pausa or b is None or b["tipo"] != "platica" or b["estilo"] == estilo:
             return
         self._cerrar_fila()
-        b["estilo"], b["indicacion"] = estilo, estilo
+        b["estilo"] = estilo
         self.eventos.append({"evento": "estilo", "estilo": estilo, "t_s": round(self.grab.tiempo(), 3)})
         clave, pregunta = self.preguntas[b["k"]]
         self.limpiar_pantalla()
@@ -869,7 +766,6 @@ class Sesion:
         self.texto.config(text=pregunta, fg="black")
         self.fila_actual = self._fila("platica", "", clave, pregunta, estilo=estilo)
         self.estado(f"Plática ({estilo}), pregunta {clave}. Espacio = siguiente · F B S N = estilo")
-        self._reproducir([estilo])
 
     def _fin_bloque(self):
         self._cerrar_fila()
@@ -877,8 +773,9 @@ class Sesion:
 
     # ---- registro
     def _fila(self, tipo, lista, num, texto, estilo="normal"):
-        """Una fila de frases.csv. En habla libre, «frase» es el número de imagen o el id de la pregunta."""
-        lectura = tipo in ("frase", "calibracion")
+        """Una fila de frases.csv. En habla libre, «frase» es el número de imagen o el id de la pregunta; en la
+        lectura continua, el nombre del texto, y en las secuencias, su clave."""
+        lectura = tipo in ("frase", "calibracion", "lectura")
         return {"tipo": tipo, "lista": lista, "frase": num, "texto": texto,
                 "silabas": silabas(texto) if lectura else "", "estilo": estilo if tipo != "silencio_referencia" else "",
                 "inicio_s": round(self.grab.tiempo(), 3), "fin_s": "", "marcada": 0, "interrumpida": 0,
@@ -911,6 +808,8 @@ class Sesion:
             self._cerrar_fila()
             self.duraciones_calib.append((self.registro[-1]["fin_s"] - inicio, silabas(frase)))
             self.siguiente()
+        elif tipo in ("lectura", "secuencia"):
+            self._cerrar_y_seguir()
 
     def pausa(self, _evento):
         if self.i >= len(self.pasos):
@@ -930,8 +829,8 @@ class Sesion:
         else:
             self.en_pausa = False
             self.eventos.append({"evento": "reanudacion", "t_s": round(self.grab.tiempo(), 3)})
-            if self.bloque is not None:  # misma imagen o pregunta; su audio se repite, sin la indicación
-                self._correr_bloque(con_indicacion=False)
+            if self.bloque is not None:  # misma imagen o pregunta, con el tiempo que le quedaba
+                self._correr_bloque()
             elif self.tras_frase:  # la frase ya se había leído completa: sigue con la próxima
                 self.siguiente()
             else:
@@ -939,12 +838,12 @@ class Sesion:
                 getattr(self, f"_{tipo}")(dato)  # repite el paso actual desde el inicio
 
     def repetir(self, _evento):
-        """Repite la frase actual (o la que acaba de terminar) por un ruido externo fuerte. La toma anterior queda
-        en frases.csv con repetida = 1, para descartarla al etiquetar."""
+        """Repite la frase, el texto o la secuencia actual (o la frase que acaba de terminar) por un ruido externo
+        fuerte. La toma anterior queda en frases.csv con repetida = 1, para descartarla al etiquetar."""
         if self.en_pausa or self.i >= len(self.pasos):
             return
         tipo, dato = self.pasos[self.i]
-        if tipo not in ("frase", "calibracion"):
+        if tipo not in ("frase", "calibracion", "lectura", "secuencia"):
             return
         self.cancelar()
         if self.fila_actual is not None:
@@ -952,10 +851,15 @@ class Sesion:
         elif self.tras_frase and self.registro:
             self.registro[-1]["repetida"] = 1
         self.tras_frase = False
-        self.eventos.append({"evento": "repeticion", "t_s": round(self.grab.tiempo(), 3),
-                             "lista": dato[0] if tipo == "frase" else "C",
-                             "frase": dato[1] if tipo == "frase" else ""})
-        self.estado("Repitiendo la frase")
+        if tipo == "frase":
+            lista, frase = dato[0], dato[1]
+        elif tipo == "calibracion":
+            lista, frase = "C", ""
+        else:  # lectura o secuencia
+            lista, frase = "", ARCHIVO_LECTURA.stem if tipo == "lectura" else dato[0]
+        self.eventos.append({"evento": "repeticion", "t_s": round(self.grab.tiempo(), 3), "lista": lista,
+                             "frase": frase})
+        self.estado("Repitiendo")
         getattr(self, f"_{tipo}")(dato)
 
     def marcar(self, _evento):
@@ -973,15 +877,13 @@ class Sesion:
     # ---- cierre
     def finalizar(self):
         self.cancelar()
-        if self.repro is not None:
-            self.repro.cerrar()
         audio = self.grab.detener()
         carpeta = CARPETA_SALIDA / f"{self.datos['codigo']}_{datetime.datetime.now():%Y%m%d_%H%M%S}"
         carpeta.mkdir(parents=True, exist_ok=True)
         if audio is not None:
             import soundfile
             soundfile.write(carpeta / "audio.wav", audio, FS, subtype="PCM_24")
-        self.registro.sort(key=lambda r: r["inicio_s"])  # las indicaciones se anotan antes de que cierre su fila
+        self.registro.sort(key=lambda r: r["inicio_s"])
         with open(carpeta / "frases.csv", "w", newline="", encoding="utf-8") as f:
             w = csv.DictWriter(f, ["tipo", "lista", "frase", "texto", "silabas", "estilo", "inicio_s", "fin_s",
                                    "marcada", "interrumpida", "repetida"])
@@ -1000,7 +902,9 @@ class Sesion:
                       duracion_imagenes_s=self.dur_imagenes, duracion_estilo_s=self.dur_estilo,
                       duracion_platica_s=self.dur_platica, eventos=self.eventos, fs=FS, bits=24,
                       archivo_listas=ARCHIVO_LISTAS.name, archivo_calibracion=ARCHIVO_CALIBRACION.name,
-                      archivo_preguntas=ARCHIVO_PREGUNTAS.name)
+                      archivo_preguntas=ARCHIVO_PREGUNTAS.name,
+                      archivo_lectura=ARCHIVO_LECTURA.name if self.lectura else None,
+                      secuencias=[c for c, _ in SECUENCIAS])
         (carpeta / "sesion.json").write_text(json.dumps(sesion, ensure_ascii=False, indent=2), encoding="utf-8")
         if not self.prueba and self.datos["codigo"] != CODIGO_PRUEBA:  # las pruebas no cuentan para el balance
             nuevo = not ARCHIVO_ASIGNACIONES.exists()
@@ -1058,10 +962,8 @@ def main():
     p.add_argument("--listar", action="store_true", help="lista los dispositivos de entrada y sale")
     p.add_argument("--dispositivo", type=int, default=None,
                    help="índice del dispositivo de entrada (si no se da, se elige en la consola)")
-    p.add_argument("--salida", type=int, default=None,
-                   help="índice de la salida de los audífonos (si no se da, se elige en la consola)")
     p.add_argument("--prueba", action="store_true", help="recorrido corto y automático")
-    p.add_argument("--sin-audio", action="store_true", help="no graba ni reproduce (solo prueba la pantalla)")
+    p.add_argument("--sin-audio", action="store_true", help="no graba (solo prueba la pantalla)")
     a = p.parse_args()
     if a.listar:
         import pyaudio
@@ -1074,14 +976,6 @@ def main():
                 marca = "OK" if i in validos else "--"
                 print(f"{i:>3} [{marca}] {nombre_dispositivo(d)}  ({int(d['defaultSampleRate'])} Hz)")
         print(f"[OK] = acepta {FS} Hz y 24 bits")
-        print("\nSalidas:")
-        validas = {v[0] for v in salidas_validas(pa)}
-        for i in range(pa.get_device_count()):
-            d = pa.get_device_info_by_index(i)
-            if d["maxOutputChannels"] > 0:
-                marca = "OK" if i in validas else "--"
-                print(f"{i:>3} [{marca}] {nombre_dispositivo(d)}  ({int(d['defaultSampleRate'])} Hz)")
-        print(f"[OK] = acepta {FS} Hz en estéreo")
         pa.terminate()
         return
     listas, calibracion = leer_listas(), leer_calibracion()
@@ -1089,30 +983,26 @@ def main():
     imagenes = leer_imagenes()
     if not imagenes:
         print(f"AVISO: no hay imágenes en {CARPETA_IMAGENES}; se omite el bloque de imágenes.")
-    sin_audio = [c for c in [*indicaciones, *(c for c, _ in preguntas)] if not (CARPETA_AUDIOS / f"{c}.wav").exists()]
-    if sin_audio:
-        print(f"AVISO: sin audio en {CARPETA_AUDIOS.name}/ (solo se mostrará el texto): {', '.join(sin_audio)}")
-    entrada = salida = None
+    lectura = leer_lectura()
+    if not lectura:
+        print(f"AVISO: no existe {ARCHIVO_LECTURA}; se omite la lectura continua.")
+    entrada = None
     if not a.sin_audio:
-        # Con la configuración guardada no se pregunta nada; --dispositivo o --salida fuerzan la elección en consola
-        config = None if a.dispositivo is not None or a.salida is not None else cargar_config()
+        # Con la configuración guardada no se pregunta nada; --dispositivo fuerza la elección en consola
+        config = None if a.dispositivo is not None else cargar_config()
         if config:
-            entrada, salida, fecha = config
-            print(f"Configuración de audio del {fecha}: entrada «{entrada['nombre']}» canal {entrada['canal']}, "
-                  f"audífonos: {'«' + salida['nombre'] + '»' if salida else 'sin audio'}")
+            entrada, fecha = config
+            print(f"Configuración de audio del {fecha}: entrada «{entrada['nombre']}» canal {entrada['canal']}")
         else:
             entrada = elegir_entrada(a.dispositivo)
-            salida = elegir_salida(a.salida)
-    datos = ({"codigo": CODIGO_PRUEBA, "edad": 25, "grupo_edad": "adulto joven", "sexo": "h", "lugar": "cubículo", "ganancia": "",
-              "sonometro_fondo_dba": "", "conductor": "prueba", "notas": "recorrido de prueba"}
+    print(f"Las sesiones se guardan en {CARPETA_SALIDA}")
+    datos = ({"codigo": CODIGO_PRUEBA, "edad": 25, "grupo_edad": "adulto joven", "sexo": "h", "lugar": "cubículo",
+              "ganancia": "", "sonometro_fondo_dba": "", "conductor": "prueba", "notas": "recorrido de prueba"}
              if a.prueba else pedir_datos())
     if entrada:
         datos["entrada"] = entrada  # dispositivo, canal y prueba de nivel quedan en sesion.json
-    datos["salida_audifonos"] = salida
-    datos["audios_faltantes"] = sin_audio
     grabador = SinAudio() if a.sin_audio else Grabador(entrada)
-    reproductor = Reproductor(salida) if salida else None
-    Sesion(datos, listas, calibracion, grabador, indicaciones, preguntas, imagenes, reproductor,
+    Sesion(datos, listas, calibracion, grabador, indicaciones, preguntas, imagenes, lectura,
            prueba=a.prueba).raiz.mainloop()
 
 
