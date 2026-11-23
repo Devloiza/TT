@@ -54,7 +54,7 @@
 
 ### 3.3 Partición (híbrida)
 
-- **10 personas de prueba**, balanceadas por sexo y edad. El modelo no las ve hasta la evaluación final.
+- **10 personas de prueba**, balanceadas por sexo (5 y 5) y, en lo posible, por edad. El modelo no las ve hasta la evaluación final.
 - **Validación cruzada de 5 grupos** con las otras 40, para ajustar el modelo.
 - **Los ruidos** se separan igual, dentro de cada categoría (§5).
 - **Las mezclas de prueba** solo usan voces y ruidos de prueba.
