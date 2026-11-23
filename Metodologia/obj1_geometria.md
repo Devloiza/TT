@@ -12,6 +12,8 @@
 | Transformación al marco del cuerpo y estadística (`estadistica_imagenes.py`) | El autor, con revisión y correcciones de Claude a petición |
 | Herramienta de anotación (`patainador.py`) | Claude, con la especificación del autor |
 | Gráficas (`graficas_patas.py`) | Claude, con la especificación del autor |
+| Exportación para el asesor (`exportar_error_proyeccion.py`) | Claude, con la especificación del autor |
+| Histogramas del error de proyección (`estadistica_error.py`) | El autor; Claude lo reordenó a petición |
 
 ---
 
@@ -31,7 +33,7 @@ La adaptación es funcional, no una réplica ([D5](../CONTEXTO.md#25-compromisos
 - Se guardan solo en local, en `Exploration/Geometria_estadistica/fotos/<orientación>/`; no se versionan.
 
 **Datos versionados:**
-- [`datos/imagenes.csv`](../Exploration/Geometria_estadistica/datos/imagenes.csv): una fila por foto, con el eje, el círculo, el estado, el motivo de descarte y la fecha.
+- [`datos/imagenes.csv`](../Exploration/Geometria_estadistica/datos/imagenes.csv): una fila por foto, con la resolución, el eje, el círculo, la proyección del centro sobre el eje, el estado, el motivo de descarte y la fecha.
 - [`datos/puntos.csv`](../Exploration/Geometria_estadistica/datos/puntos.csv): una fila por clic, con par, lado, coordenadas, centroide de la pata y visibilidad.
 
 Las coordenadas están en píxeles de la imagen original:
@@ -39,29 +41,55 @@ Las coordenadas están en píxeles de la imagen original:
 - el origen está arriba a la izquierda;
 - $y$ crece hacia abajo.
 
-**Estado de los datos al 2026-11-07:**
+**Estado de los datos al 2026-11-22:**
 
-13 fotos anotadas, todas en `Escorpiones_V_Superior/`:
+62 fotos anotadas: 36 en `Escorpiones_V_Superior/` y 26 en `Escorpiones_V_Superior_v2/`. La corrida de §7 es del 2026-11-07, con las 11 fotos completas que había entonces, todas de `Escorpiones_V_Superior/`.
 
-| Especie (según el nombre del archivo) | Completas | Descartadas |
-|:--|:--:|:--:|
-| *Smeringurus mesaensis* | 5 | 0 |
-| *Heterometrus spinifer* | 4 | 0 |
-| *Heterometrus longimanus* | 1 | 0 |
-| *Diplocentrus* sp. | 1 | 1 |
-| *Heterometrus indus* | 0 | 1 |
-| **Total** | **11** | **2** |
+| Especie (según el nombre del archivo) | Completas | Descartadas | En progreso |
+|:--|:--:|:--:|:--:|
+| *Smeringurus mesaensis* | 16 | 0 | 1 |
+| *Hadogenes troglodytes* | 6 | 1 | 0 |
+| *Heterometrus spinifer* | 4 | 0 | 0 |
+| *Brachistosternus cepedai* | 3 | 0 | 0 |
+| *Brachistosternus ehrenbergii* | 3 | 0 | 0 |
+| *Heterometrus indus* | 2 | 0 | 0 |
+| *Langxie feti* | 2 | 0 | 0 |
+| *Paruroctonus xanthus* | 2 | 0 | 0 |
+| *Diplocentrus* sp. | 1 | 1 | 0 |
+| *Androctonus crassicauda* | 1 | 0 | 0 |
+| *Apistobuthus pterygocercus* | 1 | 0 | 0 |
+| *Apistobuthus susanae* | 1 | 0 | 0 |
+| *Bothriurus asper* | 1 | 0 | 0 |
+| *Bothriurus ehrenbergii* | 1 | 0 | 0 |
+| *Bothriurus patagonicus* | 1 | 0 | 0 |
+| *Bothriurus* sp. | 1 | 0 | 0 |
+| *Brachistosternus* sp. (archivo "genus") | 1 | 0 | 0 |
+| *Buthacus nigroaculeatus* | 1 | 0 | 0 |
+| *Centruroides gracilis* | 1 | 0 | 0 |
+| *Compsobuthus carmelitis* | 1 | 0 | 0 |
+| *Diplocentrus longimanus* | 1 | 0 | 0 |
+| *Heterometrus bengalensis* (el archivo dice "bengalesis") | 1 | 0 | 0 |
+| *Heterometrus longimanus* | 1 | 0 | 0 |
+| *Isometrus maculatus* | 1 | 0 | 0 |
+| *Parabuthus namibensis* | 1 | 0 | 0 |
+| *Paravaejovis waeringi* | 1 | 0 | 0 |
+| *Paruroctonus hirsutipes* | 1 | 0 | 0 |
+| *Pandinus imperator* | 0 | 2 | 0 |
+| **Total** | **57** | **4** | **1** |
 
 **Clics:**
-- 2169 clics en total: 2160 sobre patas visibles y 9 marcas de patas no visibles.
-- Una pata visible tiene en promedio 25 clics y como mínimo 9. Todas superan el mínimo de 5 que exige la herramienta.
+- 6659 filas en `puntos.csv`: 6644 clics sobre patas visibles y 15 marcas de patas no visibles.
+- 6214 de esos clics son de fotos completas.
+- Una pata visible tiene en promedio 14.3 clics y como mínimo 6. Todas superan el mínimo de 5 que exige la herramienta.
 
 **Descartes:**
 
 | Motivo | Fotos |
 |:--|:--:|
 | Patas sobrepuestas | 1 |
-| Doble imagen | 1 |
+| Repetida | 1 |
+| Mala calidad | 1 |
+| Taxidermia | 1 |
 
 ## 3. Anotación (`patainador.py`)
 
@@ -80,7 +108,20 @@ Uso y teclas: encabezado de [`patainador.py`](../Exploration/Geometria_estadisti
    - Se calcula sobre los centroides de las patas.
    - Por defecto es un ajuste por mínimos cuadrados (`METODO_CIRCULO = "ajuste"`); la alternativa es el círculo mínimo que los encierra.
    - El centro y el radio se pueden corregir a mano; queda registrado en `circulo_manual`.
-   - Las 11 fotos actuales usan el **ajuste**.
+   - Al 2026-11-15, las 34 fotos con círculo usan el **ajuste**; en una el círculo se corrigió a mano.
+4. **Proyección del centro sobre el eje** (agregada el 2026-11-15 a petición de un asesor).
+   - Es el pie de la perpendicular desde el centro del círculo hasta la recta del eje: $\mathbf{p} = \mathbf{t} + \big((\mathbf{o}-\mathbf{t})\cdot\mathbf{u}\big)\,\mathbf{u}$, con la notación de §4.
+   - Se guarda en `imagenes.csv` (`proyeccion_x`, `proyeccion_y`, en píxeles) y se dibuja sobre el eje.
+   - **Para qué sirve (hipótesis por comprobar):** estimar el error de la anotación. Si el eje y el círculo son coherentes, el centro debería quedar cerca del eje y de su punto medio. Un desplazamiento grande indicaría un eje mal orientado o patas asimétricas.
+   - `exportar_error_proyeccion.py` genera `SALIDAS/Escorpiones_estadistica/` (no versionada). Contiene `error_proyeccion.csv`, en píxeles y sin normalizar, con estas columnas:
+     - $D$ (`D_px`): largo del eje; es el mismo $s$ de §4.
+     - $l_f$ (`l_px`): de la proyección al frente, a lo largo del eje: $l_f = s - (\mathbf{o}-\mathbf{t})\cdot\mathbf{u}$. Es positiva si la proyección queda detrás del frente. No es la componente lateral $\ell$ de §4.
+     - $r$ (`r_px`): radio del círculo.
+     - Los puntos de frente, atrás y centro.
+     - `ancho_px` y `alto_px`: la resolución de la foto. Van al final para no recorrer las columnas anteriores. Sirven para ver cuánto de la variación de $D$ y $r$ viene de la escala de cada foto.
+
+     Incluye una figura por foto procesable: a la izquierda la foto sola y a la derecha con la anotación del patainador, con la especie como título y una leyenda.
+   - La estadística de ese desplazamiento está pendiente.
 
 **Supuesto de vista dorsal:** con la cabeza hacia arriba en la foto, la izquierda del animal queda a la izquierda de la imagen.
 
@@ -326,12 +367,15 @@ Desde la raíz del repositorio:
 ```bash
 python Exploration/Geometria_estadistica/patainador.py              # anotar o corregir fotos
 python Exploration/Geometria_estadistica/estadistica_imagenes.py    # estadística y figuras → SALIDAS/
+python Exploration/Geometria_estadistica/exportar_error_proyeccion.py  # CSV y figuras para el asesor → SALIDAS/Escorpiones_estadistica/
+python Exploration/Geometria_estadistica/estadistica_error.py       # histogramas del error de proyección (usa el CSV anterior)
 ```
 
 **Ajustes:**
 
 - En `estadistica_imagenes.py`:
   - `DEBUG`: imprime los datos y los diccionarios de estadística;
+  - `ESPECIE`: analiza solo una especie (según el nombre del archivo, p. ej. `"Smeringurus mesaensis"`); con `None` usa todas. Las figuras llevan la especie en el nombre;
   - `MODOS`: qué modos se calculan.
 - En `graficas_patas.py`, al inicio del archivo:
   - tamaños de texto y línea;

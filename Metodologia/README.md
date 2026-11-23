@@ -8,7 +8,7 @@ Un archivo por objetivo específico (numeración de [`CONTEXTO.md` §2.3](../CON
 |:--:|:--|:--|
 | 1 | Geometría bioinspirada no uniforme | [`obj1_geometria.md`](obj1_geometria.md): estadística de la posición de las patas en fotos dorsales |
 | 2 | Dispositivo de adquisición | Documentado en [`Avances/Documentation.md` §1–4, §10 y §12](../Avances/Documentation.md) (hardware, protocolo serie, sincronización, despliegue) |
-| 3 | Base de datos habla / ruido | Sin trabajo aún |
+| 3 | Base de datos habla / ruido | [`obj3_base_de_datos.md`](obj3_base_de_datos.md): diseño de la adquisición (voz, ruido y habla con ruido), adaptación de *Sharvard* y programa de sesión |
 | 4 | Clasificador habla / ruido | Sin trabajo aún |
 | 5 | DOA + beamforming | Sin trabajo aún |
 | 6 | Integración | Sin trabajo aún |

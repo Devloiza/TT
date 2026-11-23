@@ -87,7 +87,7 @@ Además del sistema, el protocolo compromete:
 |:--:|:--|:--|:--|
 | 1 | Geometría bioinspirada no uniforme | 🟡 **Parcial**: 4 pares LR definidos; mics en **bases movibles** (la geometría se reconfigura por prueba sin reimprimir). Pendientes: las medidas reales $d_1$–$d_4$ en `geometria.json` (hoy placeholders). El collar no es compromiso. En curso: estadística de la posición de las patas en fotos dorsales (ángulos medios por par; radio a escala con $R = 17$ cm; el máximo es de 20 cm por los cables). | [`Documentation.md` §5](Avances/Documentation.md#5-archivo-geometriajson), [`Metodologia/obj1_geometria.md`](Metodologia/obj1_geometria.md) |
 | 2 | Dispositivo de adquisición | 🟢 **Cerrado**: electrónica en **PCB definitiva** (meta 5; sin cambios planeados por ahora): PCB de los ESP32-S3 + PCB acondicionada por micrófono, unidas por cables. 8 mics + SYNC estables en PC y Raspberry Pi 4/5, 0 underruns. | [`Documentation.md` §1–4, §10, §12](Avances/Documentation.md) |
-| 3 | Base de datos habla / ruido | 🔴 No iniciado. Es la meta más larga de TT1 (10 semanas). | [`CONTEXTO.md` D6, D7](CONTEXTO.md#25-compromisos-de-diseño-fáciles-de-perder-de-vista) |
+| 3 | Base de datos habla / ruido | 🔴 No iniciado (sin grabaciones). Es la meta más larga de TT1 (10 semanas). Diseño de la adquisición y programa de sesión listos. | [`CONTEXTO.md` D6, D7](CONTEXTO.md#25-compromisos-de-diseño-fáciles-de-perder-de-vista) |
 | 4 | Clasificador habla / ruido | 🔴 No iniciado (depende del Obj. 3). Propuesta del equipo, no exigida por el protocolo: explorar una arquitectura tipo GTCRN, implementada y entrenada por el equipo con su base. | [`CONTEXTO.md` §3.4](CONTEXTO.md#34-dónde-estamos-actualizar-conforme-avance) |
 | 5 | DOA + beamforming | 🔴 No iniciado. Punto de inserción identificado: `hilo_sincronizador` en `monitor_8LR.py`. Depende de la geometría medida (Obj. 1). | [`Documentation.md` §6](Avances/Documentation.md#6-punto-de-extensión-das-beamforming) |
 | 6 | Integración de módulos | 🔴 No iniciado (depende de 4 y 5). | — |
@@ -106,7 +106,7 @@ Además del sistema, el protocolo compromete:
 ### Lo que sigue (ruta crítica)
 
 1. **Medir la geometría real** ($d_1$–$d_4$) y registrarla en `Avances/geometria.json`, verificando que sea no lineal (D1). Es lo que desbloquea el DAS ([`CONTEXTO.md` R1](CONTEXTO.md#5-riesgos-conocidos)).
-2. **Arrancar la base de datos** (Obj. 3): es la meta más larga de TT1 y bloquea al clasificador.
+2. **Arrancar la base de datos** (Obj. 3): es la meta más larga de TT1 y bloquea al clasificador. El diseño y el programa de sesión están listos; falta grabar.
 3. **Pregunta abierta:** ¿se mantiene la alineación temporal entre las dos ESP32-S3 a lo largo de una grabación larga? ([`CONTEXTO.md` R8](CONTEXTO.md#5-riesgos-conocidos)).
 
 ---
@@ -149,7 +149,8 @@ Cada documento responde una pregunta distinta. Si dos se contradicen, gana el de
 ├── Exploration/              ← PROTOTIPOS (no producción)
 │   ├── reconstruccion_sept2026/  ← reconstrucción por etapas + diagnóstico de transporte
 │   ├── Primeros_intentos/        ← primeros prototipos (1–4 mics), históricos
-│   └── Geometria_estadistica/    ← fotos de escorpiones para estadística (apoyo al Obj. 1, en curso)
+│   ├── Geometria_estadistica/    ← fotos de escorpiones para estadística (apoyo al Obj. 1, en curso)
+│   └── Prueba_BD/                ← listas Sharvard adaptadas y programa de sesión de voz (Obj. 3, en curso)
 ├── Escrito/                  ← TESINA (LaTeX)
 │   ├── tesina/                   ← el escrito real
 │   ├── pruebas/                  ← pruebas de LaTeX y del revisor (no es tesina)
