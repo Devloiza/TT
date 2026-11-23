@@ -38,7 +38,7 @@
 
 ### 3.1 Participantes
 
-- **Total:** 50 personas, mitad hombres y mitad mujeres.
+- **Total:** 50 personas, mitad hombres y mitad mujeres: 40 de entrenamiento (20 y 20) y 10 de prueba (5 y 5), según la partición de §3.3.
 - **Grupos de edad:** niños (5–12), adolescentes (13–17), adultos jóvenes (18–30), adultos (31–59) y adultos mayores (60+). No es obligatorio que tengan el mismo tamaño, porque niños y adultos mayores son los más difíciles de conseguir. La edad mínima está por definir.
 - **Variante del idioma:** solo español de México. Extenderlo a otros acentos e idiomas queda como trabajo a futuro.
 - **Niños:** hacen la sesión corta (§4.2). Si no se consiguen suficientes, quedan como trabajo a futuro; el protocolo no exige grupos de edad.
