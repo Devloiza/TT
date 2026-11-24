@@ -6,10 +6,10 @@
 # en orden balanceado entre participantes (primero las menos usadas). Si se acaban, vuelven a empezar.
 
 [indicaciones]
-imagen | Describe esta imagen con todo el detalle que puedas.
-platica | Imagina que estás platicando con el responsable de la prueba. Háblale con tu voz normal y con calma.
-normal | Ahora sigue hablando con tu voz normal.
-fuerte | Ahora habla fuerte, como si hablaras con alguien al otro lado del salón.
+imagen | Describe en voz alta la imagen: personas, objetos, lugar y qué está pasando. Sigue hablando hasta que cambie.
+platica | Contesta la pregunta con tu voz normal, como si platicaras con el responsable de la prueba. No la leas en voz alta. Da todos los detalles que puedas.
+normal | Continúa con tu voz normal.
+fuerte | Contesta con voz fuerte, como si la persona estuviera al otro lado del salón. No grites ni te acerques al micrófono.
 baja | Ahora habla en voz baja, como en una biblioteca.
 susurro | Ahora habla en susurro.
 

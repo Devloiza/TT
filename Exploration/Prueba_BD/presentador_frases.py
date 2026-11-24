@@ -7,7 +7,9 @@ Flujo:
   0. Micrófono: se toma de config_audio.json, que escribe configurar_audio.py una vez por máquina (con prueba de
      nivel). Si no existe o el dispositivo ya no aparece, se elige aquí en la consola: dispositivo, prueba de nivel
      de 3 s por canal y canal del micrófono.
-     La UMC202HD aparece como un par estéreo (IN 1-2): hay que elegir la entrada donde está el AT2020.
+     La UMC202HD aparece como un par estéreo (IN 1-2): hay que elegir la entrada donde está el AT2020. El mismo
+     aparato sale una vez por API; en Windows se usa WASAPI y el programa avisa si la entrada es otra (MME y
+     DirectSound pasan por el mezclador de Windows, que puede remuestrear).
   1. Datos de la sesión (en la consola). El código se asigna solo (P01, P02…). Una sesión de prueba se guarda
      como P00, igual que las demás, pero no cuenta para el balance de listas. Se pide la edad exacta y el grupo se
      deduce de ella.
@@ -32,6 +34,7 @@ Flujo:
          usadas primero, con semilla según el código), con Espacio la siguiente. Con F, B, S y N el conductor pide
          otro estilo en medio de la plática.
      Las indicaciones y preguntas solo se muestran en pantalla (sin audio, decisión del 2026-11-22).
+     Colores (decisión del 2026-11-24): negro = se lee en voz alta; azul = instrucción o pregunta, no se lee.
   7. Guarda en CARPETA_SALIDA/<código>_<fecha>/ (Descargas/BD_VOZ, fuera de OneDrive; la copia al disco externo
      se hace aparte):
        audio.wav    48 kHz, 24 bits, una sola toma continua
@@ -42,7 +45,7 @@ Flujo:
 
 Teclas (solo el conductor; la persona no debe tener el teclado):
   Espacio  calibración, lectura y secuencias: la persona terminó. Imágenes y preguntas: la siguiente.
-           Espera: continuar
+           Espera: continuar. Si se deja presionada cuenta una sola vez
   P        pausa de emergencia. Otra vez para reanudar; la frase interrumpida se muestra de nuevo completa.
            En habla libre, el bloque sigue con el tiempo que le quedaba
   R        repite la frase, el texto o la secuencia actual (o la frase que acaba de terminar) por un ruido externo
@@ -95,8 +98,8 @@ SILENCIO_REFERENCIA = 30.0    # s de silencio grabado al inicio (ruido de fondo 
 DURACION_IMAGENES = 180.0     # s del bloque de imágenes (las que alcancen)
 DURACION_ESTILO = 75.0        # s de cada estilo guiado (fuerte, baja, susurro)
 DURACION_PLATICA = 300.0      # s de plática al final
-SECUENCIAS = (("numeros", "Cuenta en voz alta del 1 al 20."),
-              ("dias", "Di en voz alta los días de la semana, empezando por el lunes."))
+SECUENCIAS = (("numeros", "Cuenta del 1 al 20."),
+              ("dias", "Di los días de la semana, de lunes a domingo."))
 ESTILOS_GUIADOS = ("fuerte", "baja", "susurro")
 TECLAS_ESTILO = {"f": "fuerte", "b": "baja", "s": "susurro", "n": "normal"}
 
@@ -106,7 +109,34 @@ TAM_TEXTO = 40                # tamaño de las frases en pantalla
 TAM_LECTURA = 36              # lectura continua: tamaño máximo; se reduce solo hasta que el texto quepa completo
 TAM_AYUDA = 11                # línea de estado para el conductor
 TAM_CONSIGNA = 22             # indicación arriba de la imagen o la pregunta
-COLOR_CONSIGNA = "#1f5f8b"
+TAM_INSTRUCCION = 32          # pantallas de instrucciones: tamaño máximo, se reduce hasta que quepan
+COLOR_LECTURA = "black"       # lo que la persona lee en voz alta
+COLOR_INSTRUCCION = "#1f5f8b" # instrucciones, consignas y preguntas: no se leen en voz alta
+COLOR_TEXTO_BARRA = "#143f5e" # texto sobre la barra de descanso o de tiempo
+
+# Instrucciones de cada pantalla (las del habla libre están en preguntas.txt)
+INSTRUCCIONES = {
+    "bienvenida": "Te damos la bienvenida.\n\n"
+                  "Lo que está en azul es instrucción: no lo leas en voz alta.\n"
+                  "Lo que está en negro sí se lee en voz alta.\n\n"
+                  f"Primero grabaremos {SILENCIO_REFERENCIA:.0f} segundos del ruido del lugar.",
+    "silencio": "No hables ni te muevas hasta que la barra se vacíe.",
+    "barras": "Barra delgada: frases que faltan para descansar.\n\n"
+              "Barra grande «Descanso»: no leas, espera a que se vacíe.",
+    "calibracion": "Lee en voz alta cada frase en cuanto aparezca,\ncon tu voz y ritmo normales.\n\n"
+                   "Si te equivocas, no la repitas: continúa.",
+    "frases": "Las frases cambiarán solas.\nLee cada una en voz alta, una sola vez.\n\n"
+              "Con la pantalla en blanco, guarda silencio.",
+    "lectura": "Lee en voz alta todo el texto, con tu voz y ritmo normales. Si te equivocas, continúa.",
+    "secuencias": "Ahora no leerás.\n\nDi en voz alta lo que se pide, una sola vez y con tu voz normal.",
+    "imagenes": "Ahora verás varias imágenes.\n\nDescríbelas en voz alta, con tu voz normal.",
+    "estilos": "Ahora contestarás preguntas en voz alta.\n\n"
+               "La instrucción de arriba te dirá cómo usar la voz.\nNo leas la pregunta en voz alta: contéstala.",
+    "platica": "Por último, contestarás varias preguntas con tu voz normal.\n\nNo hay respuestas correctas.",
+    "pausa": "Pausa.\n\nNo hables hasta que cambie la pantalla.",
+    "final": "Terminamos.\n\nMuchas gracias por participar.",
+}
+REPETICION_TECLA = 1.2        # s: más que el retardo máximo de repetición del teclado de Windows (1 s)
 
 ALTO_BARRA = 34               # barra de descanso (px)
 COLOR_BARRA = "#7fb3d5"
@@ -257,6 +287,14 @@ def api_de(pa, indice):
     return pa.get_host_api_info_by_index(pa.get_device_info_by_index(indice)["hostApi"])["name"]
 
 
+def avisar_api(entrada):
+    """En Windows, avisa si la entrada no es WASAPI: MME y DirectSound pasan por el mezclador, que puede remuestrear."""
+    if sys.platform == "win32" and "WASAPI" not in (entrada.get("api") or ""):
+        print(f"\n*** AVISO: «{entrada['nombre']}» usa {entrada.get('api') or 'una API desconocida'}, no WASAPI. Windows"
+              " puede remuestrear o modificar el audio.\n    Elige la misma entrada en su versión «Windows WASAPI»"
+              " (python Exploration/Prueba_BD/presentador_frases.py --listar). ***\n")
+
+
 def localizar(pa, guardado, validos):
     """Índice actual de un dispositivo guardado. Los índices cambian al conectar o desconectar aparatos, así que se
     busca por nombre y API; None si ya no está o dejó de aceptar el formato."""
@@ -330,12 +368,13 @@ def elegir_entrada(dispositivo=None):
         if dispositivo is None:
             print(f"\nEntradas que aceptan {FS} Hz y 24 bits:")
             for i, nombre, canales in validos:
-                print(f"  {i:>3}  {nombre}  ({canales} canal(es))")
+                print(f"  {i:>3}  {nombre}  ({canales} canal(es), {api_de(pa, i)})")
             r = input("Índice del dispositivo: ").strip()
             dispositivo = int(r) if r.isdigit() and int(r) in {v[0] for v in validos} else None
             if dispositivo is None:
                 continue
         _, nombre, canales = next(v for v in validos if v[0] == dispositivo)
+        avisar_api({"nombre": nombre, "api": api_de(pa, dispositivo)})
         input(f"Prueba de nivel en «{nombre}»: presiona Enter y habla al micrófono durante 3 s...")
         try:
             picos = prueba_de_nivel(pa, dispositivo, canales)
@@ -446,13 +485,15 @@ class Sesion:
         self.barra_inicio = self.barra_total = self.barra_fin = None
         # Indicación del habla libre (estilo o tarea): solo aparece en esos bloques
         self.consigna = tk.Label(self.raiz, text="", font=("Arial", TAM_CONSIGNA, "bold"), bg="white",
-                                 fg=COLOR_CONSIGNA, wraplength=1100, justify="center")
+                                 fg=COLOR_INSTRUCCION, wraplength=1100, justify="center")
         self.texto = tk.Label(self.raiz, text="", font=("Arial", TAM_TEXTO), bg="white", fg="black",
                               wraplength=1100, justify="center")
         self.texto.pack(expand=True, fill="both")
         self.ayuda = tk.Label(self.raiz, text="", font=("Arial", TAM_AYUDA), bg="white", fg="gray60")
         self.ayuda.pack(side="bottom", fill="x")
-        for tecla, accion in (("<space>", self.espacio), ("<p>", self.pausa), ("<P>", self.pausa),
+        self.espacio_abajo, self.t_espacio = False, 0.0   # filtro de la repetición automática del teclado
+        for tecla, accion in (("<KeyPress-space>", self.tecla_espacio), ("<KeyRelease-space>", self.soltar_espacio),
+                              ("<p>", self.pausa), ("<P>", self.pausa),
                               ("<m>", self.marcar), ("<M>", self.marcar), ("<r>", self.repetir),
                               ("<R>", self.repetir), ("<Escape>", self.terminar),
                               ("<F11>", lambda e: self.raiz.attributes("-fullscreen",
@@ -463,14 +504,11 @@ class Sesion:
                 self.raiz.bind(f"<KeyPress-{t}>", lambda e, est=estilo: self.cambiar_estilo(est))
         self.raiz.protocol("WM_DELETE_WINDOW", lambda: self.terminar(None))
 
-        self.pasos = [("espera", "Bienvenida.\nCuando estés listo, guardaremos silencio un momento."),
+        self.pasos = [("espera", INSTRUCCIONES["bienvenida"]),
                       ("silencio_ref", None),
-                      ("espera", "Antes de empezar: arriba verás una barra delgada que muestra\n"
-                                 "cuánto falta para el siguiente descanso.\n\n"
-                                 "Cuando aparezca una barra grande que dice «Descanso»,\n"
-                                 "no hay nada que leer. Solo espera a que se vacíe."),
+                      ("espera", INSTRUCCIONES["barras"]),
                       ("demo_descanso", None),
-                      ("espera", "Ahora lee en voz alta cada frase, a tu ritmo normal.")]
+                      ("espera", INSTRUCCIONES["calibracion"])]
         self.pasos += [("calibracion", f) for f in self.calibracion]
         self.pasos += [("preparar_listas", None)]  # aquí se agregan las listas, ya con el ritmo medido
         self.siguiente()
@@ -507,7 +545,8 @@ class Sesion:
         self.barra.delete("all")
         self.barra.create_rectangle(margen, 10, ancho - margen, 10 + ALTO_BARRA, outline="gray70", width=2)
         self.barra.create_rectangle(margen, 10, margen + lleno, 10 + ALTO_BARRA, fill=COLOR_BARRA, outline="")
-        self.barra.create_text(ancho / 2, 10 + ALTO_BARRA / 2, font=("Arial", TAM_AYUDA + 5), fill="gray20",
+        self.barra.create_text(ancho / 2, 10 + ALTO_BARRA / 2, font=("Arial", TAM_AYUDA + 5),
+                               fill=COLOR_TEXTO_BARRA,
                                text=f"{self.barra_etiqueta} · {self._reloj(self.barra_total - transcurrido)}")
         self.tarea = self.raiz.after(50, self._animar_barra)
 
@@ -527,7 +566,8 @@ class Sesion:
         self.barra.create_rectangle(margen, y, ancho - margen, y + alto, outline="gray80", width=1)
         self.barra.create_rectangle(margen, y, margen + (ancho - 2 * margen) * hechas / total, y + alto,
                                     fill=COLOR_PROGRESO, outline="")
-        self.barra.create_text(ancho / 2, y + alto + 13, text=texto, font=("Arial", TAM_AYUDA + 1), fill="gray45")
+        self.barra.create_text(ancho / 2, y + alto + 13, text=texto, font=("Arial", TAM_AYUDA + 1),
+                               fill=COLOR_INSTRUCCION)
 
     def _texto_restantes(self, faltan, ultima):
         if faltan == 0:
@@ -540,6 +580,11 @@ class Sesion:
         self.foto = None
         self.texto.config(image="", text="", font=("Arial", TAM_TEXTO), wraplength=1100)
         self.consigna.pack_forget()
+
+    def mostrar_instruccion(self, texto):
+        """Instrucción en el centro de la pantalla: en azul, para que no se confunda con una frase por leer."""
+        self.texto.config(text=texto, fg=COLOR_INSTRUCCION)
+        self._ajustar_letra(TAM_INSTRUCCION)
 
     def mostrar_consigna(self, texto):
         self.consigna.config(text=texto)
@@ -559,19 +604,19 @@ class Sesion:
 
     # ---- pasos
     def _espera(self, mensaje):
-        self.texto.config(text=mensaje, fg="gray25")
+        self.mostrar_instruccion(mensaje)
         self.estado("Esperando al conductor (Espacio)")
         if self.prueba:
             self.programar(0.5, self.siguiente)
 
     def _silencio_ref(self, _):
-        self.texto.config(text="Silencio, por favor.", fg="gray40")
+        self.mostrar_instruccion(INSTRUCCIONES["silencio"])
         self.estado(f"Silencio de referencia ({self.sil_ref:.0f} s)")
         self.fila_actual = self._fila("silencio_referencia", "", "", "")
         self.mostrar_barra(self.sil_ref, self._cerrar_y_seguir, etiqueta="Silencio")
 
     def _calibracion(self, frase):
-        self.texto.config(text=frase, fg="black")
+        self.texto.config(text=frase, fg=COLOR_LECTURA)
         n = len([p for p in self.pasos[:self.i + 1] if p[0] == "calibracion"])
         self.estado(f"Calibración {n}/{len(self.calibracion)}: Espacio cuando termine de leer")
         self.fila_actual = self._fila("calibracion", "C", n, frase)
@@ -584,27 +629,22 @@ class Sesion:
         total_s = sum(d for d, _ in self.duraciones_calib)
         total_sil = sum(s for _, s in self.duraciones_calib)
         self.ritmo = total_s / total_sil if total_sil else 0.25
-        nuevos = [("espera", "Muy bien. Ahora seguirán más frases.\nLas frases cambiarán solas.")]
+        nuevos = [("espera", INSTRUCCIONES["frases"])]
         for k, lista in enumerate(self.orden):
             if k:
                 nuevos.append(("pausa_listas", None))
             nuevos += [("frase", (lista, num, frase)) for num, frase in enumerate(self.listas[lista], start=1)]
         # Lectura continua y secuencias (§4.1, bloques d y e): a su ritmo, Espacio al terminar
         if self.lectura:
-            nuevos += [("espera", "Muy bien. Ahora vas a leer un texto corto en voz alta,\na tu ritmo normal."),
-                       ("lectura", self.lectura)]
-        nuevos.append(("espera", "Ahora, sin leer, vas a decir unas secuencias en voz alta."))
+            nuevos += [("espera", INSTRUCCIONES["lectura"]), ("lectura", self.lectura)]
+        nuevos.append(("espera", INSTRUCCIONES["secuencias"]))
         nuevos += [("secuencia", s) for s in SECUENCIAS]
         # Habla libre guiada (§4.3): imágenes, estilos guiados y plática, cada bloque con su barra de tiempo
         if self.orden_imagenes:
-            nuevos += [("espera", "Muy bien. Ahora vas a describir unas imágenes.\n"
-                                  "Cuéntanos todo lo que veas, con tus propias palabras."),
-                       ("imagenes", None)]
-        nuevos.append(("espera", "Ahora vas a contestar unas preguntas,\ncambiando el volumen de tu voz."))
+            nuevos += [("espera", INSTRUCCIONES["imagenes"]), ("imagenes", None)]
+        nuevos.append(("espera", INSTRUCCIONES["estilos"]))
         nuevos += [("estilo", e) for e in ESTILOS_GUIADOS]
-        nuevos += [("espera", "Por último, vamos a platicar un rato.\nNo hay respuestas correctas."),
-                   ("platica", None),
-                   ("espera", "¡Terminamos! Muchas gracias.")]
+        nuevos += [("espera", INSTRUCCIONES["platica"]), ("platica", None), ("espera", INSTRUCCIONES["final"])]
         self.pasos[self.i + 1:self.i + 1] = nuevos
         print(f"Ritmo de lectura: {self.ritmo:.3f} s/sílaba. Listas: {self.orden} (aleatorias: {self.aleatorias})")
         self.siguiente()
@@ -612,7 +652,7 @@ class Sesion:
     def _frase(self, dato):
         lista, num, frase = dato
         duracion = silabas(frase) * self.ritmo * MARGEN
-        self.texto.config(text=frase, fg="black")
+        self.texto.config(text=frase, fg=COLOR_LECTURA)
         k = self.orden.index(lista) + 1
         self.estado(f"Lista {lista} ({k}/{len(self.orden)}), frase {num}/10, {duracion:.1f} s")
         self.fila_actual = self._fila("frase", lista, num, frase)
@@ -629,8 +669,8 @@ class Sesion:
         self.programar(self.sil_frases, self.siguiente)
 
     def _lectura(self, texto):
-        self.mostrar_consigna("Lee el texto en voz alta, a tu ritmo normal.")
-        self.texto.config(text=texto, fg="black")
+        self.mostrar_consigna(INSTRUCCIONES["lectura"])
+        self.texto.config(text=texto, fg=COLOR_LECTURA)
         self._ajustar_letra(TAM_LECTURA)
         self.estado("Lectura continua: Espacio cuando termine de leer")
         self.fila_actual = self._fila("lectura", "", ARCHIVO_LECTURA.stem, texto)
@@ -640,6 +680,8 @@ class Sesion:
     def _ajustar_letra(self, tam_max, tam_min=12):
         """Reduce la letra hasta que el texto completo quepa en la pantalla (depende de la escala de Windows)."""
         self.raiz.update_idletasks()
+        if self.texto.winfo_height() <= 1:  # primera pantalla: la ventana todavía no se dibuja
+            self.raiz.update()
         disponible = self.texto.winfo_height()
         self.texto.config(wraplength=max(int(self.texto.winfo_width() * 0.8), 600))  # renglones legibles
         for tam in range(tam_max, tam_min - 1, -1):
@@ -650,7 +692,7 @@ class Sesion:
 
     def _secuencia(self, dato):
         clave, consigna = dato
-        self.texto.config(text=consigna, fg="black")
+        self.mostrar_instruccion(consigna)
         self.estado(f"Secuencia «{clave}»: Espacio cuando termine")
         self.fila_actual = self._fila("secuencia", "", clave, consigna)
         if self.prueba:
@@ -726,7 +768,7 @@ class Sesion:
             consigna = self.indicaciones["platica" if b["tipo"] == "platica" and b["estilo"] == "normal"
                                          else b["estilo"]]
             self.mostrar_consigna(consigna)
-            self.texto.config(text=pregunta, fg="black")
+            self.texto.config(text=pregunta, fg=COLOR_INSTRUCCION)
             self.fila_actual = self._fila(b["tipo"], "", clave, pregunta, estilo=b["estilo"])
             extra = " · F B S N = estilo" if b["tipo"] == "platica" else ""
             self.estado(f"{b['tipo'].capitalize()} ({b['estilo']}), pregunta {clave}. Espacio = siguiente{extra}")
@@ -763,7 +805,7 @@ class Sesion:
         clave, pregunta = self.preguntas[b["k"]]
         self.limpiar_pantalla()
         self.mostrar_consigna(self.indicaciones[estilo])
-        self.texto.config(text=pregunta, fg="black")
+        self.texto.config(text=pregunta, fg=COLOR_INSTRUCCION)
         self.fila_actual = self._fila("platica", "", clave, pregunta, estilo=estilo)
         self.estado(f"Plática ({estilo}), pregunta {clave}. Espacio = siguiente · F B S N = estilo")
 
@@ -795,6 +837,18 @@ class Sesion:
         self.siguiente()
 
     # ---- teclas
+    def tecla_espacio(self, evento):
+        """Windows repite la tecla mientras está presionada, y eso saltaba pasos: cada pulsación cuenta una vez. El
+        tiempo límite evita que Espacio quede bloqueado si la ventana pierde el foco antes de soltarlo."""
+        ahora = time.monotonic()
+        repeticion = self.espacio_abajo and ahora - self.t_espacio < REPETICION_TECLA
+        self.espacio_abajo, self.t_espacio = True, ahora
+        if not repeticion:
+            self.espacio(evento)
+
+    def soltar_espacio(self, _evento):
+        self.espacio_abajo = False
+
     def espacio(self, _evento):
         if self.en_pausa or self.i >= len(self.pasos):
             return
@@ -824,7 +878,7 @@ class Sesion:
             if self.fila_actual is not None:
                 self._cerrar_fila(interrumpida=True)
             self.eventos.append({"evento": "pausa", "t_s": round(self.grab.tiempo(), 3)})
-            self.texto.config(text="Pausa", fg="gray50")
+            self.mostrar_instruccion(INSTRUCCIONES["pausa"])
             self.estado("PAUSA: P para reanudar (la frase interrumpida se repite completa)")
         else:
             self.en_pausa = False
@@ -834,6 +888,7 @@ class Sesion:
             elif self.tras_frase:  # la frase ya se había leído completa: sigue con la próxima
                 self.siguiente()
             else:
+                self.limpiar_pantalla()  # quita el tamaño de letra de la pantalla de pausa
                 tipo, dato = self.pasos[self.i]
                 getattr(self, f"_{tipo}")(dato)  # repite el paso actual desde el inicio
 
@@ -974,8 +1029,8 @@ def main():
             d = pa.get_device_info_by_index(i)
             if d["maxInputChannels"] > 0:
                 marca = "OK" if i in validos else "--"
-                print(f"{i:>3} [{marca}] {nombre_dispositivo(d)}  ({int(d['defaultSampleRate'])} Hz)")
-        print(f"[OK] = acepta {FS} Hz y 24 bits")
+                print(f"{i:>3} [{marca}] {nombre_dispositivo(d)}  ({int(d['defaultSampleRate'])} Hz, {api_de(pa, i)})")
+        print(f"[OK] = acepta {FS} Hz y 24 bits. En Windows, usar la entrada «Windows WASAPI» de la interfaz.")
         pa.terminate()
         return
     listas, calibracion = leer_listas(), leer_calibracion()
@@ -993,6 +1048,7 @@ def main():
         if config:
             entrada, fecha = config
             print(f"Configuración de audio del {fecha}: entrada «{entrada['nombre']}» canal {entrada['canal']}")
+            avisar_api(entrada)
         else:
             entrada = elegir_entrada(a.dispositivo)
     print(f"Las sesiones se guardan en {CARPETA_SALIDA}")

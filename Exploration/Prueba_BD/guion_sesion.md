@@ -12,6 +12,8 @@ Este guion es para que los dos conductores hagan la sesión igual con todos los 
 - [ ] Celulares de todos en silencio y lejos del micrófono, no solo vibrando.
 - [ ] Puerta cerrada y aviso afuera de "Grabando, no tocar".
 - [ ] Sonómetro en dB(A), respuesta lenta, en la posición de la persona. Tomar la lectura del ruido de fondo. Si pasa de **35 dB(A)**, esperar o buscar la fuente del ruido.
+- [ ] Con `python Exploration/Prueba_BD/espectro_ruido.py --vivo`, revisar el ruido y que la voz no sature. Cerrarlo antes de grabar.
+- [ ] Espectro del ruido: `python Exploration/Prueba_BD/espectro_ruido.py`. Compararlo con el de otras sesiones con la misma ganancia. **[DECIDIR]** Qué valor hace que se espere o se busque la fuente.
 - [ ] Hay espacio libre en `Descargas/BD_VOZ` y el disco duro externo está a la mano.
 - [ ] Dos formatos de consentimiento impresos (uno para la persona y uno para el proyecto) y pluma.
 - [ ] Agua para la persona.
@@ -29,12 +31,16 @@ Este guion es para que los dos conductores hagan la sesión igual con todos los 
 > "Vas a ver todo en esta pantalla. Yo voy a manejar el teclado, tú solo vas a hablar. Si en algún momento quieres parar, me dices y paramos."
 
 - Correr el programa: `python Exploration/Prueba_BD/presentador_frases.py`.
+- Si aparece el aviso de que la entrada no es **WASAPI**, corregirla antes de seguir (`configurar_audio.py`).
 - Llenar los datos en la consola: edad, sexo, lugar, ganancia, sonómetro, conductor y notas.
 - **Prueba de nivel:** pedirle una frase con su voz normal y revisar que no se acerque a 0 dBFS.
 
 > "Dime en voz normal qué desayunaste hoy."
 
 - Si satura, bajar la ganancia y anotar el valor nuevo. **[DECIDIR]** Si se ajusta la ganancia en cada persona o se deja fija.
+
+- La primera pantalla explica los colores: **en negro lo que se lee en voz alta, en azul las instrucciones y las preguntas**. Confirmar que se entendió.
+- **Espacio** siempre con una pulsación corta. Si se deja presionada, cuenta una sola vez.
 
 ## 3. Silencio de referencia (bloque b, 30 s)
 
@@ -48,13 +54,13 @@ Este guion es para que los dos conductores hagan la sesión igual con todos los 
 
 > "La barra delgada te dice cuántas frases faltan para descansar. Cuando aparezca una barra grande que dice «Descanso», no hay nada que leer, solo espera."
 
-> "Ahora lee cada frase en voz alta, a tu ritmo normal, como si se la leyeras a alguien. Si te equivocas, no pasa nada: sigue con la siguiente."
+> "Lee en voz alta cada frase en cuanto aparezca, con tu voz y ritmo normales. Si te equivocas, no la repitas: continúa."
 
 - Presionar **Espacio** justo cuando termine cada frase. Así se mide su ritmo.
 
 ## 5. Frases (bloque c, 6–8 min)
 
-> "Ahora las frases van a cambiar solas. Solo léelas conforme aparezcan."
+> "Ahora las frases cambiarán solas. Lee cada una una sola vez. Con la pantalla en blanco, guarda silencio."
 
 - No intervenir. Los errores de lectura se quedan.
 - **R** solo si hay un ruido externo fuerte e inesperado (un portazo, una alarma).
@@ -63,7 +69,7 @@ Este guion es para que los dos conductores hagan la sesión igual con todos los 
 
 ## 6. Lectura continua y secuencias (bloques d y e, 2 min)
 
-> "Ahora vas a leer un texto corto completo, a tu ritmo."
+> "Ahora lee en voz alta todo el texto, con tu voz y ritmo normales. Si te equivocas, continúa."
 
 - **Espacio** cuando termine de leer.
 - Luego la pantalla pide contar del 1 al 20 y decir los días de la semana. **Espacio** al terminar cada uno.
@@ -74,13 +80,13 @@ Este guion es para que los dos conductores hagan la sesión igual con todos los 
 
 **Imágenes (3 min)**
 
-> "Describe la imagen con todo el detalle que puedas: qué ves, qué crees que está pasando."
+> "Describe en voz alta la imagen: personas, objetos, lugar y qué está pasando. Sigue hablando hasta que cambie."
 
 - Si termina rápido, **Espacio** para pasar a otra imagen. Si va despacio, dejarla.
 
 **Estilos guiados (unos 4 min)**
 
-- La pantalla indica el estilo: fuerte, baja y susurro.
+- La pantalla indica el estilo: fuerte, baja y susurro. **[DECIDIR]** Si se conservan baja y susurro, según el espectro (metodología §4.6).
 - Antes del susurro:
 
 > "Ahora en susurro, sin voz, como si no quisieras que nadie más te oyera."
@@ -89,7 +95,7 @@ Este guion es para que los dos conductores hagan la sesión igual con todos los 
 
 **Plática (5 min)**
 
-> "Imagina que estás platicando conmigo. Contesta con calma, con tu voz normal."
+> "Contesta con tu voz normal, como si platicaras conmigo. No leas la pregunta. Da todos los detalles que puedas."
 
 - **[DECIDIR]** El conductor no habla mientras graba, para que no quede su voz en la grabación. Puede asentir o sonreír para que la persona se sienta escuchada.
 - **Espacio** para cambiar de pregunta si una no funciona.
