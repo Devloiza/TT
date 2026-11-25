@@ -24,24 +24,26 @@ Flujo:
      Entre listas hay SILENCIO_LISTAS s de descanso, con una barra arriba que dice «Descanso» y se vacía con el tiempo.
      Mientras se lee, una barra delgada indica cuántas frases faltan para el siguiente descanso.
   5. Lectura continua (ARCHIVO_LECTURA, «El viento norte y el sol») y secuencias (SECUENCIAS: contar del 1 al 20 y
-     los días de la semana). Cada una a su ritmo: el conductor presiona Espacio cuando la persona termina.
+     los días de la semana). Cada una a su ritmo: el conductor presiona Espacio cuando la persona termina. Cada
+     secuencia se dice en las dos VOCES, primero normal y luego fuerte.
   6. Habla libre guiada (§4.3), cada bloque con una barra de tiempo:
-       - imágenes (DURACION_IMAGENES s): de la carpeta CARPETA_IMAGENES, en orden balanceado entre participantes
-         (las menos usadas primero, con semilla según el código). Con Espacio se pasa a la siguiente;
-       - voz fuerte (DURACION_ESTILO s): con la primera pregunta de preguntas.txt, fija. Con Espacio se pasa a la
-         siguiente pregunta. Susurro y voz baja se quitaron el 2026-11-24: el lugar no se insonoriza lo suficiente;
-       - plática (DURACION_PLATICA s): el resto de preguntas.txt en orden balanceado entre participantes (las menos
-         usadas primero, con semilla según el código), con Espacio la siguiente. Con F y N el conductor pide voz fuerte
-         o normal en medio de la plática.
+       - imágenes (DURACION_IMAGENES s en cada voz): de la carpeta CARPETA_IMAGENES, en orden balanceado entre
+         participantes (las menos usadas primero, con semilla según el código). Con Espacio se pasa a la siguiente;
+       - preguntas (DURACION_PREGUNTAS s en cada voz): de preguntas.txt, en orden balanceado igual que las imágenes.
+         Con Espacio se pasa a la siguiente.
+     Antes de cada cambio de voz hay una pantalla de espera que lo explica y sirve de descanso (decisión del
+     2026-11-25). Susurro y voz baja se quitaron el 2026-11-24: el lugar no se insonoriza lo suficiente.
      Las indicaciones y preguntas solo se muestran en pantalla (sin audio, decisión del 2026-11-22).
-     Colores (decisión del 2026-11-24): negro = se lee en voz alta; azul = instrucción o pregunta, no se lee.
+     Lo que se lee en voz alta va en negro y sin recuadro. Las instrucciones y las preguntas van en un recuadro azul
+     con título y otra letra (decisiones del 2026-11-24 y del 2026-11-25: el color solo no bastaba). En las pantallas
+     de espera se pide una seña con la mano al terminar de leer, para que el conductor sepa cuándo continuar.
   7. Guarda en CARPETA_SALIDA/<código>_<fecha>/ (Descargas/BD_VOZ, fuera de OneDrive; la copia al disco externo
      se hace aparte):
        audio.wav    48 kHz, 24 bits, una sola toma continua
        frases.csv   inicio y fin (s, en el reloj del audio) de cada frase, texto, secuencia, imagen o pregunta,
                     con su estilo, marca e interrupción
        sesion.json  datos de la sesión, entrada de audio, ritmo medido, listas, imágenes y preguntas mostradas,
-                    duraciones y eventos (pausas y cambios de estilo)
+                    duraciones y eventos (pausas y repeticiones)
 
 Teclas (solo el conductor; la persona no debe tener el teclado):
   Espacio  calibración, lectura y secuencias: la persona terminó. Imágenes y preguntas: la siguiente.
@@ -51,7 +53,6 @@ Teclas (solo el conductor; la persona no debe tener el teclado):
   R        repite la frase, el texto o la secuencia actual (o la frase que acaba de terminar) por un ruido externo
            fuerte; la toma anterior queda en frases.csv con repetida = 1
   M        marca la frase, imagen o pregunta actual como dudosa (ruido externo, palabra omitida…)
-  F N      solo en la plática: pide voz fuerte o normal
   Esc      termina la sesión antes y guarda lo grabado
   F11      pantalla completa
 
@@ -95,46 +96,52 @@ MARGEN = 1.25                 # tiempo de cada frase = sílabas × ritmo de cali
 SILENCIO_FRASES = 2.0         # s en blanco después de cada frase
 SILENCIO_LISTAS = 5.0         # s en blanco entre listas
 SILENCIO_REFERENCIA = 30.0    # s de silencio grabado al inicio (ruido de fondo de la sesión)
-DURACION_IMAGENES = 180.0     # s del bloque de imágenes (las que alcancen)
-DURACION_ESTILO = 75.0        # s de cada estilo guiado (solo voz fuerte)
-DURACION_PLATICA = 450.0      # s de plática al final
+VOCES = ("normal", "fuerte")  # en este orden, en las secuencias, las imágenes y las preguntas
+DURACION_IMAGENES = 60.0      # s de imágenes en cada voz (las que alcancen)
+DURACION_PREGUNTAS = 90.0     # s de preguntas en cada voz
 SECUENCIAS = (("numeros", "Cuenta del 1 al 20."),
               ("dias", "Di los días de la semana, de lunes a domingo."))
-ESTILOS_GUIADOS = ("fuerte",)
-TECLAS_ESTILO = {"f": "fuerte", "n": "normal"}
 
 FS = 48000                    # Hz
 BLOQUE = 1024                 # muestras por bloque de grabación
 TAM_TEXTO = 40                # tamaño de las frases en pantalla
 TAM_LECTURA = 36              # lectura continua: tamaño máximo; se reduce solo hasta que el texto quepa completo
 TAM_AYUDA = 11                # línea de estado para el conductor
-TAM_CONSIGNA = 22             # indicación arriba de la imagen o la pregunta
-TAM_INSTRUCCION = 32          # pantallas de instrucciones: tamaño máximo, se reduce hasta que quepan
+FUENTE_INSTRUCCION = "Georgia"  # distinta de la Arial de lo que se lee en voz alta
+TAM_CONSIGNA = 26             # indicación arriba de la imagen, la pregunta o la lectura: tamaño máximo
+PARTE_CONSIGNA = 0.28         # parte máxima del alto de la ventana para esa indicación
+TAM_INSTRUCCION = 48          # pantallas de instrucciones: tamaño máximo, se reduce hasta que quepan
 COLOR_LECTURA = "black"       # lo que la persona lee en voz alta
 COLOR_INSTRUCCION = "#1f5f8b" # instrucciones, consignas y preguntas: no se leen en voz alta
+FONDO_INSTRUCCION = "#eaf3fb"  # dentro del recuadro
 COLOR_TEXTO_BARRA = "#143f5e" # texto sobre la barra de descanso o de tiempo
 
-# Instrucciones de cada pantalla (las del habla libre están en preguntas.txt)
+# Instrucciones de cada pantalla (las de las voces, las imágenes y las preguntas están en preguntas.txt)
 INSTRUCCIONES = {
     "bienvenida": "Te damos la bienvenida.\n\n"
-                  "Lo que está en azul es instrucción: no lo leas en voz alta.\n"
-                  "Lo que está en negro sí se lee en voz alta.\n\n"
+                  "En un recuadro azul van las instrucciones y las preguntas: no las leas en voz alta.\n"
+                  "Lo que está en negro y sin recuadro sí se lee en voz alta.\n\n"
                   f"Primero grabaremos {SILENCIO_REFERENCIA:.0f} segundos del ruido del lugar.",
     "silencio": "No hables ni te muevas hasta que la barra se vacíe.",
     "barras": "Barra delgada: frases que faltan para descansar.\n\n"
               "Barra grande «Descanso»: no leas, espera a que se vacíe.",
-    "calibracion": "Lee en voz alta cada frase en cuanto aparezca,\ncon tu voz y ritmo normales.\n\n"
+    "calibracion": "Lee en voz alta cada frase en cuanto aparezca, con tu voz y ritmo normales.\n\n"
                    "Si te equivocas, no la repitas: continúa.",
     "frases": "Las frases cambiarán solas.\nLee cada una en voz alta, una sola vez.\n\n"
               "Con la pantalla en blanco, guarda silencio.",
     "lectura": "Lee en voz alta todo el texto, con tu voz y ritmo normales. Si te equivocas, continúa.",
-    "secuencias": "Ahora no leerás.\n\nDi en voz alta lo que se pide, una sola vez y con tu voz normal.",
-    "imagenes": "Ahora verás varias imágenes.\n\nDescríbelas en voz alta, con tu voz normal.",
-    "estilos": "Ahora contestarás preguntas con voz fuerte.\n\nNo leas la pregunta en voz alta: contéstala.",
-    "platica": "Por último, contestarás varias preguntas con tu voz normal.\n\nNo hay respuestas correctas.",
+    "secuencias": "Ahora no leerás.\n\nDi en voz alta lo que se pide: primero con tu voz normal y después con voz fuerte.",
+    "imagenes": "Ahora verás varias imágenes.\n\nDescríbelas en voz alta: primero con tu voz normal y después con voz "
+                "fuerte.",
+    "preguntas": "Por último, contestarás varias preguntas: primero con tu voz normal y después con voz fuerte.\n\n"
+                 "No las leas en voz alta. No hay respuestas correctas.",
+    "cambio_fuerte": "Ahora lo mismo con voz fuerte, como si la persona estuviera al otro lado del salón.\n\n"
+                     "No grites ni te acerques al micrófono.",
+    "cambio_normal": "Ahora regresa a tu voz normal.",
     "pausa": "Pausa.\n\nNo hables hasta que cambie la pantalla.",
     "final": "Terminamos.\n\nMuchas gracias por participar.",
 }
+SENA = "Haz una seña con la mano cuando termines de leer."   # al pie de las pantallas de espera
 REPETICION_TECLA = 1.2        # s: más que el retardo máximo de repetición del teclado de Windows (1 s)
 
 ALTO_BARRA = 34               # barra de descanso (px)
@@ -192,7 +199,7 @@ def leer_preguntas(ruta=ARCHIVO_PREGUNTAS):
             sys.exit(f"Línea mal formada en {ruta.name}: {linea}")
         actual.append((clave.strip(), texto.strip()))
     indicaciones = dict(secciones.get("indicaciones", []))
-    faltan = {"imagen", "platica", "normal", *ESTILOS_GUIADOS} - indicaciones.keys()
+    faltan = {"imagen", "pregunta", *VOCES} - indicaciones.keys()
     if faltan or not secciones.get("preguntas"):
         sys.exit(f"{ruta.name} debe tener [indicaciones] con {sorted(faltan) or 'todas'} y al menos una pregunta"
                  " en [preguntas].")
@@ -264,9 +271,7 @@ def asignar_imagenes(codigo, imagenes):
 
 
 def asignar_preguntas(codigo, preguntas):
-    """Las primeras de preguntas.txt, una por estilo guiado, fijas y en orden; el resto, balanceado para la plática."""
-    n = len(ESTILOS_GUIADOS)
-    return list(preguntas[:n]) + balanceado(codigo, preguntas[n:], "preguntas", clave=lambda p: p[0])
+    return balanceado(codigo, preguntas, "preguntas", clave=lambda p: p[0])
 
 
 # ----------------------------------------------------------------- grabación
@@ -456,10 +461,8 @@ class Sesion:
         escala = 0.15 if prueba else 1.0
         self.sil_ref, self.sil_frases, self.sil_listas = (SILENCIO_REFERENCIA * escala, SILENCIO_FRASES * escala,
                                                           SILENCIO_LISTAS * escala)
-        escala_libre = 0.04 if prueba else 1.0
-        self.dur_imagenes, self.dur_estilo, self.dur_platica = (DURACION_IMAGENES * escala_libre,
-                                                                DURACION_ESTILO * escala_libre,
-                                                                DURACION_PLATICA * escala_libre)
+        escala_libre = 0.1 if prueba else 1.0
+        self.dur_imagenes, self.dur_preguntas = DURACION_IMAGENES * escala_libre, DURACION_PREGUNTAS * escala_libre
         self.orden, self.aleatorias = asignar_listas(datos["codigo"], sorted(listas))
         self.orden_imagenes = asignar_imagenes(datos["codigo"], imagenes)
         self.preguntas = asignar_preguntas(datos["codigo"], preguntas)
@@ -467,15 +470,15 @@ class Sesion:
             self.orden = self.orden[:2]
             self.calibracion = self.calibracion[:3]
         self.registro = []           # una fila por frase, texto, secuencia, imagen o pregunta
-        self.eventos = []            # pausas, reanudaciones, cambios de estilo y fin anticipado
+        self.eventos = []            # pausas, reanudaciones, repeticiones y fin anticipado
         self.duraciones_calib = []   # (segundos, sílabas)
         self.ritmo = None            # s por sílaba
         self.pasos, self.i, self.tarea, self.en_pausa = [], -1, None, False
         self.tras_frase = False      # True durante el silencio posterior a una frase ya leída
         self.fila_actual = None
-        self.bloque = None           # habla libre en curso: tipo, estilo y segundos que le quedan
+        self.bloque = None           # habla libre en curso: tipo, voz y segundos que le quedan
         self.k_imagen = 0
-        self.k_libre = 0             # cuántas preguntas de la plática (las balanceadas) se han tomado
+        self.k_pregunta = 0
         self.foto = None             # referencia a la imagen mostrada (Tk la borra si no se guarda)
 
         self.raiz = tk.Tk()
@@ -486,11 +489,29 @@ class Sesion:
         self.barra = tk.Canvas(self.raiz, height=ALTO_BARRA + 20, bg="white", highlightthickness=0)
         self.barra.pack(side="top", fill="x")
         self.barra_inicio = self.barra_total = self.barra_fin = None
-        # Indicación del habla libre (estilo o tarea): solo aparece en esos bloques
-        self.consigna = tk.Label(self.raiz, text="", font=("Arial", TAM_CONSIGNA, "bold"), bg="white",
-                                 fg=COLOR_INSTRUCCION, wraplength=1100, justify="center")
-        self.texto = tk.Label(self.raiz, text="", font=("Arial", TAM_TEXTO), bg="white", fg="black",
+        # Indicación de la voz y la tarea, en un recuadro: aparece en la lectura y el habla libre
+        self.consigna = tk.Frame(self.raiz, bg=FONDO_INSTRUCCION, highlightthickness=3,
+                                 highlightbackground=COLOR_INSTRUCCION)
+        tk.Label(self.consigna, text="INSTRUCCIONES", font=(FUENTE_INSTRUCCION, TAM_AYUDA + 3, "bold"),
+                 bg=COLOR_INSTRUCCION, fg="white", padx=12).pack(side="left", fill="y")
+        self.texto_consigna = tk.Label(self.consigna, bg=FONDO_INSTRUCCION, fg=COLOR_INSTRUCCION, justify="center",
+                                       padx=12, pady=4)
+        self.texto_consigna.pack(side="left", expand=True, fill="both")
+        # Zona central: lo que se lee en voz alta y las imágenes (texto), o un recuadro con título (caja)
+        self.zona = tk.Frame(self.raiz, bg="white")
+        self.zona.pack(expand=True, fill="both")
+        self.zona.pack_propagate(False)
+        self.texto = tk.Label(self.zona, text="", font=("Arial", TAM_TEXTO), bg="white", fg="black",
                               wraplength=1100, justify="center")
+        self.caja = tk.Frame(self.zona, bg=FONDO_INSTRUCCION, highlightthickness=4,
+                             highlightbackground=COLOR_INSTRUCCION)
+        self.titulo_caja = tk.Label(self.caja, bg=COLOR_INSTRUCCION, fg="white", padx=20, pady=5)
+        self.titulo_caja.pack(side="top", fill="x")
+        self.texto_caja = tk.Label(self.caja, bg=FONDO_INSTRUCCION, fg=COLOR_INSTRUCCION, justify="center",
+                                   padx=28, pady=14)
+        self.texto_caja.pack(side="top", expand=True, fill="both")
+        self.pie_caja = tk.Label(self.caja, text=SENA, bg=FONDO_INSTRUCCION, fg=COLOR_INSTRUCCION, padx=20, pady=8)
+        self.zona.bind("<Configure>", lambda e: self.raiz.after_idle(self._reajustar_caja))  # p. ej. al presionar F11
         self.texto.pack(expand=True, fill="both")
         self.ayuda = tk.Label(self.raiz, text="", font=("Arial", TAM_AYUDA), bg="white", fg="gray60")
         self.ayuda.pack(side="bottom", fill="x")
@@ -502,9 +523,6 @@ class Sesion:
                               ("<F11>", lambda e: self.raiz.attributes("-fullscreen",
                                                                        not self.raiz.attributes("-fullscreen")))):
             self.raiz.bind(tecla, accion)
-        for letra, estilo in TECLAS_ESTILO.items():
-            for t in (letra, letra.upper()):
-                self.raiz.bind(f"<KeyPress-{t}>", lambda e, est=estilo: self.cambiar_estilo(est))
         self.raiz.protocol("WM_DELETE_WINDOW", lambda: self.terminar(None))
 
         self.pasos = [("espera", INSTRUCCIONES["bienvenida"]),
@@ -579,19 +597,55 @@ class Sesion:
         return f"Falta 1 frase para {destino}" if faltan == 1 else f"Faltan {faltan} frases para {destino}"
 
     def limpiar_pantalla(self):
-        """Quita la imagen y la consigna (la frase se vuelve a escribir después)."""
+        """Quita la imagen, la consigna y el recuadro (la frase se vuelve a escribir después)."""
         self.foto = None
+        self.caja.place_forget()
         self.texto.config(image="", text="", font=("Arial", TAM_TEXTO), wraplength=1100)
+        self.texto.pack(expand=True, fill="both")
         self.consigna.pack_forget()
 
-    def mostrar_instruccion(self, texto):
-        """Instrucción en el centro de la pantalla: en azul, para que no se confunda con una frase por leer."""
-        self.texto.config(text=texto, fg=COLOR_INSTRUCCION)
-        self._ajustar_letra(TAM_INSTRUCCION)
+    def mostrar_instruccion(self, texto, titulo="INSTRUCCIONES", sena=False):
+        """Recuadro con título en el centro, para que no se confunda con una frase por leer. Con `sena`, al pie se
+        pide la seña de que terminó de leer."""
+        self.texto.pack_forget()
+        self.titulo_caja.config(text=titulo)
+        self.texto_caja.config(text=texto)
+        self.pie_caja.pack_forget()
+        if sena:
+            self.pie_caja.pack(side="bottom", fill="x", before=self.texto_caja)
+        self.caja.place(relx=0.5, rely=0.5, anchor="center")
+        self._ajustar_caja()
+
+    def _ajustar_caja(self, tam_min=14):
+        """La letra más grande con la que el recuadro completo cabe en la zona central."""
+        self.raiz.update_idletasks()
+        if self.zona.winfo_height() <= 1:  # primera pantalla: la ventana todavía no se dibuja
+            self.raiz.update()
+        ancho, alto = self.zona.winfo_width() - 40, self.zona.winfo_height() - 20
+        self.texto_caja.config(wraplength=max(ancho - 80, 300))
+        for tam in range(TAM_INSTRUCCION, tam_min - 1, -1):
+            self.texto_caja.config(font=(FUENTE_INSTRUCCION, tam))
+            self.titulo_caja.config(font=(FUENTE_INSTRUCCION, max(int(tam * 0.55), 14), "bold"))
+            self.pie_caja.config(font=(FUENTE_INSTRUCCION, max(int(tam * 0.65), 14), "bold italic"))
+            self.raiz.update_idletasks()
+            if self.caja.winfo_reqheight() <= alto and self.caja.winfo_reqwidth() <= ancho:
+                break
+
+    def _reajustar_caja(self):
+        if self.caja.winfo_manager():
+            self._ajustar_caja()
 
     def mostrar_consigna(self, texto):
-        self.consigna.config(text=texto)
-        self.consigna.pack(side="top", fill="x", pady=(4, 0), before=self.texto)
+        """Recuadro de arriba, con la letra más grande que no pase de PARTE_CONSIGNA del alto de la ventana."""
+        self.texto_consigna.config(text=texto)
+        self.consigna.pack(side="top", fill="x", padx=12, pady=(4, 0), before=self.zona)
+        self.raiz.update_idletasks()
+        self.texto_consigna.config(wraplength=max(self.raiz.winfo_width() - 260, 600))
+        for tam in range(TAM_CONSIGNA, 15, -1):
+            self.texto_consigna.config(font=(FUENTE_INSTRUCCION, tam, "bold"))
+            self.raiz.update_idletasks()
+            if self.consigna.winfo_reqheight() <= PARTE_CONSIGNA * self.raiz.winfo_height():
+                break
 
     def siguiente(self):
         self.cancelar()
@@ -607,7 +661,7 @@ class Sesion:
 
     # ---- pasos
     def _espera(self, mensaje):
-        self.mostrar_instruccion(mensaje)
+        self.mostrar_instruccion(mensaje, sena=mensaje != INSTRUCCIONES["final"])
         self.estado("Esperando al conductor (Espacio)")
         if self.prueba:
             self.programar(0.5, self.siguiente)
@@ -641,16 +695,28 @@ class Sesion:
         if self.lectura:
             nuevos += [("espera", INSTRUCCIONES["lectura"]), ("lectura", self.lectura)]
         nuevos.append(("espera", INSTRUCCIONES["secuencias"]))
-        nuevos += [("secuencia", s) for s in SECUENCIAS]
-        # Habla libre guiada (§4.3): imágenes, estilos guiados y plática, cada bloque con su barra de tiempo
+        for k, s in enumerate(SECUENCIAS):
+            if k:
+                nuevos.append(("espera", INSTRUCCIONES["cambio_normal"]))
+            nuevos += self._en_cada_voz("secuencia", lambda voz, s=s: (*s, voz))
+        # Habla libre guiada (§4.3): imágenes y preguntas, cada una con su barra de tiempo en cada voz
         if self.orden_imagenes:
-            nuevos += [("espera", INSTRUCCIONES["imagenes"]), ("imagenes", None)]
-        nuevos.append(("espera", INSTRUCCIONES["estilos"]))
-        nuevos += [("estilo", e) for e in ESTILOS_GUIADOS]
-        nuevos += [("espera", INSTRUCCIONES["platica"]), ("platica", None), ("espera", INSTRUCCIONES["final"])]
+            nuevos += [("espera", INSTRUCCIONES["imagenes"]), *self._en_cada_voz("imagenes")]
+        nuevos += [("espera", INSTRUCCIONES["preguntas"]), *self._en_cada_voz("preguntas")]
+        nuevos.append(("espera", INSTRUCCIONES["final"]))
         self.pasos[self.i + 1:self.i + 1] = nuevos
         print(f"Ritmo de lectura: {self.ritmo:.3f} s/sílaba. Listas: {self.orden} (aleatorias: {self.aleatorias})")
         self.siguiente()
+
+    @staticmethod
+    def _en_cada_voz(paso, dato=lambda voz: voz):
+        """El paso en cada voz, con una pantalla de espera antes de cada cambio."""
+        pasos = []
+        for voz in VOCES:
+            if pasos:
+                pasos.append(("espera", INSTRUCCIONES[f"cambio_{voz}"]))
+            pasos.append((paso, dato(voz)))
+        return pasos
 
     def _frase(self, dato):
         lista, num, frase = dato
@@ -683,10 +749,8 @@ class Sesion:
     def _ajustar_letra(self, tam_max, tam_min=12):
         """Reduce la letra hasta que el texto completo quepa en la pantalla (depende de la escala de Windows)."""
         self.raiz.update_idletasks()
-        if self.texto.winfo_height() <= 1:  # primera pantalla: la ventana todavía no se dibuja
-            self.raiz.update()
-        disponible = self.texto.winfo_height()
-        self.texto.config(wraplength=max(int(self.texto.winfo_width() * 0.8), 600))  # renglones legibles
+        disponible = self.zona.winfo_height()
+        self.texto.config(wraplength=max(int(self.zona.winfo_width() * 0.8), 600))  # renglones legibles
         for tam in range(tam_max, tam_min - 1, -1):
             self.texto.config(font=("Arial", tam))
             self.raiz.update_idletasks()
@@ -694,10 +758,10 @@ class Sesion:
                 break
 
     def _secuencia(self, dato):
-        clave, consigna = dato
-        self.mostrar_instruccion(consigna)
-        self.estado(f"Secuencia «{clave}»: Espacio cuando termine")
-        self.fila_actual = self._fila("secuencia", "", clave, consigna)
+        clave, consigna, voz = dato
+        self.mostrar_instruccion(f"{self.indicaciones[voz]}\n\n{consigna}")
+        self.estado(f"Secuencia «{clave}» ({voz}): Espacio cuando termine")
+        self.fila_actual = self._fila("secuencia", "", clave, consigna, estilo=voz)
         if self.prueba:
             self.programar(1.0, lambda: self.espacio(None))
 
@@ -712,30 +776,15 @@ class Sesion:
         self.mostrar_barra(self.sil_listas, self.siguiente)
 
     # ---- habla libre guiada: un bloque con tiempo fijo; Espacio cambia de imagen o de pregunta
-    def _imagenes(self, _):
-        self.bloque = {"tipo": "imagen", "estilo": "normal", "restante": self.dur_imagenes,
-                       "total": self.dur_imagenes}
-        self._correr_bloque()
+    def _imagenes(self, voz):
+        self._bloque("imagen", voz, self.dur_imagenes)
 
-    def _estilo(self, estilo):
-        # Cada estilo guiado empieza con su pregunta fija (la primera, para la voz fuerte)
-        k = ESTILOS_GUIADOS.index(estilo) % len(self.preguntas)
-        self.bloque = {"tipo": "estilos", "estilo": estilo, "restante": self.dur_estilo, "total": self.dur_estilo,
-                       "k": k}
-        self._correr_bloque()
+    def _preguntas(self, voz):
+        self._bloque("pregunta", voz, self.dur_preguntas)
 
-    def _platica(self, _):
-        self.bloque = {"tipo": "platica", "estilo": "normal", "restante": self.dur_platica,
-                       "total": self.dur_platica, "k": self._tomar_libre()}
+    def _bloque(self, tipo, voz, duracion):
+        self.bloque = {"tipo": tipo, "voz": voz, "restante": duracion, "total": duracion}
         self._correr_bloque()
-
-    def _tomar_libre(self):
-        """Índice de la siguiente pregunta balanceada (las que no son de los estilos guiados). Si se acaban,
-        vuelven a empezar."""
-        fijas = len(ESTILOS_GUIADOS) if len(self.preguntas) > len(ESTILOS_GUIADOS) else 0
-        k = fijas + self.k_libre % (len(self.preguntas) - fijas)
-        self.k_libre += 1
-        return k
 
     def _correr_bloque(self):
         """Muestra el elemento actual y arranca (o retoma) la barra con el tiempo que le queda al bloque."""
@@ -745,14 +794,11 @@ class Sesion:
             self._auto_espacio(self.i)
 
     def _auto_espacio(self, i):
-        """--prueba: pasa de imagen o de pregunta sola; en la plática prueba también un cambio de estilo."""
+        """--prueba: pasa de imagen o de pregunta sola."""
         def paso():
             if self.i != i or self.en_pausa or self.bloque is None:
                 return
-            if self.bloque["tipo"] == "platica" and self.bloque["estilo"] == "normal":
-                self.cambiar_estilo("fuerte")
-            else:
-                self.espacio(None)
+            self.espacio(None)
             self.raiz.after(2500, paso)
         self.raiz.after(2500, paso)
 
@@ -760,28 +806,25 @@ class Sesion:
         """Imagen o pregunta actual en pantalla y fila nueva en el registro."""
         b = self.bloque
         self.limpiar_pantalla()
+        # primero la voz que se pide y debajo la tarea
+        self.mostrar_consigna(f"{self.indicaciones[b['voz']]}\n{self.indicaciones[b['tipo']]}")
         if b["tipo"] == "imagen":
             nombre = self.orden_imagenes[self.k_imagen % len(self.orden_imagenes)]
-            self.mostrar_consigna(self.indicaciones["imagen"])
             self._dibujar_imagen(nombre)
-            self.fila_actual = self._fila("imagen", "", self.k_imagen + 1, nombre, estilo=b["estilo"])
-            self.estado(f"Imagen {self.k_imagen + 1}: {nombre}. Espacio = siguiente imagen")
+            self.fila_actual = self._fila("imagen", "", self.k_imagen + 1, nombre, estilo=b["voz"])
+            self.estado(f"Imagen {self.k_imagen + 1} ({b['voz']}): {nombre}. Espacio = siguiente imagen")
         else:
-            clave, pregunta = self.preguntas[b["k"]]
-            consigna = self.indicaciones["platica" if b["tipo"] == "platica" and b["estilo"] == "normal"
-                                         else b["estilo"]]
-            self.mostrar_consigna(consigna)
-            self.texto.config(text=pregunta, fg=COLOR_INSTRUCCION)
-            self.fila_actual = self._fila(b["tipo"], "", clave, pregunta, estilo=b["estilo"])
-            extra = " · F N = estilo" if b["tipo"] == "platica" else ""
-            self.estado(f"{b['tipo'].capitalize()} ({b['estilo']}), pregunta {clave}. Espacio = siguiente{extra}")
+            clave, pregunta = self.preguntas[self.k_pregunta % len(self.preguntas)]
+            self.mostrar_instruccion(pregunta, titulo="PREGUNTA")
+            self.fila_actual = self._fila("pregunta", "", clave, pregunta, estilo=b["voz"])
+            self.estado(f"Pregunta {clave} ({b['voz']}). Espacio = siguiente pregunta")
         return b
 
     def _dibujar_imagen(self, nombre):
         from PIL import Image, ImageOps, ImageTk
         self.raiz.update_idletasks()
-        ancho = max(self.texto.winfo_width(), 600) - 40
-        alto = max(self.texto.winfo_height(), 400) - 20
+        ancho = max(self.zona.winfo_width(), 600) - 40
+        alto = max(self.zona.winfo_height(), 200) - 20
         with Image.open(CARPETA_IMAGENES / nombre) as im:
             im.draft("RGB", (max(ancho, alto),) * 2)  # decodifica el JPEG ya reducido: mucho más rápido
             im = ImageOps.exif_transpose(im).convert("RGB")
@@ -791,29 +834,18 @@ class Sesion:
 
     def _siguiente_elemento(self):
         self._cerrar_fila()
-        if self.bloque["tipo"] == "imagen":
-            self.k_imagen += 1
-        else:  # en los estilos guiados, la pregunta extra también sale de las balanceadas
-            self.bloque["k"] = self._tomar_libre()
+        self._avanzar_elemento()
         self._mostrar_elemento()
 
-    def cambiar_estilo(self, estilo):
-        """Solo en la plática: el conductor pide otro estilo; la pregunta sigue en pantalla y la barra no se detiene."""
-        b = self.bloque
-        if self.en_pausa or b is None or b["tipo"] != "platica" or b["estilo"] == estilo:
-            return
-        self._cerrar_fila()
-        b["estilo"] = estilo
-        self.eventos.append({"evento": "estilo", "estilo": estilo, "t_s": round(self.grab.tiempo(), 3)})
-        clave, pregunta = self.preguntas[b["k"]]
-        self.limpiar_pantalla()
-        self.mostrar_consigna(self.indicaciones[estilo])
-        self.texto.config(text=pregunta, fg=COLOR_INSTRUCCION)
-        self.fila_actual = self._fila("platica", "", clave, pregunta, estilo=estilo)
-        self.estado(f"Plática ({estilo}), pregunta {clave}. Espacio = siguiente · F N = estilo")
+    def _avanzar_elemento(self):
+        if self.bloque["tipo"] == "imagen":
+            self.k_imagen += 1
+        else:
+            self.k_pregunta += 1
 
     def _fin_bloque(self):
         self._cerrar_fila()
+        self._avanzar_elemento()   # la siguiente voz empieza con otra imagen o pregunta
         self.siguiente()
 
     # ---- registro
@@ -891,7 +923,7 @@ class Sesion:
             elif self.tras_frase:  # la frase ya se había leído completa: sigue con la próxima
                 self.siguiente()
             else:
-                self.limpiar_pantalla()  # quita el tamaño de letra de la pantalla de pausa
+                self.limpiar_pantalla()  # quita el recuadro de la pausa
                 tipo, dato = self.pasos[self.i]
                 getattr(self, f"_{tipo}")(dato)  # repite el paso actual desde el inicio
 
@@ -916,7 +948,7 @@ class Sesion:
         else:  # lectura o secuencia
             lista, frase = "", ARCHIVO_LECTURA.stem if tipo == "lectura" else dato[0]
         self.eventos.append({"evento": "repeticion", "t_s": round(self.grab.tiempo(), 3), "lista": lista,
-                             "frase": frase})
+                             "frase": frase, "estilo": dato[2] if tipo == "secuencia" else "normal"})
         self.estado("Repitiendo")
         getattr(self, f"_{tipo}")(dato)
 
@@ -951,14 +983,14 @@ class Sesion:
                      if len({r["frase"] for r in self.registro if r["lista"] == l and not r["interrumpida"]
                              and not r["repetida"]}) == len(self.listas[l])]
         mostradas = list(dict.fromkeys(r["texto"] for r in self.registro if r["tipo"] == "imagen"))
-        hechas = list(dict.fromkeys(r["frase"] for r in self.registro if r["tipo"] in ("estilos", "platica")))
+        hechas = list(dict.fromkeys(r["frase"] for r in self.registro if r["tipo"] == "pregunta"))
         sesion = dict(self.datos, fecha=datetime.datetime.now().isoformat(timespec="seconds"), prueba=self.prueba,
                       ritmo_s_por_silaba=self.ritmo, margen=MARGEN, silencio_frases_s=self.sil_frases,
                       silencio_listas_s=self.sil_listas, silencio_referencia_s=self.sil_ref,
                       listas_orden=self.orden, listas_fijas=list(LISTAS_FIJAS), listas_aleatorias=self.aleatorias,
                       listas_completas=completas, imagenes_mostradas=mostradas, preguntas_mostradas=hechas,
-                      duracion_imagenes_s=self.dur_imagenes, duracion_estilo_s=self.dur_estilo,
-                      duracion_platica_s=self.dur_platica, eventos=self.eventos, fs=FS, bits=24,
+                      voces=list(VOCES), duracion_imagenes_por_voz_s=self.dur_imagenes,
+                      duracion_preguntas_por_voz_s=self.dur_preguntas, eventos=self.eventos, fs=FS, bits=24,
                       archivo_listas=ARCHIVO_LISTAS.name, archivo_calibracion=ARCHIVO_CALIBRACION.name,
                       archivo_preguntas=ARCHIVO_PREGUNTAS.name,
                       archivo_lectura=ARCHIVO_LECTURA.name if self.lectura else None,

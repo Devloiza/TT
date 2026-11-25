@@ -1,20 +1,19 @@
 # Indicaciones y preguntas del habla libre guiada (Metodologia/obj3_base_de_datos.md §4.3).
 # Formato: «id | texto». El texto solo se muestra en pantalla (sin audio, decisión del 2026-11-22).
 # Las líneas con # se ignoran.
-# [indicaciones] necesita estos ids: imagen, platica, normal, fuerte.
-# [preguntas]: la primera va fija a la voz fuerte. El resto sale en la plática
-# en orden balanceado entre participantes (primero las menos usadas). Si se acaban, vuelven a empezar.
+# [indicaciones] necesita estos ids: normal, fuerte, imagen, pregunta. En pantalla sale primero la voz y debajo la tarea.
+# [preguntas]: salen en orden balanceado entre participantes (primero las menos usadas). Si se acaban, vuelven a empezar.
 
 [indicaciones]
+normal | Con tu voz normal.
+fuerte | Con voz fuerte, como si la persona estuviera al otro lado del salón. No grites ni te acerques al micrófono.
 imagen | Describe en voz alta la imagen: personas, objetos, lugar y qué está pasando. Sigue hablando hasta que cambie.
-platica | Contesta la pregunta con tu voz normal, como si platicaras con el responsable de la prueba. No la leas en voz alta. Da todos los detalles que puedas.
-normal | Continúa con tu voz normal.
-fuerte | Contesta con voz fuerte, como si la persona estuviera al otro lado del salón. No grites ni te acerques al micrófono.
+pregunta | Contesta la pregunta, como si platicaras con el responsable de la prueba. No la leas en voz alta. Da todos los detalles que puedas.
 
 [preguntas]
 # Banco de 30 preguntas abiertas, de temas variados, para que cada persona encuentre alguna que le guste. El conductor
 # se salta con Espacio la que no funcione. Sin datos personales sensibles (salud, dinero, política, religión).
-# La primera va a la voz fuerte, por eso es de las más universales. p01-p04 son las de §4.3.
+# p01-p04 son las de §4.3.
 
 # Vida diaria
 p01 | Cuéntame qué hiciste el fin de semana.

@@ -21,7 +21,7 @@ Este guion es para que los dos conductores hagan la sesión igual con todos los 
 
 ## 2. Bienvenida y consentimiento (bloque a, 2–3 min)
 
-> "Hola, gracias por venir. Soy [nombre] y estoy haciendo mi Trabajo Terminal en la UPIITA. Vamos a grabar tu voz para entrenar un sistema que ayude a entender el habla en lugares con ruido. Dura unos 25 minutos."
+> "Hola, gracias por venir. Soy [nombre] y estoy haciendo mi Trabajo Terminal en la UPIITA. Vamos a grabar tu voz para entrenar un sistema que ayude a entender el habla en lugares con ruido. Dura unos 20 minutos."
 
 > "Antes de empezar, te pido que leas este consentimiento. Si tienes cualquier duda, pregúntame. La publicación de tu voz es aparte y es opcional: si no la autorizas, tu voz solo se usa dentro del proyecto."
 
@@ -30,6 +30,7 @@ Este guion es para que los dos conductores hagan la sesión igual con todos los 
 
 > "Vas a ver todo en esta pantalla. Yo voy a manejar el teclado, tú solo vas a hablar. Si en algún momento quieres parar, me dices y paramos."
 
+- **Voz normal y voz fuerte:** con `espectro_ruido.py --vivo` abierto, pedirle la misma frase en cada voz y comparar el nivel de 80–8000 Hz. La fuerte debe subir al menos **[DECIDIR: cuántos dB]** sin saturar; si no, explicarle otra vez. Cerrar el monitor.
 - Correr el programa: `python Exploration/Prueba_BD/presentador_frases.py`.
 - Si aparece el aviso de que la entrada no es **WASAPI**, corregirla antes de seguir (`configurar_audio.py`).
 - Llenar los datos en la consola: edad, sexo, lugar, ganancia, sonómetro, conductor y notas. En una sesión de prueba (P00) se llenan solos.
@@ -39,7 +40,11 @@ Este guion es para que los dos conductores hagan la sesión igual con todos los 
 
 - Si satura, bajar la ganancia y anotar el valor nuevo. **[DECIDIR]** Si se ajusta la ganancia en cada persona o se deja fija.
 
-- La primera pantalla explica los colores: **en negro lo que se lee en voz alta, en azul las instrucciones y las preguntas**. Confirmar que se entendió.
+- La primera pantalla lo explica: **en negro y sin recuadro lo que se lee en voz alta; en un recuadro azul, las instrucciones y las preguntas**. Confirmar que se entendió.
+- **Seña:** en las pantallas de espera, la persona hace una seña con la mano cuando termina de leer. Esperarla antes de presionar **Espacio**. Acordar la seña al inicio, para que sea silenciosa:
+
+> "Cuando termines de leer cada instrucción, levanta la mano, sin hablar, y yo continúo."
+
 - **Espacio** siempre con una pulsación corta. Si se deja presionada, cuenta una sola vez.
 
 ## 3. Silencio de referencia (bloque b, 30 s)
@@ -67,36 +72,35 @@ Este guion es para que los dos conductores hagan la sesión igual con todos los 
 - **M** para marcar una frase dudosa (tos, una palabra omitida, un ruido leve).
 - **P** si la persona necesita parar.
 
-## 6. Lectura continua y secuencias (bloques d y e, 2 min)
+## 6. Lectura continua y secuencias (bloques d y e, 2–3 min)
 
 > "Ahora lee en voz alta todo el texto, con tu voz y ritmo normales. Si te equivocas, continúa."
 
 - **Espacio** cuando termine de leer.
-- Luego la pantalla pide contar del 1 al 20 y decir los días de la semana. **Espacio** al terminar cada uno.
+- Luego la pantalla pide contar del 1 al 20 y decir los días de la semana, cada uno con voz normal y después con voz fuerte. **Espacio** al terminar cada uno y en las pantallas de espera entre voces. Entre los números y los días, la pantalla pide regresar a la voz normal.
 
-## 7. Habla libre (bloque f, 12–13 min)
+## 7. Habla libre (bloque f, 5–6 min)
 
 > "Ya terminamos de leer. Ahora vas a hablar libremente. No hay respuestas correctas ni incorrectas, lo importante es que hables."
 
-**Imágenes (3 min)**
+La pantalla dice siempre qué voz usar: **primero normal y luego fuerte**. Antes de cada cambio hay una pantalla de espera: aprovecharla para que la persona descanse y continuar con **Espacio**.
 
-> "Describe en voz alta la imagen: personas, objetos, lugar y qué está pasando. Sigue hablando hasta que cambie."
+**Imágenes (1 min en cada voz)**
+
+> "Describe en voz alta la imagen: personas, objetos, lugar y qué está pasando. Sigue hablando hasta que cambie. Primero con tu voz normal."
 
 - Si termina rápido, **Espacio** para pasar a otra imagen. Si va despacio, dejarla.
 
-**Voz fuerte (1 min 15 s)**
+**Preguntas (1 min 30 s en cada voz)**
 
-> "Contesta con voz fuerte, como si la persona estuviera al otro lado del salón. No grites ni te acerques al micrófono."
+> "Contesta como si platicaras conmigo, primero con tu voz normal. No leas la pregunta. Da todos los detalles que puedas."
 
-- Si se queda sin qué decir, **Espacio** para otra pregunta.
-
-**Plática (7.5 min)**
-
-> "Contesta con tu voz normal, como si platicaras conmigo. No leas la pregunta. Da todos los detalles que puedas."
-
-- **[DECIDIR]** El conductor no habla mientras graba, para que no quede su voz en la grabación. Puede asentir o sonreír para que la persona se sienta escuchada.
 - **Espacio** para cambiar de pregunta si una no funciona.
-- En medio, pedir voz fuerte con **F** y volver a la normal con **N**. La pantalla lo indica sola. **[DECIDIR]** Cuántos cambios y en qué momentos, para que todas las sesiones sean parecidas.
+- **[DECIDIR]** El conductor no habla mientras graba, para que no quede su voz en la grabación. Puede asentir o sonreír para que la persona se sienta escuchada.
+
+**Antes de cada cambio a voz fuerte,** en la pantalla de espera:
+
+> "Ahora lo mismo con voz fuerte, como si yo estuviera al otro lado del salón. Sin gritar ni acercarte al micrófono."
 
 ## 8. Cierre (2 min)
 
