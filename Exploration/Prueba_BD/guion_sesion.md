@@ -32,7 +32,7 @@ Este guion es para que los dos conductores hagan la sesión igual con todos los 
 
 - Correr el programa: `python Exploration/Prueba_BD/presentador_frases.py`.
 - Si aparece el aviso de que la entrada no es **WASAPI**, corregirla antes de seguir (`configurar_audio.py`).
-- Llenar los datos en la consola: edad, sexo, lugar, ganancia, sonómetro, conductor y notas.
+- Llenar los datos en la consola: edad, sexo, lugar, ganancia, sonómetro, conductor y notas. En una sesión de prueba (P00) se llenan solos.
 - **Prueba de nivel:** pedirle una frase con su voz normal y revisar que no se acerque a 0 dBFS.
 
 > "Dime en voz normal qué desayunaste hoy."
@@ -84,22 +84,19 @@ Este guion es para que los dos conductores hagan la sesión igual con todos los 
 
 - Si termina rápido, **Espacio** para pasar a otra imagen. Si va despacio, dejarla.
 
-**Estilos guiados (unos 4 min)**
+**Voz fuerte (1 min 15 s)**
 
-- La pantalla indica el estilo: fuerte, baja y susurro. **[DECIDIR]** Si se conservan baja y susurro, según el espectro (metodología §4.6).
-- Antes del susurro:
-
-> "Ahora en susurro, sin voz, como si no quisieras que nadie más te oyera."
+> "Contesta con voz fuerte, como si la persona estuviera al otro lado del salón. No grites ni te acerques al micrófono."
 
 - Si se queda sin qué decir, **Espacio** para otra pregunta.
 
-**Plática (5 min)**
+**Plática (7.5 min)**
 
 > "Contesta con tu voz normal, como si platicaras conmigo. No leas la pregunta. Da todos los detalles que puedas."
 
 - **[DECIDIR]** El conductor no habla mientras graba, para que no quede su voz en la grabación. Puede asentir o sonreír para que la persona se sienta escuchada.
 - **Espacio** para cambiar de pregunta si una no funciona.
-- En medio, pedir otros estilos con **F** (fuerte), **B** (baja), **S** (susurro) y **N** (normal). La pantalla lo indica sola. **[DECIDIR]** Cuántos cambios y en qué momentos, para que todas las sesiones sean parecidas.
+- En medio, pedir voz fuerte con **F** y volver a la normal con **N**. La pantalla lo indica sola. **[DECIDIR]** Cuántos cambios y en qué momentos, para que todas las sesiones sean parecidas.
 
 ## 8. Cierre (2 min)
 
@@ -108,7 +105,7 @@ Este guion es para que los dos conductores hagan la sesión igual con todos los 
 - Darle su copia del consentimiento. **[DECIDIR]** Si la copia lleva su código (P01, P02…) y un contacto, para que pueda retirar su autorización después.
 - **Después de que se vaya:**
   - [ ] revisar que se creó la carpeta `Descargas/BD_VOZ/<código>_<fecha>/` con `audio.wav`, `frases.csv` y `sesion.json`;
-  - [ ] escuchar unos segundos del inicio, del susurro y del final;
+  - [ ] escuchar unos segundos del inicio, de la voz fuerte y del final;
   - [ ] copiar la carpeta al disco duro externo;
   - [ ] guardar el consentimiento firmado en el lugar acordado, separado de las grabaciones;
   - [ ] anotar cualquier incidente en las notas de la sesión.

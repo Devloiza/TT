@@ -11,8 +11,8 @@ Flujo:
      aparato sale una vez por API; en Windows se usa WASAPI y el programa avisa si la entrada es otra (MME y
      DirectSound pasan por el mezclador de Windows, que puede remuestrear).
   1. Datos de la sesión (en la consola). El código se asigna solo (P01, P02…). Una sesión de prueba se guarda
-     como P00, igual que las demás, pero no cuenta para el balance de listas. Se pide la edad exacta y el grupo se
-     deduce de ella.
+     como P00, igual que las demás, pero no cuenta para el balance de listas, y sus datos se llenan solos
+     (DATOS_PRUEBA). En las demás se pide la edad exacta y el grupo se deduce de ella.
   2. Silencio de referencia (SILENCIO_REFERENCIA s), grabando, con una barra que muestra cuánto falta. Luego se muestra cómo se ve la barra de descanso.
   3. Calibración con calibracion.txt: el conductor presiona Espacio cuando la persona termina cada frase.
      Se mide el ritmo en segundos por sílaba.
@@ -28,11 +28,11 @@ Flujo:
   6. Habla libre guiada (§4.3), cada bloque con una barra de tiempo:
        - imágenes (DURACION_IMAGENES s): de la carpeta CARPETA_IMAGENES, en orden balanceado entre participantes
          (las menos usadas primero, con semilla según el código). Con Espacio se pasa a la siguiente;
-       - estilos guiados (DURACION_ESTILO s cada uno): fuerte, baja y susurro, con las primeras preguntas de
-         preguntas.txt, fijas y en orden (una por estilo). Con Espacio se pasa a la siguiente pregunta;
+       - voz fuerte (DURACION_ESTILO s): con la primera pregunta de preguntas.txt, fija. Con Espacio se pasa a la
+         siguiente pregunta. Susurro y voz baja se quitaron el 2026-11-24: el lugar no se insonoriza lo suficiente;
        - plática (DURACION_PLATICA s): el resto de preguntas.txt en orden balanceado entre participantes (las menos
-         usadas primero, con semilla según el código), con Espacio la siguiente. Con F, B, S y N el conductor pide
-         otro estilo en medio de la plática.
+         usadas primero, con semilla según el código), con Espacio la siguiente. Con F y N el conductor pide voz fuerte
+         o normal en medio de la plática.
      Las indicaciones y preguntas solo se muestran en pantalla (sin audio, decisión del 2026-11-22).
      Colores (decisión del 2026-11-24): negro = se lee en voz alta; azul = instrucción o pregunta, no se lee.
   7. Guarda en CARPETA_SALIDA/<código>_<fecha>/ (Descargas/BD_VOZ, fuera de OneDrive; la copia al disco externo
@@ -51,7 +51,7 @@ Teclas (solo el conductor; la persona no debe tener el teclado):
   R        repite la frase, el texto o la secuencia actual (o la frase que acaba de terminar) por un ruido externo
            fuerte; la toma anterior queda en frases.csv con repetida = 1
   M        marca la frase, imagen o pregunta actual como dudosa (ruido externo, palabra omitida…)
-  F B S N  solo en la plática: pide voz fuerte, baja, susurro o normal
+  F N      solo en la plática: pide voz fuerte o normal
   Esc      termina la sesión antes y guarda lo grabado
   F11      pantalla completa
 
@@ -96,12 +96,12 @@ SILENCIO_FRASES = 2.0         # s en blanco después de cada frase
 SILENCIO_LISTAS = 5.0         # s en blanco entre listas
 SILENCIO_REFERENCIA = 30.0    # s de silencio grabado al inicio (ruido de fondo de la sesión)
 DURACION_IMAGENES = 180.0     # s del bloque de imágenes (las que alcancen)
-DURACION_ESTILO = 75.0        # s de cada estilo guiado (fuerte, baja, susurro)
-DURACION_PLATICA = 300.0      # s de plática al final
+DURACION_ESTILO = 75.0        # s de cada estilo guiado (solo voz fuerte)
+DURACION_PLATICA = 450.0      # s de plática al final
 SECUENCIAS = (("numeros", "Cuenta del 1 al 20."),
               ("dias", "Di los días de la semana, de lunes a domingo."))
-ESTILOS_GUIADOS = ("fuerte", "baja", "susurro")
-TECLAS_ESTILO = {"f": "fuerte", "b": "baja", "s": "susurro", "n": "normal"}
+ESTILOS_GUIADOS = ("fuerte",)
+TECLAS_ESTILO = {"f": "fuerte", "n": "normal"}
 
 FS = 48000                    # Hz
 BLOQUE = 1024                 # muestras por bloque de grabación
@@ -130,8 +130,7 @@ INSTRUCCIONES = {
     "lectura": "Lee en voz alta todo el texto, con tu voz y ritmo normales. Si te equivocas, continúa.",
     "secuencias": "Ahora no leerás.\n\nDi en voz alta lo que se pide, una sola vez y con tu voz normal.",
     "imagenes": "Ahora verás varias imágenes.\n\nDescríbelas en voz alta, con tu voz normal.",
-    "estilos": "Ahora contestarás preguntas en voz alta.\n\n"
-               "La instrucción de arriba te dirá cómo usar la voz.\nNo leas la pregunta en voz alta: contéstala.",
+    "estilos": "Ahora contestarás preguntas con voz fuerte.\n\nNo leas la pregunta en voz alta: contéstala.",
     "platica": "Por último, contestarás varias preguntas con tu voz normal.\n\nNo hay respuestas correctas.",
     "pausa": "Pausa.\n\nNo hables hasta que cambie la pantalla.",
     "final": "Terminamos.\n\nMuchas gracias por participar.",
@@ -142,6 +141,10 @@ ALTO_BARRA = 34               # barra de descanso (px)
 COLOR_BARRA = "#7fb3d5"
 COLOR_PROGRESO = "#82c99a"    # barra delgada: cuánto falta para el siguiente descanso
 CODIGO_PRUEBA = "P00"         # sesiones de prueba: se guardan normal, pero no cuentan para el balance de listas
+# Datos de las sesiones de prueba: siempre los mismos, para no pedirlos (2026-11-25). La ganancia y el sonómetro van
+# vacíos porque son mediciones: un valor fijo parecería real.
+DATOS_PRUEBA = {"codigo": CODIGO_PRUEBA, "edad": 25, "grupo_edad": "adulto joven", "sexo": "h", "lugar": "cubículo",
+                "ganancia": "", "sonometro_fondo_dba": "", "conductor": "Arturo", "notas": "sesión de prueba"}
 # Grupos de edad (edad mínima, nombre): se guarda la edad exacta y el grupo se deduce de ella
 GRUPOS = ((60, "adulto mayor"), (31, "adulto"), (18, "adulto joven"), (13, "adolescente"), (0, "niño"))
 
@@ -715,7 +718,7 @@ class Sesion:
         self._correr_bloque()
 
     def _estilo(self, estilo):
-        # Cada estilo empieza con su pregunta fija (la primera para fuerte, la segunda para baja…)
+        # Cada estilo guiado empieza con su pregunta fija (la primera, para la voz fuerte)
         k = ESTILOS_GUIADOS.index(estilo) % len(self.preguntas)
         self.bloque = {"tipo": "estilos", "estilo": estilo, "restante": self.dur_estilo, "total": self.dur_estilo,
                        "k": k}
@@ -747,7 +750,7 @@ class Sesion:
             if self.i != i or self.en_pausa or self.bloque is None:
                 return
             if self.bloque["tipo"] == "platica" and self.bloque["estilo"] == "normal":
-                self.cambiar_estilo("baja")
+                self.cambiar_estilo("fuerte")
             else:
                 self.espacio(None)
             self.raiz.after(2500, paso)
@@ -770,7 +773,7 @@ class Sesion:
             self.mostrar_consigna(consigna)
             self.texto.config(text=pregunta, fg=COLOR_INSTRUCCION)
             self.fila_actual = self._fila(b["tipo"], "", clave, pregunta, estilo=b["estilo"])
-            extra = " · F B S N = estilo" if b["tipo"] == "platica" else ""
+            extra = " · F N = estilo" if b["tipo"] == "platica" else ""
             self.estado(f"{b['tipo'].capitalize()} ({b['estilo']}), pregunta {clave}. Espacio = siguiente{extra}")
         return b
 
@@ -807,7 +810,7 @@ class Sesion:
         self.mostrar_consigna(self.indicaciones[estilo])
         self.texto.config(text=pregunta, fg=COLOR_INSTRUCCION)
         self.fila_actual = self._fila("platica", "", clave, pregunta, estilo=estilo)
-        self.estado(f"Plática ({estilo}), pregunta {clave}. Espacio = siguiente · F B S N = estilo")
+        self.estado(f"Plática ({estilo}), pregunta {clave}. Espacio = siguiente · F N = estilo")
 
     def _fin_bloque(self):
         self._cerrar_fila()
@@ -997,7 +1000,11 @@ def pedir_datos():
             if r in opciones:
                 return r
     prueba = opcion(f"¿Es una sesión de prueba? (se guarda como {CODIGO_PRUEBA})", ("s", "n")) == "s"
-    codigo = CODIGO_PRUEBA if prueba else siguiente_codigo()
+    if prueba:
+        print(f"Código asignado: {CODIGO_PRUEBA}. Datos de prueba: {DATOS_PRUEBA['edad']} años, sexo "
+              f"{DATOS_PRUEBA['sexo']}, {DATOS_PRUEBA['lugar']}, conductor {DATOS_PRUEBA['conductor']}.")
+        return dict(DATOS_PRUEBA)
+    codigo = siguiente_codigo()
     print(f"Código asignado: {codigo}")
     edad = None
     while edad is None:
@@ -1052,9 +1059,7 @@ def main():
         else:
             entrada = elegir_entrada(a.dispositivo)
     print(f"Las sesiones se guardan en {CARPETA_SALIDA}")
-    datos = ({"codigo": CODIGO_PRUEBA, "edad": 25, "grupo_edad": "adulto joven", "sexo": "h", "lugar": "cubículo",
-              "ganancia": "", "sonometro_fondo_dba": "", "conductor": "prueba", "notas": "recorrido de prueba"}
-             if a.prueba else pedir_datos())
+    datos = dict(DATOS_PRUEBA, notas="recorrido de prueba") if a.prueba else pedir_datos()
     if entrada:
         datos["entrada"] = entrada  # dispositivo, canal y prueba de nivel quedan en sesion.json
     grabador = SinAudio() if a.sin_audio else Grabador(entrada)

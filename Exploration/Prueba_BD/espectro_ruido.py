@@ -72,7 +72,7 @@ HISTORIAL = 30.0                  # s del mapa de calor y de la mediana (ruido c
 COLUMNAS = 900                    # columnas del mapa y de las curvas
 SATURA_DBFS = -1.0                # pico a partir del cual avisa
 
-ESTILOS = ("normal", "fuerte", "baja", "susurro")
+ESTILOS = ("normal", "fuerte", "baja", "susurro")   # baja y susurro: solo en sesiones anteriores al 2026-11-24
 COLOR = {"normal": "#2a78d6", "fuerte": "#eb6834", "baja": "#1baf7a", "susurro": "#4a3aa7"}
 TRAZO = {"normal": "-", "fuerte": "--", "baja": "-.", "susurro": ":"}
 TINTA, TINTA2, TENUE = "#0b0b0b", "#52514e", "#d9d8d3"
@@ -82,7 +82,6 @@ MARCAS_HZ = (20, 60, 100, 200, 500, 1000, 2000, 5000, 10000, 20000)
 VISTAS = {"1": ("completa", 20, 24000, True, MARCAS_HZ),
           "2": ("red y armónicos", 0, 1000, False, tuple(range(0, 1000, 60))),
           "3": ("armónicos de la voz", 0, 4000, False, tuple(range(0, 4001, 500)))}
-
 
 def db(p):
     return 10 * np.log10(np.maximum(p, 1e-20))
