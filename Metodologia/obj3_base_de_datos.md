@@ -230,8 +230,8 @@ Se muestrean todas las categorías:
 - [x] **Preguntas:** ~~completar el banco~~: 30 en `preguntas.txt` (2026-11-22), aprobadas por el autor. ~~Grabar sus audios~~: descartado (2026-11-22), solo se muestran en pantalla.
 - [x] ~~**Audífonos cerrados**~~: innecesarios sin audios (2026-11-22).
 - [x] **Lectura continua y secuencias** (bloques d y e de §4.1): en el programa (2026-11-22).
-- [ ] **Consentimiento:** formato (adultos y menores) hecho por el autor (2026-11-22), en `Referencias/` (local, no versionado). En revisión con los asesores: 2 ya dieron el visto bueno y falta 1 (2026-11-25). Falta quitar la mención de "voz baja y susurros", que ya no se graban, y revisar la duración que indica (35 min) contra la de §4.1 (15–20 min).
-- [ ] **Guion de sesión** escrito, idéntico para los dos conductores: boceto en `Exploration/Prueba_BD/guion_sesion.md` (2026-11-22), por revisar y completar por el autor (puntos **[DECIDIR]**).
+- [ ] **Consentimiento:** formato (adultos y menores) hecho por el autor (2026-11-22), en `Referencias/` (local, no versionado). En revisión con los asesores: 2 ya dieron el visto bueno y falta 1 (2026-11-25). Versión del 2026-11-26: ya sin voz baja ni susurros y con 20 min (adultos y adolescentes) y 10 min (niños).
+- [ ] **Guion de sesión** escrito, idéntico para los dos conductores: versión del autor en `Referencias/Guion.pdf` (2026-11-26, local, no versionado), en revisión. El boceto de Claude (2026-11-22) le sirvió de base y se eliminó el 2026-11-26.
 - [ ] **Prueba piloto completa** con P00 en el cubículo, con el equipo y la duración reales, antes del primer participante.
 - [ ] **Metadatos:** definir el formato y la convención de nombres de archivo.
 - [ ] **Etiquetado:** elegir la herramienta (habla activa, pausa y silencio largo).

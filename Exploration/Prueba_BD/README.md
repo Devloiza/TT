@@ -14,7 +14,6 @@ Diseño completo en [`Metodologia/obj3_base_de_datos.md`](../../Metodologia/obj3
 | `configurar_audio.py` | Prueba de habla (micrófono) una vez por máquina; guarda la elección en `config_audio.json`. Hecho por Claude con la especificación del autor |
 | `presentador_frases.py` | Programa de sesión: hecho por Claude con la especificación del autor. Uso y teclas en su encabezado |
 | `espectro_ruido.py` | Espectro del ruido: del lugar (30 s antes de una sesión), en tiempo real con mapa de calor (`--vivo`) o de una sesión guardada, comparado con cada estilo de voz. Diagnóstico, hecho por Claude con la especificación del autor |
-| `guion_sesion.md` | Boceto del guion del conductor, hecho por Claude a petición del autor; el autor lo revisa |
 
 No se versionan:
 
