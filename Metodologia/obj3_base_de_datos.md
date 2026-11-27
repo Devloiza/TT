@@ -39,9 +39,9 @@
 ### 3.1 Participantes
 
 - **Total:** 50 personas, mitad hombres y mitad mujeres: 40 de entrenamiento (20 y 20) y 10 de prueba (5 y 5), según la partición de §3.3.
-- **Grupos de edad:** niños (5–12), adolescentes (13–17), adultos jóvenes (18–30), adultos (31–59) y adultos mayores (60+). No es obligatorio que tengan el mismo tamaño, porque niños y adultos mayores son los más difíciles de conseguir. La edad mínima está por definir.
+- **Grupos de edad:** niños (menores de 13), adolescentes (13–17), adultos jóvenes (18–30), adultos (31–59) y adultos mayores (60+). No es obligatorio que tengan el mismo tamaño, porque niños y adultos mayores son los más difíciles de conseguir. Sin edad mínima (decisión del 2026-11-27): participa quien ya pueda hablar, a criterio de su madre, padre o tutor.
 - **Variante del idioma:** solo español de México. Extenderlo a otros acentos e idiomas queda como trabajo a futuro.
-- **Niños:** hacen la sesión corta (§4.2). Si no se consiguen suficientes, quedan como trabajo a futuro; el protocolo no exige grupos de edad.
+- **Niños:** hacen la sesión de niños (§4.2), automática por edad (menores de 13). Si no se consiguen suficientes, quedan como trabajo a futuro; el protocolo no exige grupos de edad.
 
 ### 3.2 Consentimiento y datos personales
 
@@ -72,19 +72,20 @@
 | e. Secuencias | 1–2 min | Contar del 1 al 20 y decir los días de la semana, cada una primero con voz normal y luego con voz fuerte, sin texto en pantalla (solo la consigna). Cubren los números, sin un bloque aparte |
 | f. Habla libre guiada | 5–6 min | §4.3: imágenes (1 min en cada voz) y preguntas (1 min 30 s en cada voz), con la voz indicada explícitamente |
 
-### 4.2 Sesión corta: niños y no lectores (unos 10 min)
+### 4.2 Sesión de niños
+
+Decisión del 2026-11-27, que reemplaza la propuesta anterior (repetición de frases, contar del 1 al 10, una imagen y una pregunta). El programa la elige solo cuando la edad es menor de 13 años.
 
 - **Inicio:** bloques a y b de §4.1.
-- **Repetición:** 15–20 frases cortas que el conductor dice en voz alta.
-- **Secuencias:** contar del 1 al 10.
-- **Habla libre:** describir una imagen del mismo conjunto que los adultos y una pregunta sencilla ("¿Qué te gusta jugar?").
-- **Criterio:** si la repetición sale mal, se descarta y se conserva la descripción de la imagen.
+- **Imágenes:** 1 min, solo con voz normal, del mismo conjunto que los adultos.
+- **Preguntas:** 1 min 30 s, solo con voz normal. **Las dice el conductor**, personalizadas para cada niño, mientras mantiene presionada la tecla H; en pantalla solo aparece "Escucha la pregunta y contesta con tu voz normal".
+- **Sin** calibración, frases, lectura, secuencias ni voz fuerte.
 
 ### 4.3 Habla libre guiada
 
 Las preguntas son accesibles para todos los grupos y no piden datos personales sensibles.
 
-Decisión del 2026-11-25, que reemplaza la del 2026-11-22 (imágenes, voz fuerte y plática): el bloque tiene dos partes, imágenes y preguntas, y cada una se hace **primero con voz normal y luego con voz fuerte**. La prueba completa del autor mostró que hablar tanto tiempo cansaba demasiado. Cada voz tiene tiempo fijo y una barra que lo muestra. Antes de cada cambio de voz hay una pantalla de espera que lo explica y sirve de descanso. El conductor decide cuándo pasar a la siguiente imagen o pregunta.
+Decisión del 2026-11-25, que reemplaza la del 2026-11-22 (imágenes, voz fuerte y plática): el bloque tiene dos partes, imágenes y preguntas, y cada una se hace **primero con voz normal y luego con voz fuerte**. La prueba completa del autor mostró que hablar tanto tiempo cansaba demasiado. Cada voz tiene tiempo fijo. Desde las secuencias no hay barra de tiempo en pantalla, para no distraer (decisión del 2026-11-27): el tiempo que queda solo lo ve el conductor. Cada pregunta aparece primero con una barra de 5 s para leerla, que no cuenta en el 1 min 30 s. Antes de cada cambio de voz hay una pantalla de espera que lo explica y sirve de descanso. El conductor decide cuándo pasar a la siguiente imagen o pregunta.
 
 | Parte | Contenido | Voz normal | Voz fuerte |
 |:--|:--|:--|:--|
@@ -122,15 +123,15 @@ Hecho por Claude con la especificación del autor (2026-11-22).
   3. 30 s de silencio de referencia, con una barra «Silencio» que muestra cuánto falta.
   4. **Calibración** con `calibracion.txt`: 10 frases cotidianas propias, que no son de *Sharvard* y no requieren balance. El conductor presiona Espacio al terminar cada frase y se mide el ritmo en segundos por sílaba.
   5. **6 listas** en orden mezclado por persona: las fijas **15, 33 y 3** más 3 aleatorias balanceadas, elegidas entre las menos usadas en `asignaciones.csv`, con semilla según el código.
-  6. **Lectura continua y secuencias** (§4.1, bloques d y e): el texto de `textos_prueba/El_viento_norte_y_el_sol.txt`, con la letra ajustada para que quepa completo en pantalla, y luego contar del 1 al 20 y los días de la semana, cada uno en las dos voces. Cada uno a su ritmo: el conductor presiona Espacio al terminar.
-  7. **Habla libre guiada** (§4.3): imágenes y preguntas, primero con voz normal y luego con voz fuerte, cada una con su barra de «Tiempo». Arriba va la voz que se pide y, debajo, la tarea; después, la imagen o la pregunta. Con Espacio el conductor pasa a la siguiente. Antes de cada cambio de voz, una pantalla de espera lo explica. Una pausa a mitad de una parte la retoma con el tiempo que le quedaba.
-- **Instrucciones en recuadro** (decisiones del 2026-11-24 y del 2026-11-25): lo que se lee en voz alta va en **negro, en Arial y sin recuadro**. Las instrucciones y las preguntas, que no se leen, van en un **recuadro azul con título** (INSTRUCCIONES o PREGUNTA), en Georgia y con la letra más grande que quepa. En las pruebas, las instrucciones en gris se confundían con frases, y el color solo no bastó. En las pantallas de espera se pide **una seña con la mano al terminar de leer**, para que el conductor sepa cuándo continuar sin hablar. La bienvenida lo explica. Los textos dicen qué se pide y cómo hacerlo; están en `INSTRUCCIONES`, dentro del programa, y en `preguntas.txt`.
+  6. **Lectura continua y secuencias** (§4.1, bloques d y e): el texto de `textos_prueba/El_viento_norte_y_el_sol.txt`, con la letra ajustada para que quepa completo en pantalla, y luego contar del 1 al 20 y los días de la semana, cada uno en las dos voces. Cada secuencia sale primero con una barra de 5 s para leer qué decir; luego el título del recuadro cambia a «¡Empieza ahora!» (2026-11-27: no quedaba claro cuándo empezar). El conductor puede adelantar ese momento con Espacio. Cada uno a su ritmo: el conductor presiona Espacio al terminar.
+  7. **Habla libre guiada** (§4.3): imágenes y preguntas, primero con voz normal y luego con voz fuerte, con tiempo fijo pero sin barra en pantalla; el tiempo que queda sale en la línea del conductor. Cada pregunta empieza con una barra de 5 s para leerla. Arriba va la voz que se pide y, debajo, la tarea; después, la imagen o la pregunta. Con Espacio el conductor pasa a la siguiente. Antes de cada cambio de voz, una pantalla de espera lo explica. Una pausa a mitad de una parte la retoma con el tiempo que le quedaba.
+- **Instrucciones en recuadro** (decisiones del 2026-11-24 y del 2026-11-25): lo que se lee en voz alta va en **negro, en Arial y sin recuadro**. Las instrucciones y las preguntas, que no se leen, van en un **recuadro azul con título** (INSTRUCCIONES o PREGUNTA), **rojo cuando se pide voz fuerte** (2026-11-27), en Georgia y con la letra más grande que quepa. En las pruebas, las instrucciones en gris se confundían con frases, y el color solo no bastó. En las pantallas de espera se pide **una seña con la mano al terminar de leer**, para que el conductor sepa cuándo continuar sin hablar. La bienvenida lo explica. Los textos dicen qué se pide y cómo hacerlo; están en `INSTRUCCIONES`, dentro del programa, y en `preguntas.txt`.
 - **Imágenes y preguntas balanceadas:** las mostradas se suman en las columnas `imagenes` y `preguntas` de `asignaciones.csv`, salvo en P00. El orden de cada participante pone primero las menos usadas, con desempate al azar según el código.
 - **Avance automático:** cada frase dura sílabas × ritmo × **1.25**, seguida de **2 s** en blanco. Entre listas hay **5 s** de descanso, con una **barra arriba** que dice «Descanso» y se vacía con el tiempo. Su funcionamiento se muestra antes de la calibración, después del silencio y con la misma duración que un descanso real (5 s), para que no se confunda con algo que hay que leer.
 - **Datos de la sesión:**
   - **El código se asigna solo** (P01, P02…), para evitar errores.
-  - **P00 es el código de prueba:** se guarda igual que las demás sesiones, no se sobrescribe (cada sesión va en su carpeta con fecha y hora) y no cuenta para el balance de listas. Sus datos se llenan solos y son siempre los mismos (2026-11-25): 25 años, hombre, cubículo y Arturo como conductor; la ganancia y el sonómetro quedan vacíos.
-  - Se pide la **edad exacta** y el grupo de edad se deduce de ella.
+  - **P00 es el código de prueba:** se guarda igual que las demás sesiones, no se sobrescribe (cada sesión va en su carpeta con fecha y hora) y no cuenta para el balance de listas. Sus datos se llenan solos y son siempre los mismos (2026-11-25): 25 años, hombre, cubículo y Arturo como conductor; la ganancia y el sonómetro quedan vacíos. Al elegir prueba, el programa pregunta si es de niños; entonces la edad es 8 años y se hace la sesión de niños (§4.2). El grupo de edad siempre se deduce de la edad.
+  - Se pide la **edad exacta**, sin edad mínima, y el grupo de edad se deduce de ella. Si es menor de 13, se hace la sesión de niños (§4.2).
 - **Mientras se lee,** una barra delgada y discreta arriba indica cuántas frases faltan para el siguiente descanso. Es distinta de la barra grande de descanso.
 - **Los errores de lectura se conservan,** porque también ocurren en la realidad. Solo se repite una frase en casos extremos, como un ruido externo fuerte e inesperado.
 - **Teclas, solo para el conductor:**
@@ -138,13 +139,14 @@ Hecho por Claude con la especificación del autor (2026-11-22).
   - **P:** pausa de emergencia. La frase interrumpida se repite completa y el evento queda registrado.
   - **R:** repite la frase, el texto o la secuencia actual, o la frase que acaba de terminar. La toma anterior queda en `frases.csv` con `repetida = 1`, para descartarla al etiquetar.
   - **M:** marca una frase dudosa.
+  - **H:** se mantiene presionada mientras habla el conductor. Cada tramo queda en `frases.csv` (tipo `conductor`), y en imágenes y preguntas el tiempo del bloque se detiene mientras tanto (2026-11-27).
   - **Esc:** termina la sesión antes.
 - **Salida** en `Descargas/BD_VOZ/<código>_<fecha>/` (`Path.home()/Downloads/BD_VOZ`, fuera del repo y de OneDrive; §3.2):
   - `audio.wav` a 48 kHz y 24 bits, en una sola toma;
-  - `frases.csv` con el inicio y el fin de cada frase, texto, secuencia, imagen o pregunta en el reloj del audio, con su tarea (`tipo`: `silencio_referencia`, `calibracion`, `frase`, `lectura`, `secuencia`, `imagen` o `pregunta`) y su `estilo` (normal o fuerte). Es la segmentación automática para el etiquetado;
-  - `sesion.json` con datos, ritmo, listas, imágenes y preguntas mostradas, entrada de audio (`entrada`), texto de lectura y secuencias, y eventos (pausas y repeticiones).
+  - `frases.csv` con el inicio y el fin de cada frase, texto, secuencia, imagen o pregunta en el reloj del audio, con su tarea (`tipo`: `silencio_referencia`, `calibracion`, `frase`, `lectura`, `secuencia`, `imagen`, `leer_secuencia` y `leer_pregunta` (los 5 s de lectura), `pregunta`, `pregunta_conductor` (niños) o `conductor` (tecla H)) y su `estilo` (normal o fuerte; vacío en los tramos donde no habla la persona). Es la segmentación automática para el etiquetado;
+  - `sesion.json` con datos, tipo de sesión (`adultos` o `niños`), ritmo, listas, imágenes y preguntas mostradas, entrada de audio (`entrada`), texto de lectura y secuencias, y eventos (pausas y repeticiones).
 - **API de audio:** la UMC202HD aparece una vez por API de Windows y se usa **WASAPI**. Si la entrada es otra (MME o DirectSound, que pasan por el mezclador y pueden remuestrear), el programa avisa.
-- **Uso:** `python Exploration/Prueba_BD/presentador_frases.py`. Opciones: `--listar` (entradas), `--dispositivo N`, `--prueba` (recorrido corto automático) y `--sin-audio` (no graba; para probar la pantalla). La UMC202HD aparece varias veces. La que reporta 48 kHz (WASAPI) funcionó en la prueba del 2026-11-22.
+- **Uso:** `python Exploration/Prueba_BD/presentador_frases.py`. Opciones: `--listar` (entradas), `--dispositivo N`, `--prueba` (recorrido corto automático), `--sin-audio` (no graba; para probar la pantalla) y `--ninos` (sesión de prueba P00 de niños, sin preguntarlo). La UMC202HD aparece varias veces. La que reporta 48 kHz (WASAPI) funcionó en la prueba del 2026-11-22.
 
 ### 4.6 Espectro del ruido (`Exploration/Prueba_BD/espectro_ruido.py`)
 
@@ -215,6 +217,7 @@ Se muestrean todas las categorías:
 | 2026-11-22 | Indicaciones y preguntas solo en pantalla, sin audios ni audífonos; en la plática la consigna pide imaginar que se platica con el responsable. Lectura continua con la versión de Coloma de «El viento norte y el sol»; las secuencias cubren los números. Sin frases propias: con *Sharvard* basta. Grabaciones solo locales (`Descargas/BD_VOZ/`, fuera de OneDrive) con copia en un disco duro externo |
 | 2026-11-24 | Instrucciones en pantalla concisas y explícitas (qué y cómo), en azul; en negro solo lo que se lee en voz alta. Espectro del ruido como complemento del sonómetro, en dBFS. Se quitan el susurro y la voz baja: no son viables porque el lugar no se insonoriza lo suficiente. Quedan voz normal y fuerte, y la plática pasa a 7.5 min |
 | 2026-11-25 | Habla libre más corta, porque hablar tanto tiempo cansa: 2 min de imágenes (1 normal y 1 fuerte) y 3 min de preguntas (1:30 y 1:30), en lugar de imágenes, voz fuerte y plática. La voz se indica explícitamente. Números y días, en las dos voces. Siempre normal y luego fuerte, con una pantalla de espera antes de cada cambio. Sin teclas F y N, y un solo banco balanceado de preguntas. Instrucciones más grandes, en otra letra y en un recuadro con título, y seña con la mano al terminar de leerlas |
+| 2026-11-27 | Sesión de niños automática para menores de 13 años: imágenes y preguntas que dice el conductor, todo con voz normal, sin frases ni voz fuerte. Sin edad mínima, a criterio de los padres. Pantallas de inicio solo con la voz normal. Sin barra de tiempo desde las secuencias; barra de lectura antes de cada pregunta y de cada secuencia, que luego dice «¡Empieza ahora!». Recuadros en rojo cuando se pide voz fuerte. Tecla H para marcar cuándo habla el conductor |
 
 ## 8. Pendientes antes de grabar
 
@@ -239,7 +242,7 @@ Se muestrean todas las categorías:
 - [ ] **Base giratoria:** construirla con marcas cada 22.5°.
 - [ ] **Reproducción en el cubículo:** fijar los niveles de calibración (voz a 1 m y ruidos).
 - [ ] **Evaluación:** definir el subconjunto de frases y de ruidos.
-- [ ] **Edad mínima** de los niños.
+- [x] ~~**Edad mínima** de los niños~~: sin mínimo (2026-11-27).
 
 ## 9. Referencias por verificar
 

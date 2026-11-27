@@ -1,7 +1,7 @@
 """Presentador de frases para la adquisición de voz de la base de datos (Obj. 3).
 
 Hecho por Claude con la especificación del autor (2026-11-22). Es una utilidad de adquisición, no análisis del TT.
-Diseño de la sesión: Metodologia/obj3_base_de_datos.md §4.1 (bloques b a f), §4.3 y §4.5.
+Diseño de la sesión: Metodologia/obj3_base_de_datos.md §4.1 (bloques b a f), §4.2 (sesión de niños), §4.3 y §4.5.
 
 Flujo:
   0. Micrófono: se toma de config_audio.json, que escribe configurar_audio.py una vez por máquina (con prueba de
@@ -12,7 +12,10 @@ Flujo:
      DirectSound pasan por el mezclador de Windows, que puede remuestrear).
   1. Datos de la sesión (en la consola). El código se asigna solo (P01, P02…). Una sesión de prueba se guarda
      como P00, igual que las demás, pero no cuenta para el balance de listas, y sus datos se llenan solos
-     (DATOS_PRUEBA). En las demás se pide la edad exacta y el grupo se deduce de ella.
+     (DATOS_PRUEBA). En las demás se pide la edad exacta (sin mínimo) y el grupo se deduce de ella.
+     Sesión de niños (menores de 13, automática por la edad; decisión del 2026-11-27): silencio de referencia,
+     imágenes y preguntas que dice el conductor, todo con voz normal. Sin calibración, frases, lectura, secuencias
+     ni voz fuerte. Para probarla, la sesión de prueba pregunta si es de niños (o se da --ninos).
   2. Silencio de referencia (SILENCIO_REFERENCIA s), grabando, con una barra que muestra cuánto falta. Luego se muestra cómo se ve la barra de descanso.
   3. Calibración con calibracion.txt: el conductor presiona Espacio cuando la persona termina cada frase.
      Se mide el ritmo en segundos por sílaba.
@@ -25,17 +28,23 @@ Flujo:
      Mientras se lee, una barra delgada indica cuántas frases faltan para el siguiente descanso.
   5. Lectura continua (ARCHIVO_LECTURA, «El viento norte y el sol») y secuencias (SECUENCIAS: contar del 1 al 20 y
      los días de la semana). Cada una a su ritmo: el conductor presiona Espacio cuando la persona termina. Cada
-     secuencia se dice en las dos VOCES, primero normal y luego fuerte.
+     secuencia se dice en las dos VOCES, primero normal y luego fuerte. Cada secuencia sale primero con una barra
+     de LECTURA_SECUENCIA s para leer qué decir, y luego el recuadro dice «¡Empieza ahora!» (Espacio adelanta ese
+     momento); el tramo de lectura queda aparte en frases.csv (2026-11-27).
   6. Habla libre guiada (§4.3), cada bloque con una barra de tiempo:
        - imágenes (DURACION_IMAGENES s en cada voz): de la carpeta CARPETA_IMAGENES, en orden balanceado entre
          participantes (las menos usadas primero, con semilla según el código). Con Espacio se pasa a la siguiente;
        - preguntas (DURACION_PREGUNTAS s en cada voz): de preguntas.txt, en orden balanceado igual que las imágenes.
-         Con Espacio se pasa a la siguiente.
+         Cada pregunta sale primero con una barra de LECTURA_PREGUNTA s para leerla, que no cuenta en el tiempo del
+         bloque. Con Espacio se pasa a la siguiente.
+     Desde las secuencias no hay barra de tiempo en pantalla (2026-11-27): el tiempo que queda sale solo en la línea
+     del conductor.
      Antes de cada cambio de voz hay una pantalla de espera que lo explica y sirve de descanso (decisión del
      2026-11-25). Susurro y voz baja se quitaron el 2026-11-24: el lugar no se insonoriza lo suficiente.
      Las indicaciones y preguntas solo se muestran en pantalla (sin audio, decisión del 2026-11-22).
      Lo que se lee en voz alta va en negro y sin recuadro. Las instrucciones y las preguntas van en un recuadro azul
-     con título y otra letra (decisiones del 2026-11-24 y del 2026-11-25: el color solo no bastaba). En las pantallas
+     con título y otra letra (decisiones del 2026-11-24 y del 2026-11-25: el color solo no bastaba); cuando se pide
+     voz fuerte, el recuadro va en rojo (2026-11-27). En las pantallas
      de espera se pide una seña con la mano al terminar de leer, para que el conductor sepa cuándo continuar.
   7. Guarda en CARPETA_SALIDA/<código>_<fecha>/ (Descargas/BD_VOZ, fuera de OneDrive; la copia al disco externo
      se hace aparte):
@@ -53,6 +62,8 @@ Teclas (solo el conductor; la persona no debe tener el teclado):
   R        repite la frase, el texto o la secuencia actual (o la frase que acaba de terminar) por un ruido externo
            fuerte; la toma anterior queda en frases.csv con repetida = 1
   M        marca la frase, imagen o pregunta actual como dudosa (ruido externo, palabra omitida…)
+  H        mantener presionada mientras habla el conductor: cada tramo queda en frases.csv (tipo «conductor») y, en
+           imágenes y preguntas, el tiempo del bloque se detiene mientras tanto
   Esc      termina la sesión antes y guarda lo grabado
   F11      pantalla completa
 
@@ -60,7 +71,8 @@ Uso:
   python Exploration/Prueba_BD/presentador_frases.py              sesión normal
   python Exploration/Prueba_BD/presentador_frases.py --listar     lista los dispositivos de entrada
   python Exploration/Prueba_BD/presentador_frases.py --prueba     recorrido corto y automático, sin participante
-  Opciones: --dispositivo N (índice de --listar), --sin-audio (no graba; para probar la pantalla)
+  Opciones: --dispositivo N (índice de --listar), --sin-audio (no graba; para probar la pantalla),
+            --ninos (sesión de prueba P00 de niños, sin preguntarlo; p. ej. con --prueba)
 """
 import argparse
 import csv
@@ -99,7 +111,12 @@ SILENCIO_LISTAS = 5.0         # s en blanco entre listas
 SILENCIO_REFERENCIA = 30.0    # s de silencio grabado al inicio (ruido de fondo de la sesión)
 VOCES = ("normal", "fuerte")  # en este orden, en las secuencias, las imágenes y las preguntas
 DURACION_IMAGENES = 60.0      # s de imágenes en cada voz (las que alcancen)
-DURACION_PREGUNTAS = 90.0     # s de preguntas en cada voz
+DURACION_PREGUNTAS = 90.0     # s de preguntas en cada voz (sin contar la lectura de cada pregunta)
+LECTURA_PREGUNTA = 5.0        # s con barra para leer cada pregunta antes de contestarla
+LECTURA_SECUENCIA = 5.0       # s con barra para leer qué decir en cada secuencia, antes de «¡Empieza ahora!»
+DURACION_IMAGENES_NINOS = 60.0   # sesión de niños: solo voz normal
+DURACION_PREGUNTAS_NINOS = 90.0
+EDAD_NINOS = 13               # menores de esta edad hacen la sesión de niños (grupo «niño»)
 SECUENCIAS = (("numeros", "Cuenta del 1 al 20."),
               ("dias", "Di los días de la semana, de lunes a domingo."))
 
@@ -115,12 +132,15 @@ TAM_INSTRUCCION = 48          # pantallas de instrucciones: tamaño máximo, se 
 COLOR_LECTURA = "black"       # lo que la persona lee en voz alta
 COLOR_INSTRUCCION = "#1f5f8b" # instrucciones, consignas y preguntas: no se leen en voz alta
 FONDO_INSTRUCCION = "#eaf3fb"  # dentro del recuadro
+COLOR_FUERTE = "#b0281c"      # el recuadro en rojo cuando se pide voz fuerte (2026-11-27)
+FONDO_FUERTE = "#fbeceb"
 COLOR_TEXTO_BARRA = "#143f5e" # texto sobre la barra de descanso o de tiempo
 
 # Instrucciones de cada pantalla (las de las voces, las imágenes y las preguntas están en preguntas.txt)
 INSTRUCCIONES = {
     "bienvenida": "Te damos la bienvenida.\n\n"
-                  "En un recuadro azul van las instrucciones y las preguntas: no las leas en voz alta.\n"
+                  "En un recuadro azul (o rojo, cuando se pide voz fuerte) van las instrucciones y las "
+                  "preguntas: no las leas en voz alta.\n"
                   "Lo que está en negro y sin recuadro sí se lee en voz alta.\n\n"
                   f"Primero grabaremos {SILENCIO_REFERENCIA:.0f} segundos del ruido del lugar.",
     "silencio": "No hables ni te muevas hasta que la barra se vacíe.",
@@ -131,11 +151,15 @@ INSTRUCCIONES = {
     "frases": "Las frases cambiarán solas.\nLee cada una en voz alta, una sola vez.\n\n"
               "Con la pantalla en blanco, guarda silencio.",
     "lectura": "Lee en voz alta todo el texto, con tu voz y ritmo normales. Si te equivocas, continúa.",
-    "secuencias": "Ahora no leerás.\n\nDi en voz alta lo que se pide: primero con tu voz normal y después con voz fuerte.",
-    "imagenes": "Ahora verás varias imágenes.\n\nDescríbelas en voz alta: primero con tu voz normal y después con voz "
-                "fuerte.",
-    "preguntas": "Por último, contestarás varias preguntas: primero con tu voz normal y después con voz fuerte.\n\n"
-                 "No las leas en voz alta. No hay respuestas correctas.",
+    "secuencias": "Ahora no leerás.\n\nDi en voz alta lo que se pide, con tu voz normal.\n\n"
+                  "Primero tendrás unos segundos para leer qué decir. Empieza cuando aparezca «¡Empieza ahora!».",
+    "imagenes": "Ahora verás varias imágenes.\n\nDescríbelas en voz alta, con tu voz normal.",
+    "preguntas": "Por último, contestarás varias preguntas con tu voz normal.\n\n"
+                 "Primero tendrás unos segundos para leer cada pregunta. No la leas en voz alta. "
+                 "No hay respuestas correctas.",
+    "imagenes_nino": "Vas a ver unas imágenes.\n\nCuéntanos todo lo que ves, con tu voz normal.",
+    "preguntas_nino": "Ahora te vamos a hacer unas preguntas.\n\nContesta con tu voz normal.",
+    "pregunta_nino": "Escucha la pregunta y contesta con tu voz normal.",
     "cambio_fuerte": "Ahora lo mismo con voz fuerte, como si la persona estuviera al otro lado del salón.\n\n"
                      "No grites ni te acerques al micrófono.",
     "cambio_normal": "Ahora regresa a tu voz normal.",
@@ -143,6 +167,7 @@ INSTRUCCIONES = {
     "final": "Terminamos.\n\nMuchas gracias por participar.",
 }
 SENA = "Haz una seña con la mano cuando termines de leer."   # al pie de las pantallas de espera
+EMPIEZA = "¡Empieza ahora!"   # título del recuadro de la secuencia cuando termina su barra de lectura
 REPETICION_TECLA = 1.2        # s: más que el retardo máximo de repetición del teclado de Windows (1 s)
 
 ALTO_BARRA = 34               # barra de descanso (px)
@@ -151,8 +176,10 @@ COLOR_PROGRESO = "#82c99a"    # barra delgada: cuánto falta para el siguiente d
 CODIGO_PRUEBA = "P00"         # sesiones de prueba: se guardan normal, pero no cuentan para el balance de listas
 # Datos de las sesiones de prueba: siempre los mismos, para no pedirlos (2026-11-25). La ganancia y el sonómetro van
 # vacíos porque son mediciones: un valor fijo parecería real.
-DATOS_PRUEBA = {"codigo": CODIGO_PRUEBA, "edad": 25, "grupo_edad": "adulto joven", "sexo": "h", "lugar": "cubículo",
+# El grupo de edad no va aquí: se deduce de la edad, como en las sesiones reales.
+DATOS_PRUEBA = {"codigo": CODIGO_PRUEBA, "edad": 9, "sexo": "h", "lugar": "cubículo",
                 "ganancia": "", "sonometro_fondo_dba": "", "conductor": "Arturo", "notas": "sesión de prueba"}
+EDAD_PRUEBA_NINOS = 8         # edad de la sesión de prueba de niños
 # Grupos de edad (edad mínima, nombre): se guarda la edad exacta y el grupo se deduce de ella
 GRUPOS = ((60, "adulto mayor"), (31, "adulto"), (18, "adulto joven"), (13, "adolescente"), (0, "niño"))
 
@@ -463,10 +490,17 @@ class Sesion:
         self.sil_ref, self.sil_frases, self.sil_listas = (SILENCIO_REFERENCIA * escala, SILENCIO_FRASES * escala,
                                                           SILENCIO_LISTAS * escala)
         escala_libre = 0.1 if prueba else 1.0
-        self.dur_imagenes, self.dur_preguntas = DURACION_IMAGENES * escala_libre, DURACION_PREGUNTAS * escala_libre
+        self.nino = datos.get("grupo_edad") == "niño"
+        self.dur_imagenes = (DURACION_IMAGENES_NINOS if self.nino else DURACION_IMAGENES) * escala_libre
+        self.dur_preguntas = (DURACION_PREGUNTAS_NINOS if self.nino else DURACION_PREGUNTAS) * escala_libre
+        self.dur_lectura = LECTURA_PREGUNTA * escala_libre
+        self.dur_lectura_secuencia = LECTURA_SECUENCIA * escala_libre
+        self.leyendo_secuencia = False   # True durante la barra de lectura de una secuencia
         self.orden, self.aleatorias = asignar_listas(datos["codigo"], sorted(listas))
         self.orden_imagenes = asignar_imagenes(datos["codigo"], imagenes)
         self.preguntas = asignar_preguntas(datos["codigo"], preguntas)
+        if self.nino:
+            self.orden, self.aleatorias = [], []
         if prueba:  # recorrido corto: 2 listas de 3 frases
             self.orden = self.orden[:2]
             self.calibracion = self.calibracion[:3]
@@ -481,6 +515,10 @@ class Sesion:
         self.k_imagen = 0
         self.k_pregunta = 0
         self.foto = None             # referencia a la imagen mostrada (Tk la borra si no se guarda)
+        self.hablando = None         # tramo en curso del conductor (tecla H)
+        self.congelado = None        # tiempo del bloque detenido mientras habla el conductor
+        self.texto_estado = ""
+        self._auto_i, self._auto_id = None, None   # --prueba: cadena de Espacios automáticos
 
         self.raiz = tk.Tk()
         self.raiz.title("Presentador de frases")
@@ -490,11 +528,14 @@ class Sesion:
         self.barra = tk.Canvas(self.raiz, height=ALTO_BARRA + 20, bg="white", highlightthickness=0)
         self.barra.pack(side="top", fill="x")
         self.barra_inicio = self.barra_total = self.barra_fin = None
+        self.barra_visible = True
         # Indicación de la voz y la tarea, en un recuadro: aparece en la lectura y el habla libre
         self.consigna = tk.Frame(self.raiz, bg=FONDO_INSTRUCCION, highlightthickness=3,
                                  highlightbackground=COLOR_INSTRUCCION)
-        tk.Label(self.consigna, text="INSTRUCCIONES", font=(FUENTE_INSTRUCCION, TAM_AYUDA + 3, "bold"),
-                 bg=COLOR_INSTRUCCION, fg="white", padx=12).pack(side="left", fill="y")
+        self.titulo_consigna = tk.Label(self.consigna, text="INSTRUCCIONES",
+                                        font=(FUENTE_INSTRUCCION, TAM_AYUDA + 3, "bold"), bg=COLOR_INSTRUCCION,
+                                        fg="white", padx=12)
+        self.titulo_consigna.pack(side="left", fill="y")
         self.texto_consigna = tk.Label(self.consigna, bg=FONDO_INSTRUCCION, fg=COLOR_INSTRUCCION, justify="center",
                                        padx=12, pady=4)
         self.texto_consigna.pack(side="left", expand=True, fill="both")
@@ -521,11 +562,23 @@ class Sesion:
                               ("<p>", self.pausa), ("<P>", self.pausa),
                               ("<m>", self.marcar), ("<M>", self.marcar), ("<r>", self.repetir),
                               ("<R>", self.repetir), ("<Escape>", self.terminar),
+                              ("<KeyPress-h>", self.hablar), ("<KeyPress-H>", self.hablar),
+                              ("<KeyRelease-h>", self.callar), ("<KeyRelease-H>", self.callar),
+                              ("<FocusOut>", self.callar),
                               ("<F11>", lambda e: self.raiz.attributes("-fullscreen",
                                                                        not self.raiz.attributes("-fullscreen")))):
             self.raiz.bind(tecla, accion)
         self.raiz.protocol("WM_DELETE_WINDOW", lambda: self.terminar(None))
 
+        if self.nino:
+            # Niños: sin lectura; imágenes y preguntas que dice el conductor, todo con voz normal
+            self.pasos = [("espera", INSTRUCCIONES["bienvenida"]), ("silencio_ref", None)]
+            if self.orden_imagenes:
+                self.pasos += [("espera", INSTRUCCIONES["imagenes_nino"]), ("imagenes", "normal")]
+            self.pasos += [("espera", INSTRUCCIONES["preguntas_nino"]), ("preguntas", "normal"),
+                           ("espera", INSTRUCCIONES["final"])]
+            self.siguiente()
+            return
         self.pasos = [("espera", INSTRUCCIONES["bienvenida"]),
                       ("silencio_ref", None),
                       ("espera", INSTRUCCIONES["barras"]),
@@ -544,14 +597,21 @@ class Sesion:
             self.raiz.after_cancel(self.tarea)
             self.tarea = None
 
-    def estado(self, texto):
-        self.ayuda.config(text=f"{texto}   |   Espacio · P pausa · R repetir · M marcar · Esc terminar · F11 pantalla completa")
+    def estado(self, texto, reloj=None):
+        """Línea gris del conductor. Con `reloj`, muestra además el tiempo que le queda al bloque."""
+        self.texto_estado = texto
+        extra = f"   ·   Quedan {self._reloj(reloj)}" if reloj is not None else ""
+        self.ayuda.config(text=f"{texto}{extra}   |   Espacio · P pausa · R repetir · M marcar · H hablo (mantener) · "
+                               "Esc terminar · F11 pantalla completa")
 
-    def mostrar_barra(self, segundos, al_terminar, etiqueta="Descanso", total=None):
-        """Barra que se vacía en `segundos`. Con `total`, arranca ya gastada (para reanudar un bloque tras pausa)."""
+    def mostrar_barra(self, segundos, al_terminar, etiqueta="Descanso", total=None, visible=True):
+        """Barra que se vacía en `segundos`. Con `total`, arranca ya gastada (para reanudar un bloque tras pausa).
+        Sin `visible`, solo cuenta el tiempo y lo muestra en la línea del conductor."""
         total = total or segundos
         self.barra_inicio, self.barra_total, self.barra_fin = time.monotonic() - (total - segundos), total, al_terminar
-        self.barra_etiqueta = etiqueta
+        self.barra_etiqueta, self.barra_visible, self._segundo = etiqueta, visible, None
+        if not visible:
+            self.ocultar_barra()
         self._animar_barra()
 
     def barra_restante(self):
@@ -562,6 +622,13 @@ class Sesion:
         if transcurrido >= self.barra_total:
             self.ocultar_barra()
             return self.barra_fin()
+        if not self.barra_visible:
+            segundo = round(self.barra_total - transcurrido)
+            if segundo != self._segundo:  # la línea del conductor cambia una vez por segundo
+                self._segundo = segundo
+                self.estado(self.texto_estado, reloj=segundo)
+            self.tarea = self.raiz.after(100, self._animar_barra)
+            return
         ancho, margen = max(self.barra.winfo_width(), 400), 60
         lleno = (ancho - 2 * margen) * (1 - transcurrido / self.barra_total)
         self.barra.delete("all")
@@ -605,10 +672,21 @@ class Sesion:
         self.texto.pack(expand=True, fill="both")
         self.consigna.pack_forget()
 
-    def mostrar_instruccion(self, texto, titulo="INSTRUCCIONES", sena=False):
+    def pintar_recuadros(self, fuerte=False):
+        """Azul normalmente; rojo cuando se pide voz fuerte."""
+        color, fondo = (COLOR_FUERTE, FONDO_FUERTE) if fuerte else (COLOR_INSTRUCCION, FONDO_INSTRUCCION)
+        for marco in (self.consigna, self.caja):
+            marco.config(bg=fondo, highlightbackground=color)
+        for titulo in (self.titulo_consigna, self.titulo_caja):
+            titulo.config(bg=color)
+        for texto in (self.texto_consigna, self.texto_caja, self.pie_caja):
+            texto.config(bg=fondo, fg=color)
+
+    def mostrar_instruccion(self, texto, titulo="INSTRUCCIONES", sena=False, fuerte=False):
         """Recuadro con título en el centro, para que no se confunda con una frase por leer. Con `sena`, al pie se
-        pide la seña de que terminó de leer."""
+        pide la seña de que terminó de leer. Con `fuerte`, el recuadro va en rojo."""
         self.texto.pack_forget()
+        self.pintar_recuadros(fuerte)
         self.titulo_caja.config(text=titulo)
         self.texto_caja.config(text=texto)
         self.pie_caja.pack_forget()
@@ -636,8 +714,10 @@ class Sesion:
         if self.caja.winfo_manager():
             self._ajustar_caja()
 
-    def mostrar_consigna(self, texto):
-        """Recuadro de arriba, con la letra más grande que no pase de PARTE_CONSIGNA del alto de la ventana."""
+    def mostrar_consigna(self, texto, fuerte=False):
+        """Recuadro de arriba, con la letra más grande que no pase de PARTE_CONSIGNA del alto de la ventana. Con
+        `fuerte`, en rojo."""
+        self.pintar_recuadros(fuerte)
         self.texto_consigna.config(text=texto)
         self.consigna.pack(side="top", fill="x", padx=12, pady=(4, 0), before=self.zona)
         self.raiz.update_idletasks()
@@ -662,7 +742,8 @@ class Sesion:
 
     # ---- pasos
     def _espera(self, mensaje):
-        self.mostrar_instruccion(mensaje, sena=mensaje != INSTRUCCIONES["final"])
+        self.mostrar_instruccion(mensaje, sena=mensaje != INSTRUCCIONES["final"],
+                                 fuerte=mensaje == INSTRUCCIONES["cambio_fuerte"])
         self.estado("Esperando al conductor (Espacio)")
         if self.prueba:
             self.programar(0.5, self.siguiente)
@@ -759,8 +840,23 @@ class Sesion:
                 break
 
     def _secuencia(self, dato):
+        """Primero una barra para leer qué decir (como en las preguntas) y luego «¡Empieza ahora!» (2026-11-27)."""
         clave, consigna, voz = dato
-        self.mostrar_instruccion(f"{self.indicaciones[voz]}\n\n{consigna}")
+        self.leyendo_secuencia = True
+        self.mostrar_instruccion(f"{self.indicaciones[voz]}\n\n{consigna}", fuerte=voz == "fuerte")
+        self.estado(f"Secuencia «{clave}» ({voz}): leyendo. Espacio = empezar ya")
+        self.fila_actual = self._fila("leer_secuencia", "", clave, consigna, estilo="")
+        self.mostrar_barra(self.dur_lectura_secuencia, lambda: self._empezar_secuencia(dato), etiqueta="Lee qué decir")
+
+    def _empezar_secuencia(self, dato):
+        """Termina la lectura: el recuadro dice que empiece y desde aquí se registra la secuencia."""
+        clave, consigna, voz = dato
+        self.cancelar()
+        self.ocultar_barra()
+        self.leyendo_secuencia = False
+        self._cerrar_fila()
+        self.mostrar_instruccion(f"{self.indicaciones[voz]}\n\n{consigna}", titulo=EMPIEZA.upper(),
+                                 fuerte=voz == "fuerte")
         self.estado(f"Secuencia «{clave}» ({voz}): Espacio cuando termine")
         self.fila_actual = self._fila("secuencia", "", clave, consigna, estilo=voz)
         if self.prueba:
@@ -784,15 +880,35 @@ class Sesion:
         self._bloque("pregunta", voz, self.dur_preguntas)
 
     def _bloque(self, tipo, voz, duracion):
-        self.bloque = {"tipo": tipo, "voz": voz, "restante": duracion, "total": duracion}
+        self.bloque = {"tipo": tipo, "voz": voz, "restante": duracion, "total": duracion, "fase": None}
         self._correr_bloque()
 
     def _correr_bloque(self):
-        """Muestra el elemento actual y arranca (o retoma) la barra con el tiempo que le queda al bloque."""
+        """Muestra el elemento actual y arranca (o retoma) el tiempo del bloque. Las preguntas de los adultos
+        empiezan con su barra de lectura, que no cuenta en ese tiempo."""
         b = self._mostrar_elemento()
-        self.mostrar_barra(b["restante"], self._fin_bloque, etiqueta="Tiempo", total=b["total"])
-        if self.prueba:
+        if b["tipo"] == "pregunta" and not self.nino:
+            b["fase"] = "leer"
+            self.mostrar_barra(self.dur_lectura, self._empezar_respuesta, etiqueta="Lee la pregunta")
+        else:
+            self._contar_bloque()
+        if self.prueba and self._auto_i != self.i:  # una sola cadena por bloque
+            self._auto_i = self.i
             self._auto_espacio(self.i)
+
+    def _contar_bloque(self):
+        """Tiempo del bloque sin barra en pantalla: solo lo ve el conductor."""
+        b = self.bloque
+        b["fase"] = "contestar"
+        self.mostrar_barra(b["restante"], self._fin_bloque, etiqueta="Tiempo", total=b["total"], visible=False)
+
+    def _empezar_respuesta(self):
+        """Termina la lectura de la pregunta: desde aquí corre el tiempo y se registra la respuesta."""
+        self._cerrar_fila()
+        clave, pregunta = self.preguntas[self.k_pregunta % len(self.preguntas)]
+        self.fila_actual = self._fila("pregunta", "", clave, pregunta, estilo=self.bloque["voz"])
+        self.estado(f"Pregunta {clave} ({self.bloque['voz']}): contestando. Espacio = siguiente pregunta")
+        self._contar_bloque()
 
     def _auto_espacio(self, i):
         """--prueba: pasa de imagen o de pregunta sola."""
@@ -800,15 +916,22 @@ class Sesion:
             if self.i != i or self.en_pausa or self.bloque is None:
                 return
             self.espacio(None)
-            self.raiz.after(2500, paso)
-        self.raiz.after(2500, paso)
+            self._auto_id = self.raiz.after(2500, paso)
+        self._auto_id = self.raiz.after(2500, paso)
 
     def _mostrar_elemento(self):
         """Imagen o pregunta actual en pantalla y fila nueva en el registro."""
         b = self.bloque
         self.limpiar_pantalla()
+        if b["tipo"] == "pregunta" and self.nino:  # la pregunta la dice el conductor
+            n = self.k_pregunta + 1
+            self.mostrar_instruccion(INSTRUCCIONES["pregunta_nino"], titulo="PREGUNTA")
+            self.fila_actual = self._fila("pregunta_conductor", "", n, "", estilo=b["voz"])
+            self.estado(f"Pregunta {n}: dila manteniendo H. Espacio = siguiente pregunta")
+            return b
         # primero la voz que se pide y debajo la tarea
-        self.mostrar_consigna(f"{self.indicaciones[b['voz']]}\n{self.indicaciones[b['tipo']]}")
+        fuerte = b["voz"] == "fuerte"
+        self.mostrar_consigna(f"{self.indicaciones[b['voz']]}\n{self.indicaciones[b['tipo']]}", fuerte=fuerte)
         if b["tipo"] == "imagen":
             nombre = self.orden_imagenes[self.k_imagen % len(self.orden_imagenes)]
             self._dibujar_imagen(nombre)
@@ -816,9 +939,10 @@ class Sesion:
             self.estado(f"Imagen {self.k_imagen + 1} ({b['voz']}): {nombre}. Espacio = siguiente imagen")
         else:
             clave, pregunta = self.preguntas[self.k_pregunta % len(self.preguntas)]
-            self.mostrar_instruccion(pregunta, titulo="PREGUNTA")
-            self.fila_actual = self._fila("pregunta", "", clave, pregunta, estilo=b["voz"])
-            self.estado(f"Pregunta {clave} ({b['voz']}). Espacio = siguiente pregunta")
+            self.mostrar_instruccion(pregunta, titulo="PREGUNTA", fuerte=fuerte)
+            # mientras la lee, la persona no debería hablar; el tramo queda aparte, sin estilo
+            self.fila_actual = self._fila("leer_pregunta", "", clave, pregunta, estilo="")
+            self.estado(f"Pregunta {clave} ({b['voz']}): leyendo. Espacio = siguiente pregunta")
         return b
 
     def _dibujar_imagen(self, nombre):
@@ -836,7 +960,14 @@ class Sesion:
     def _siguiente_elemento(self):
         self._cerrar_fila()
         self._avanzar_elemento()
-        self._mostrar_elemento()
+        if self.bloque["tipo"] == "pregunta" and not self.nino:
+            # la nueva pregunta vuelve a tener su lectura; el tiempo del bloque se detiene mientras tanto
+            if self.bloque["fase"] == "contestar":
+                self.bloque["restante"] = self.barra_restante()
+            self.cancelar()
+            self._correr_bloque()
+        else:
+            self._mostrar_elemento()
 
     def _avanzar_elemento(self):
         if self.bloque["tipo"] == "imagen":
@@ -885,9 +1016,36 @@ class Sesion:
     def soltar_espacio(self, _evento):
         self.espacio_abajo = False
 
+    def hablar(self, _evento):
+        """H presionada: empieza un tramo del conductor. En imágenes y preguntas, el tiempo se detiene."""
+        if self.hablando is not None or self.i >= len(self.pasos):
+            return  # repetición automática del teclado
+        self.hablando = self._fila("conductor", "", "", "", estilo="")
+        if self.bloque is not None and not self.en_pausa and self.tarea is not None:
+            self.congelado = (self.barra_restante(), self.barra_fin, self.barra_etiqueta, self.barra_total,
+                              self.barra_visible)
+            self.cancelar()
+        self.estado(f"HABLANDO EL CONDUCTOR (suelta H al terminar) · {self.texto_estado}")
+
+    def callar(self, _evento):
+        """H soltada (o la ventana perdió el foco): termina el tramo y el tiempo sigue donde se quedó."""
+        if self.hablando is None:
+            return
+        self.hablando["fin_s"] = round(self.grab.tiempo(), 3)
+        self.registro.append(self.hablando)
+        self.hablando = None
+        self.estado(self.texto_estado.split(" · ", 1)[-1] if self.texto_estado.startswith("HABLANDO") else
+                    self.texto_estado)
+        if self.congelado is not None:
+            restante, fin, etiqueta, total, visible = self.congelado
+            self.congelado = None
+            if not self.en_pausa:
+                self.mostrar_barra(restante, fin, etiqueta=etiqueta, total=total, visible=visible)
+
     def espacio(self, _evento):
         if self.en_pausa or self.i >= len(self.pasos):
             return
+        self.callar(None)
         tipo, frase = self.pasos[self.i]
         if tipo == "espera":
             self.siguiente()
@@ -898,6 +1056,8 @@ class Sesion:
             self._cerrar_fila()
             self.duraciones_calib.append((self.registro[-1]["fin_s"] - inicio, silabas(frase)))
             self.siguiente()
+        elif tipo == "secuencia" and self.leyendo_secuencia:  # ya leyó: empieza sin esperar la barra
+            self._empezar_secuencia(frase)
         elif tipo in ("lectura", "secuencia"):
             self._cerrar_y_seguir()
 
@@ -905,8 +1065,10 @@ class Sesion:
         if self.i >= len(self.pasos):
             return
         if not self.en_pausa:
+            self.callar(None)
             self.en_pausa = True
-            if self.bloque is not None:  # habla libre: al reanudar sigue con el tiempo que le quedaba
+            # habla libre: al reanudar sigue con el tiempo que le quedaba (la lectura de la pregunta se repite)
+            if self.bloque is not None and self.bloque["fase"] == "contestar":
                 self.bloque["restante"] = self.barra_restante()
             self.cancelar()
             self.ocultar_barra()
@@ -961,13 +1123,17 @@ class Sesion:
         self.estado("Frase marcada")
 
     def terminar(self, _evento):
+        self.callar(None)
         self.eventos.append({"evento": "fin_anticipado", "t_s": round(self.grab.tiempo(), 3)})
         self._cerrar_fila(interrumpida=True)
         self.finalizar()
 
     # ---- cierre
     def finalizar(self):
+        self.callar(None)  # cierra el tramo del conductor si H sigue presionada
         self.cancelar()
+        if self._auto_id is not None:
+            self.raiz.after_cancel(self._auto_id)
         audio = self.grab.detener()
         carpeta = CARPETA_SALIDA / f"{self.datos['codigo']}_{datetime.datetime.now():%Y%m%d_%H%M%S}"
         carpeta.mkdir(parents=True, exist_ok=True)
@@ -986,16 +1152,18 @@ class Sesion:
         mostradas = list(dict.fromkeys(r["texto"] for r in self.registro if r["tipo"] == "imagen"))
         hechas = list(dict.fromkeys(r["frase"] for r in self.registro if r["tipo"] == "pregunta"))
         sesion = dict(self.datos, fecha=datetime.datetime.now().isoformat(timespec="seconds"), prueba=self.prueba,
+                      tipo_sesion="niños" if self.nino else "adultos", lectura_pregunta_s=self.dur_lectura,
+                      lectura_secuencia_s=self.dur_lectura_secuencia,
                       ritmo_s_por_silaba=self.ritmo, margen=MARGEN, silencio_frases_s=self.sil_frases,
                       silencio_listas_s=self.sil_listas, silencio_referencia_s=self.sil_ref,
                       listas_orden=self.orden, listas_fijas=list(LISTAS_FIJAS), listas_aleatorias=self.aleatorias,
                       listas_completas=completas, imagenes_mostradas=mostradas, preguntas_mostradas=hechas,
-                      voces=list(VOCES), duracion_imagenes_por_voz_s=self.dur_imagenes,
+                      voces=["normal"] if self.nino else list(VOCES), duracion_imagenes_por_voz_s=self.dur_imagenes,
                       duracion_preguntas_por_voz_s=self.dur_preguntas, eventos=self.eventos, fs=FS, bits=24,
                       archivo_listas=ARCHIVO_LISTAS.name, archivo_calibracion=ARCHIVO_CALIBRACION.name,
                       archivo_preguntas=ARCHIVO_PREGUNTAS.name,
                       archivo_lectura=ARCHIVO_LECTURA.name if self.lectura else None,
-                      secuencias=[c for c, _ in SECUENCIAS])
+                      secuencias=[] if self.nino else [c for c, _ in SECUENCIAS])
         (carpeta / "sesion.json").write_text(json.dumps(sesion, ensure_ascii=False, indent=2), encoding="utf-8")
         if not self.prueba and self.datos["codigo"] != CODIGO_PRUEBA:  # las pruebas no cuentan para el balance
             nuevo = not ARCHIVO_ASIGNACIONES.exists()
@@ -1026,7 +1194,20 @@ def siguiente_codigo():
     return f"P{max(numeros, default=0) + 1:02d}"
 
 
-def pedir_datos():
+def datos_prueba(ninos=False):
+    """Los datos fijos de P00; con `ninos`, la edad de niño, y el grupo siempre se deduce de la edad."""
+    datos = dict(DATOS_PRUEBA)
+    if ninos:
+        datos["edad"] = EDAD_PRUEBA_NINOS
+    datos["grupo_edad"] = grupo_de_edad(datos["edad"])
+    tipo = "de niños" if datos["grupo_edad"] == "niño" else "de adultos"
+    print(f"Código asignado: {CODIGO_PRUEBA}, sesión {tipo}. Datos de prueba: {datos['edad']} años, sexo "
+          f"{datos['sexo']}, {datos['lugar']}, conductor {datos['conductor']}.")
+    return datos
+
+
+def pedir_datos(ninos=None):
+    """Con `ninos` (opción --ninos) no se pregunta si la prueba es de niños."""
     def opcion(pregunta, opciones):
         while True:
             r = input(f"{pregunta} {list(opciones)}: ").strip().lower()
@@ -1034,15 +1215,19 @@ def pedir_datos():
                 return r
     prueba = opcion(f"¿Es una sesión de prueba? (se guarda como {CODIGO_PRUEBA})", ("s", "n")) == "s"
     if prueba:
-        print(f"Código asignado: {CODIGO_PRUEBA}. Datos de prueba: {DATOS_PRUEBA['edad']} años, sexo "
-              f"{DATOS_PRUEBA['sexo']}, {DATOS_PRUEBA['lugar']}, conductor {DATOS_PRUEBA['conductor']}.")
-        return dict(DATOS_PRUEBA)
+        if ninos is None:
+            ninos = opcion(f"¿Prueba de niños? ({EDAD_PRUEBA_NINOS} años)", ("s", "n")) == "s"
+        return datos_prueba(ninos)
+    if ninos:
+        print("AVISO: --ninos solo aplica a sesiones de prueba (P00); se usa la edad capturada.")
     codigo = siguiente_codigo()
     print(f"Código asignado: {codigo}")
     edad = None
     while edad is None:
         r = input("Edad (años): ").strip()
-        edad = int(r) if r.isdigit() and 3 <= int(r) <= 110 else None
+        edad = int(r) if r.isdigit() and 1 <= int(r) <= 110 else None  # sin edad mínima (decisión del 2026-11-27)
+    if grupo_de_edad(edad) == "niño":
+        print(f"Menor de {EDAD_NINOS} años: sesión de niños (imágenes y preguntas que dices tú, solo voz normal).")
     return {"codigo": codigo, "edad": edad, "grupo_edad": grupo_de_edad(edad),
             "sexo": opcion("Sexo", ("h", "m")),
             "lugar": opcion("Lugar", ("cubículo", "auto")),
@@ -1059,6 +1244,7 @@ def main():
                    help="índice del dispositivo de entrada (si no se da, se elige en la consola)")
     p.add_argument("--prueba", action="store_true", help="recorrido corto y automático")
     p.add_argument("--sin-audio", action="store_true", help="no graba (solo prueba la pantalla)")
+    p.add_argument("--ninos", action="store_true", help="en una sesión de prueba (P00), usar la sesión de niños")
     a = p.parse_args()
     if a.listar:
         import pyaudio
@@ -1092,7 +1278,10 @@ def main():
         else:
             entrada = elegir_entrada(a.dispositivo)
     print(f"Las sesiones se guardan en {CARPETA_SALIDA}")
-    datos = dict(DATOS_PRUEBA, notas="recorrido de prueba") if a.prueba else pedir_datos()
+    if a.prueba:
+        datos = dict(datos_prueba(a.ninos), notas="recorrido de prueba")
+    else:
+        datos = pedir_datos(True if a.ninos else None)
     if entrada:
         datos["entrada"] = entrada  # dispositivo, canal y prueba de nivel quedan en sesion.json
     grabador = SinAudio() if a.sin_audio else Grabador(entrada)
