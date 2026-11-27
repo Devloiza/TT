@@ -41,7 +41,9 @@ Flujo:
      del conductor.
      Antes de cada cambio de voz hay una pantalla de espera que lo explica y sirve de descanso (decisión del
      2026-11-25). Susurro y voz baja se quitaron el 2026-11-24: el lugar no se insonoriza lo suficiente.
-     Las indicaciones y preguntas solo se muestran en pantalla (sin audio, decisión del 2026-11-22).
+     Las indicaciones y preguntas solo se muestran en pantalla (sin audio, decisión del 2026-11-22). Excepción, sesión
+     de niños (2026-11-27): el conductor dice las preguntas en voz alta; esos tramos quedan aparte en frases.csv
+     (pregunta_conductor y conductor).
      Lo que se lee en voz alta va en negro y sin recuadro. Las instrucciones y las preguntas van en un recuadro azul
      con título y otra letra (decisiones del 2026-11-24 y del 2026-11-25: el color solo no bastaba); cuando se pide
      voz fuerte, el recuadro va en rojo (2026-11-27). En las pantallas
@@ -177,7 +179,7 @@ CODIGO_PRUEBA = "P00"         # sesiones de prueba: se guardan normal, pero no c
 # Datos de las sesiones de prueba: siempre los mismos, para no pedirlos (2026-11-25). La ganancia y el sonómetro van
 # vacíos porque son mediciones: un valor fijo parecería real.
 # El grupo de edad no va aquí: se deduce de la edad, como en las sesiones reales.
-DATOS_PRUEBA = {"codigo": CODIGO_PRUEBA, "edad": 9, "sexo": "h", "lugar": "cubículo",
+DATOS_PRUEBA = {"codigo": CODIGO_PRUEBA, "edad": 25, "sexo": "h", "lugar": "cubículo",
                 "ganancia": "", "sonometro_fondo_dba": "", "conductor": "Arturo", "notas": "sesión de prueba"}
 EDAD_PRUEBA_NINOS = 8         # edad de la sesión de prueba de niños
 # Grupos de edad (edad mínima, nombre): se guarda la edad exacta y el grupo se deduce de ella
