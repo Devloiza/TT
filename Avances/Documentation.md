@@ -507,6 +507,8 @@ pip install pyserial numpy pyaudio
 ```
 `pyaudio` necesita la librería de sistema `portaudio19-dev` antes de instalarse: `sudo apt install -y portaudio19-dev`.
 
+En la Pi el venv puede quedarse en `venv/`, dentro del repo. La regla de `README.md` §6 de ponerlo fuera del repo (`~/.venvs/tt`) es para las máquinas Windows, cuyo repo sincroniza OneDrive (nov 2026). La Pi no usa OneDrive, y `venv/` no se versiona.
+
 ### 12.5 Puertos por variable de entorno (evita editar el código por máquina)
 
 `monitor_8LR.py` lee `ESP1_PORT`/`ESP2_PORT` de variables de entorno si existen (default: `COM7`/`COM5` para Windows, los USB nativos del equipo de desarrollo). En la Pi:

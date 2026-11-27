@@ -4,21 +4,22 @@ Diseño completo en [`Metodologia/obj3_base_de_datos.md`](../../Metodologia/obj3
 
 | Archivo | Qué es |
 |:--|:--|
-| `Lists_SHARVARD.txt` | Las 70 listas de 10 frases del corpus *Sharvard*. Las líneas "a." son propuestas de adaptación del autor |
-| `Lists_SHARVARD_MX.txt` | Versión adaptada al español de México: una frase final por número. Es la que usa el programa |
-| `adaptaciones_SHARVARD_MX.csv` | Registro de las 51 frases adaptadas: original, adaptada y motivo |
-| `calibracion.txt` | 10 frases propias para medir el ritmo de lectura. No son de *Sharvard* |
-| `preguntas.txt` | Indicaciones y banco de 30 preguntas del habla libre (§4.3), con el id de su audio |
-| `fuentes_imagenes.csv` | Fuente de cada imagen para describir: archivo, URL de Pexels, fotógrafo y licencia |
-| `configurar_audio.py` | Prueba de habla (micrófono) y de escucha (audífonos) una vez por máquina; guarda la elección en `config_audio.json`. Hecho por Claude con la especificación del autor |
+| `textos_prueba/Lists_SHARVARD.txt` | Las 70 listas de 10 frases del corpus *Sharvard*. Las líneas "a." son propuestas de adaptación del autor |
+| `textos_prueba/Lists_SHARVARD_MX.txt` | Versión adaptada al español de México: una frase final por número. Es la que usa el programa |
+| `textos_prueba/adaptaciones_SHARVARD_MX.csv` | Registro de las 51 frases adaptadas: original, adaptada y motivo |
+| `textos_prueba/calibracion.txt` | 10 frases propias para medir el ritmo de lectura. No son de *Sharvard* |
+| `textos_prueba/preguntas.txt` | Indicaciones y banco de 30 preguntas del habla libre (§4.3). Solo se muestran en pantalla |
+| `textos_prueba/El_viento_norte_y_el_sol.txt` | Texto de la lectura continua (§4.1, bloque d), versión de Coloma. Lo eligió el autor |
+| `textos_prueba/fuentes_imagenes.csv` | Fuente de cada imagen para describir: archivo, URL de Pexels, fotógrafo y licencia |
+| `configurar_audio.py` | Prueba de habla (micrófono) una vez por máquina; guarda la elección en `config_audio.json`. Hecho por Claude con la especificación del autor |
 | `presentador_frases.py` | Programa de sesión: hecho por Claude con la especificación del autor. Uso y teclas en su encabezado |
+| `espectro_ruido.py` | Espectro del ruido: del lugar (30 s antes de una sesión), en tiempo real con mapa de calor (`--vivo`) o de una sesión guardada, comparado con cada estilo de voz. Diagnóstico, hecho por Claude con la especificación del autor |
 
 No se versionan:
 
-- `image/`: las imágenes para describir (Pexels, unos 66 MB). Se reconstruyen con `fuentes_imagenes.csv`. La licencia de Pexels permite usarlas sin dar crédito, pero no redistribuirlas en otras plataformas de fotos;
-- `audios_preguntas/`: las indicaciones pregrabadas, un `<id>.wav` por línea de `preguntas.txt`;
+- `image/`: las imágenes para describir (Pexels, unos 66 MB). Se reconstruyen con `textos_prueba/fuentes_imagenes.csv`. La licencia de Pexels permite usarlas sin dar crédito, pero no redistribuirlas en otras plataformas de fotos;
 - `config_audio.json`: los dispositivos de cada máquina;
-- las grabaciones, que van a `SALIDAS/BD_voz/`.
+- las grabaciones, que van a `Descargas/BD_VOZ/`, fuera del repo y de OneDrive, con copia en un disco duro externo.
 
 ## Atribución y licencia de *Sharvard*
 

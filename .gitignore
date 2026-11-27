@@ -59,9 +59,7 @@ Exploration/Geometria_estadistica/fotos/
 Prompts.txt
 
 # Imágenes para la descripción libre del Obj. 3 (Pexels, 66 MB): se quedan locales.
-# Se versiona su lista de fuentes, Exploration/Prueba_BD/fuentes_imagenes.csv
+# Se versiona su lista de fuentes, Exploration/Prueba_BD/textos_prueba/fuentes_imagenes.csv
 Exploration/Prueba_BD/image/
-# Indicaciones pregrabadas por el conductor (voz de una persona): se quedan locales
-Exploration/Prueba_BD/audios_preguntas/
 # Configuración de audio de cada máquina (la escribe configurar_audio.py)
 Exploration/Prueba_BD/config_audio.json

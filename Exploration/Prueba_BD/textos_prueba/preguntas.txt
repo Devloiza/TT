@@ -1,22 +1,19 @@
 # Indicaciones y preguntas del habla libre guiada (Metodologia/obj3_base_de_datos.md §4.3).
-# Formato: «id | texto». El texto se muestra en pantalla. Si existe audios_preguntas/<id>.wav, también suena por
-# los audífonos (grabarlo a 48 kHz; mono o estéreo). Las líneas con # se ignoran.
-# [indicaciones] necesita estos ids: imagen, platica, normal, fuerte, baja, susurro.
-# [preguntas]: las primeras tres van fijas a los estilos guiados (fuerte, baja, susurro). El resto sale en la plática
-# en orden balanceado entre participantes (primero las menos usadas). Si se acaban, vuelven a empezar.
+# Formato: «id | texto». El texto solo se muestra en pantalla (sin audio, decisión del 2026-11-22).
+# Las líneas con # se ignoran.
+# [indicaciones] necesita estos ids: normal, fuerte, imagen, pregunta. En pantalla sale primero la voz y debajo la tarea.
+# [preguntas]: salen en orden balanceado entre participantes (primero las menos usadas). Si se acaban, vuelven a empezar.
 
 [indicaciones]
-imagen | Describe esta imagen con todo el detalle que puedas.
-platica | Platiquemos un rato. Contesta con calma.
-normal | Ahora sigue hablando con tu voz normal.
-fuerte | Ahora habla fuerte, como si hablaras con alguien al otro lado del salón.
-baja | Ahora habla en voz baja, como en una biblioteca.
-susurro | Ahora habla en susurro.
+normal | Con tu voz normal.
+fuerte | Con voz fuerte, como si la persona estuviera al otro lado del salón. No grites ni te acerques al micrófono.
+imagen | Describe en voz alta la imagen: personas, objetos, lugar y qué está pasando. Sigue hablando hasta que cambie.
+pregunta | Contesta la pregunta, como si platicaras con el responsable de la prueba. No la leas en voz alta. Da todos los detalles que puedas.
 
 [preguntas]
 # Banco de 30 preguntas abiertas, de temas variados, para que cada persona encuentre alguna que le guste. El conductor
 # se salta con Espacio la que no funcione. Sin datos personales sensibles (salud, dinero, política, religión).
-# Las primeras tres van a los estilos guiados, por eso son las más universales. p01-p04 son las de §4.3.
+# p01-p04 son las de §4.3.
 
 # Vida diaria
 p01 | Cuéntame qué hiciste el fin de semana.
