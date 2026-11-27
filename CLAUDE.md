@@ -74,7 +74,7 @@ py -3.11 -m venv "$env:USERPROFILE\.venvs\tt"                                   
 & "$env:USERPROFILE\.venvs\tt\Scripts\Activate.ps1"
 ```
 
-El venv va **fuera del repo**, uno por máquina (Linux/Pi: `~/.venvs/tt`). El repo está en OneDrive, y un venv guarda la ruta absoluta de su Python: sincronizado, se rompe en la otra máquina (`No Python at 'C:\Program Files\Python311\python.exe'`, nov 2026). La carpeta `venv/` del repo es la vieja; no usarla.
+En Windows, el venv va **fuera del repo**, uno por máquina. El repo está en OneDrive, y un venv guarda la ruta absoluta de su Python: sincronizado, se rompe en la otra máquina (`No Python at 'C:\Program Files\Python311\python.exe'`, nov 2026). La carpeta `venv/` del repo en Windows es la vieja; no usarla. En la Raspberry Pi no aplica: no usa OneDrive y su venv puede quedarse en `venv/` (`Documentation.md` §12.4).
 
 Ejecutar el sistema completo de adquisición (requiere ambos ESP32-S3 conectados por USB *antes* de arrancar el script):
 

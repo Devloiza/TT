@@ -166,7 +166,7 @@ Cada documento responde una pregunta distinta. Si dos se contradicen, gana el de
 
 ### Entorno
 
-Un venv por máquina, **fuera del repo**. El repo está en OneDrive, y un venv no se puede mover entre máquinas: guarda la ruta absoluta del Python con que se creó. Si OneDrive lo sincroniza, deja de funcionar en la otra máquina (`No Python at '...'`). Lo único compartido es `requirements.txt`.
+En Windows, un venv por máquina, **fuera del repo**. El repo está en OneDrive, y un venv no se puede mover entre máquinas: guarda la ruta absoluta del Python con que se creó. Si OneDrive lo sincroniza, deja de funcionar en la otra máquina (`No Python at '...'`). Lo único compartido es `requirements.txt`.
 
 ```powershell
 # Windows (PowerShell), una vez por máquina, desde la raíz del repo
@@ -175,12 +175,7 @@ py -3.11 -m venv "$env:USERPROFILE\.venvs\tt"
 & "$env:USERPROFILE\.venvs\tt\Scripts\Activate.ps1"     # en cada terminal nueva
 ```
 
-```bash
-# Linux/Raspberry Pi
-python3 -m venv ~/.venvs/tt
-~/.venvs/tt/bin/pip install -r requirements.txt
-source ~/.venvs/tt/bin/activate
-```
+En la Raspberry Pi no aplica: no usa OneDrive y el venv puede quedarse en `venv/`, dentro del repo ([`Documentation.md` §12.4](Avances/Documentation.md#124-entorno-python)).
 
 En VS Code: *Python: Select Interpreter* → `~/.venvs/tt`. La elección se guarda en cada máquina, no en el repo.
 
