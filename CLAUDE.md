@@ -68,11 +68,13 @@ Trabajan dos personas en el repo (Arturo y Atenea; regla acordada el 2026-10-28)
 
 No hay build system, linter ni suite de tests — es un proyecto de investigación con scripts Python ejecutados directamente.
 
-```bash
-python -m venv venv
-venv\Scripts\activate          # Windows
-pip install -r requirements.txt
+```powershell
+py -3.11 -m venv "$env:USERPROFILE\.venvs\tt"                                    # una vez por máquina
+& "$env:USERPROFILE\.venvs\tt\Scripts\python.exe" -m pip install -r requirements.txt
+& "$env:USERPROFILE\.venvs\tt\Scripts\Activate.ps1"
 ```
+
+El venv va **fuera del repo**, uno por máquina (Linux/Pi: `~/.venvs/tt`). El repo está en OneDrive, y un venv guarda la ruta absoluta de su Python: sincronizado, se rompe en la otra máquina (`No Python at 'C:\Program Files\Python311\python.exe'`, nov 2026). La carpeta `venv/` del repo es la vieja; no usarla.
 
 Ejecutar el sistema completo de adquisición (requiere ambos ESP32-S3 conectados por USB *antes* de arrancar el script):
 
@@ -142,7 +144,7 @@ Prototipos y herramientas de diagnóstico; no es código de producción del TT (
 - `reconstruccion_sept2026/` — reconstrucción incremental por etapas del sistema completo (transporte puro → 1 mic → 4 mics), referencia histórica y herramientas para depurar transporte serie.
 - `Primeros_intentos/` — prototipos históricos de 1–4 mics; usan baudios y pines viejos.
 - `Geometria_estadistica/` — trabajo del autor, en curso: recopilación de fuentes e imágenes de escorpiones con *slit sensilla* de varios géneros, centradas en *Heterometrus*, para hacer estadística sobre imágenes, como apoyo al Obj. 1 (geometría bioinspirada). Los enlaces vacíos del índice de `Fuentes.md` son pendientes de la recopilación, no errores. `patainador.py` es una utilidad de anotación hecha por Claude con la especificación del autor (eje del cuerpo, patas P1–P4 con lado deducido, círculo por ajuste o mínimo, dos CSV en `datos/`); `estadistica_imagenes.py` y el análisis son del autor (Claude lo revisa y corrige a petición); `graficas_patas.py` es la parte visual hecha por Claude con la especificación del autor, y `exportar_error_proyeccion.py` es una utilidad de exportación para un asesor, también de Claude. `estadistica_error.py` (histogramas del error de proyección) es del autor; Claude lo reordenó a petición. Metodología completa en `Metodologia/obj1_geometria.md`. Las fotos (`fotos/`) no se versionan.
-- `Prueba_BD/` — preparación de la adquisición de voz del Obj. 3: listas *Sharvard* (`Lists_SHARVARD.txt`, con las propuestas del autor) y su adaptación a México (`Lists_SHARVARD_MX.txt`, `adaptaciones_SHARVARD_MX.csv`), `calibracion.txt`, `preguntas.txt` (habla libre, solo en pantalla), `textos_prueba/` (lectura continua), `fuentes_imagenes.csv`, `configurar_audio.py` (prueba de micrófono una vez por máquina), `presentador_frases.py`, programa de sesión, y `espectro_ruido.py`, espectro del ruido del lugar o de una sesión; los tres programas los hizo Claude con la especificación del autor. El guion del conductor y el consentimiento son del autor y están en `Referencias/` (locales). No se versionan las imágenes (`image/`, de Pexels) ni la configuración de audio (`config_audio.json`). Las grabaciones se guardan fuera del repo y de OneDrive, en `Descargas/BD_VOZ/`. Diseño en `Metodologia/obj3_base_de_datos.md`.
+- `Prueba_BD/` — preparación de la adquisición de voz del Obj. 3: textos de la sesión en `textos_prueba/`: listas *Sharvard* (`Lists_SHARVARD.txt`, con las propuestas del autor) y su adaptación a México (`Lists_SHARVARD_MX.txt`, `adaptaciones_SHARVARD_MX.csv`), `calibracion.txt`, `preguntas.txt` (habla libre, solo en pantalla), la lectura continua y `fuentes_imagenes.csv`; además, `configurar_audio.py` (prueba de micrófono una vez por máquina), `presentador_frases.py`, programa de sesión, y `espectro_ruido.py`, espectro del ruido del lugar o de una sesión; los tres programas los hizo Claude con la especificación del autor. El guion del conductor y el consentimiento son del autor y están en `Referencias/` (locales). No se versionan las imágenes (`image/`, de Pexels) ni la configuración de audio (`config_audio.json`). Las grabaciones se guardan fuera del repo y de OneDrive, en `Descargas/BD_VOZ/`. Diseño en `Metodologia/obj3_base_de_datos.md`.
 
 ### Mapa de documentación
 

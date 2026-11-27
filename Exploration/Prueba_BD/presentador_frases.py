@@ -79,15 +79,16 @@ import numpy as np
 
 # ----------------------------------------------------------------- configuración
 CARPETA = Path(__file__).resolve().parent
-ARCHIVO_LISTAS = CARPETA / "Lists_SHARVARD_MX.txt"
-ARCHIVO_CALIBRACION = CARPETA / "calibracion.txt"
+CARPETA_TEXTOS = CARPETA / "textos_prueba"       # listas, calibración, preguntas y lectura continua
+ARCHIVO_LISTAS = CARPETA_TEXTOS / "Lists_SHARVARD_MX.txt"
+ARCHIVO_CALIBRACION = CARPETA_TEXTOS / "calibracion.txt"
 # Voces de personas: solo locales, fuera del repo y de OneDrive (decisión del 2026-11-22). En esta máquina es
 # C:\Users\monit\Downloads\BD_VOZ; con Path.home() funciona igual en otra computadora.
 CARPETA_SALIDA = Path.home() / "Downloads" / "BD_VOZ"
 ARCHIVO_ASIGNACIONES = CARPETA_SALIDA / "asignaciones.csv"
-ARCHIVO_PREGUNTAS = CARPETA / "preguntas.txt"
-ARCHIVO_LECTURA = CARPETA / "textos_prueba" / "El_viento_norte_y_el_sol.txt"   # versión de Coloma
-CARPETA_IMAGENES = CARPETA / "image"             # no se versiona (Pexels); fuentes en fuentes_imagenes.csv
+ARCHIVO_PREGUNTAS = CARPETA_TEXTOS / "preguntas.txt"
+ARCHIVO_LECTURA = CARPETA_TEXTOS / "El_viento_norte_y_el_sol.txt"   # versión de Coloma
+CARPETA_IMAGENES = CARPETA / "image"             # no se versiona (Pexels); fuentes en textos_prueba/fuentes_imagenes.csv
 ARCHIVO_CONFIG = CARPETA / "config_audio.json"   # lo escribe configurar_audio.py; es de cada máquina, no se versiona
 
 LISTAS_FIJAS = (15, 33, 3)

@@ -166,13 +166,23 @@ Cada documento responde una pregunta distinta. Si dos se contradicen, gana el de
 
 ### Entorno
 
-```bash
-python -m venv venv
-venv\Scripts\activate            # Windows  (Linux/Pi: source venv/bin/activate)
-pip install -r requirements.txt
+Un venv por máquina, **fuera del repo**. El repo está en OneDrive, y un venv no se puede mover entre máquinas: guarda la ruta absoluta del Python con que se creó. Si OneDrive lo sincroniza, deja de funcionar en la otra máquina (`No Python at '...'`). Lo único compartido es `requirements.txt`.
+
+```powershell
+# Windows (PowerShell), una vez por máquina, desde la raíz del repo
+py -3.11 -m venv "$env:USERPROFILE\.venvs\tt"
+& "$env:USERPROFILE\.venvs\tt\Scripts\python.exe" -m pip install -r requirements.txt
+& "$env:USERPROFILE\.venvs\tt\Scripts\Activate.ps1"     # en cada terminal nueva
 ```
 
-El `venv` no se versiona: hay que crearlo en cada máquina.
+```bash
+# Linux/Raspberry Pi
+python3 -m venv ~/.venvs/tt
+~/.venvs/tt/bin/pip install -r requirements.txt
+source ~/.venvs/tt/bin/activate
+```
+
+En VS Code: *Python: Select Interpreter* → `~/.venvs/tt`. La elección se guarda en cada máquina, no en el repo.
 
 ### Adquisición en vivo (requiere hardware)
 
